@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search, Save, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Database, Edit, Plus, Save, Search, Trash2, X } from 'lucide-react';
+import {
+  createAdminStudent,
+  deleteAdminStudent,
+  fetchAdminStudents,
+  updateAdminStudent,
+} from '@/services/adminService';
 
-const Modal = ({ title, children, onSubmit, onClose }) => (
+const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
   <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-3xl shadow-2xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">{title}</h2>
         <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors p-1">
@@ -13,19 +19,12 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
       <form onSubmit={onSubmit} className="space-y-6">
         {children}
         <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-700">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2 text-neutral-300 bg-neutral-800 border border-neutral-600 rounded-lg hover:bg-neutral-700 transition-colors"
-          >
+          <button type="button" onClick={onClose} className="px-6 py-2 text-neutral-300 bg-neutral-800 border border-neutral-600 rounded-lg hover:bg-neutral-700 transition-colors">
             Cancel
           </button>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg"
-          >
+          <button type="submit" disabled={isSubmitting} className="px-6 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg disabled:opacity-60">
             <Save className="w-4 h-4 mr-2" />
-            Save
+            {isSubmitting ? 'Saving...' : 'Save'}
           </button>
         </div>
       </form>
@@ -34,49 +33,83 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
 );
 
 const StudentManagement = () => {
-  const [students, setStudents] = useState([
-    { id: 1, name: 'John Doe', email: 'john@example.com', rollNo: 'CS001', year: '2nd', branch: 'CSE' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', rollNo: 'CS002', year: '2nd', branch: 'CSE' }
-  ]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingStudent, setEditingStudent] = useState(null);
   const [studentForm, setStudentForm] = useState({
-    name: '', email: '', rollNo: '', year: '', branch: ''
+    name: '',
+    email: '',
+    rollNo: '',
+    year: '',
+    branch: '',
   });
 
   const resetForm = () => {
     setStudentForm({ name: '', email: '', rollNo: '', year: '', branch: '' });
   };
 
-  const openModal = (item = null) => {
-    setEditingItem(item);
-    if (item) {
-      setStudentForm(item);
-    } else {
-      resetForm();
-    }
-    setShowModal(true);
-  };
-
   const closeModal = () => {
     setShowModal(false);
-    setEditingItem(null);
+    setEditingStudent(null);
     resetForm();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (editingItem) {
-      setStudents(students.map(s => s.id === editingItem.id ? { ...studentForm, id: editingItem.id } : s));
-    } else {
-      setStudents([...students, { ...studentForm, id: Date.now() }]);
-    }
-    closeModal();
+  const openCreateModal = () => {
+    setEditingStudent(null);
+    resetForm();
+    setShowModal(true);
   };
 
-  const deleteItem = (id) => {
-    setStudents(students.filter(s => s.id !== id));
+  const openEditModal = (student) => {
+    setEditingStudent(student);
+    setStudentForm({
+      name: student.name || '',
+      email: student.email || '',
+      rollNo: student.rollNo || '',
+      year: student.year === 'N/A' ? '' : (student.year || ''),
+      branch: student.branch === 'N/A' ? '' : (student.branch || ''),
+    });
+    setShowModal(true);
+  };
+
+  const handleSubmitStudent = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (editingStudent) {
+        const result = await updateAdminStudent(editingStudent.id, studentForm);
+        const updatedStudent = result?.data?.student;
+        if (updatedStudent) {
+          setStudents((prev) => prev.map((item) => (item.id === updatedStudent.id ? updatedStudent : item)));
+        }
+      } else {
+        const result = await createAdminStudent(studentForm);
+        const createdStudent = result?.data?.student;
+        if (createdStudent) {
+          setStudents((prev) => [createdStudent, ...prev]);
+          alert(`Student created. Username: ${createdStudent.credentials?.username || createdStudent.rollNo}, Password: ${createdStudent.credentials?.password || createdStudent.rollNo}`);
+        }
+      }
+      closeModal();
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to save student';
+      alert(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId) => {
+    try {
+      await deleteAdminStudent(studentId);
+      setStudents((prev) => prev.filter((item) => item.id !== studentId));
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to delete student';
+      alert(message);
+    }
   };
 
   const filterData = () => {
@@ -90,6 +123,22 @@ const StudentManagement = () => {
 
   const filteredStudents = filterData();
 
+  useEffect(() => {
+    const loadStudents = async () => {
+      try {
+        const result = await fetchAdminStudents();
+        setStudents(result?.data?.students || []);
+      } catch (error) {
+        const message = error?.response?.data?.message || 'Failed to fetch students from backend';
+        alert(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStudents();
+  }, []);
+
   return (
     <div className="space-y-8 p-15">
       <div className="flex justify-between items-center">
@@ -97,15 +146,18 @@ const StudentManagement = () => {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
             Student Management
           </h1>
-          <p className="text-neutral-400 mt-2">Manage student records and information</p>
+          <p className="text-neutral-400 mt-2">Add and view students from backend database</p>
         </div>
-        <button
-          onClick={() => openModal()}
-          className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-3 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add Student
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            Backend Synced
+          </div>
+          <button onClick={openCreateModal} className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Student
+          </button>
+        </div>
       </div>
       
       <div className="relative">
@@ -133,7 +185,12 @@ const StudentManagement = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-700">
-              {filteredStudents.map((student) => (
+              {isLoading && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-6 text-center text-neutral-400">Loading students...</td>
+                </tr>
+              )}
+              {!isLoading && filteredStudents.map((student) => (
                 <tr key={student.id} className="hover:bg-neutral-700/30 transition-colors">
                   <td className="px-6 py-4 text-white font-medium">{student.name}</td>
                   <td className="px-6 py-4 text-neutral-300">{student.email}</td>
@@ -145,80 +202,35 @@ const StudentManagement = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => openModal(student)}
-                        className="text-blue-400 hover:text-blue-300 transition-colors p-1"
-                      >
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => openEditModal(student)} className="p-1 text-blue-400 hover:text-blue-300">
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button
-                        onClick={() => deleteItem(student.id)}
-                        className="text-red-400 hover:text-red-300 transition-colors p-1"
-                      >
+                      <button onClick={() => handleDeleteStudent(student.id)} className="p-1 text-red-400 hover:text-red-300">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
                 </tr>
               ))}
+              {!isLoading && filteredStudents.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-6 text-center text-neutral-500">No students found.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Student Modal */}
       {showModal && (
-        <Modal title={editingItem ? 'Edit Student' : 'Add Student'} onSubmit={handleSubmit} onClose={closeModal}>
-          <div className="grid md:grid-cols-2 gap-6">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={studentForm.name}
-              onChange={(e) => setStudentForm({...studentForm, name: e.target.value})}
-              className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email Address"
-              value={studentForm.email}
-              onChange={(e) => setStudentForm({...studentForm, email: e.target.value})}
-              className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Roll Number"
-              value={studentForm.rollNo}
-              onChange={(e) => setStudentForm({...studentForm, rollNo: e.target.value})}
-              className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              required
-            />
-            <select
-              value={studentForm.year}
-              onChange={(e) => setStudentForm({...studentForm, year: e.target.value})}
-              className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              required
-            >
-              <option value="">Select Year</option>
-              <option value="1st">1st Year</option>
-              <option value="2nd">2nd Year</option>
-              <option value="3rd">3rd Year</option>
-              <option value="4th">4th Year</option>
-            </select>
-            <select
-              value={studentForm.branch}
-              onChange={(e) => setStudentForm({...studentForm, branch: e.target.value})}
-              className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all md:col-span-2"
-              required
-            >
-              <option value="">Select Branch</option>
-              <option value="CSE">Computer Science Engineering</option>
-              <option value="IT">Information Technology</option>
-              <option value="ECE">Electronics & Communication</option>
-              <option value="EEE">Electrical & Electronics</option>
-            </select>
+        <Modal title={editingStudent ? 'Edit Student' : 'Add Student'} onSubmit={handleSubmitStudent} onClose={closeModal} isSubmitting={isSubmitting}>
+          <div className="grid md:grid-cols-2 gap-4">
+            <input type="text" placeholder="Full Name" value={studentForm.name} onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="email" placeholder="Email" value={studentForm.email} onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="text" placeholder="Roll Number" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="text" placeholder="Year (optional)" value={studentForm.year} onChange={(e) => setStudentForm((prev) => ({ ...prev, year: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" />
+            <input type="text" placeholder="Branch (optional)" value={studentForm.branch} onChange={(e) => setStudentForm((prev) => ({ ...prev, branch: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" />
           </div>
         </Modal>
       )}

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardTitle } from '../Labs/Card';
 
-const ActivitySidebar = () => {
-    const recentActivities = [
+const ActivitySidebar = ({ recentActivitiesProp, pendingActionsProp }) => {
+    const recentActivities = recentActivitiesProp || [
         {
             id: 1,
             type: 'submission',
@@ -49,7 +49,7 @@ const ActivitySidebar = () => {
         }
     ];
 
-    const pendingActions = [
+    const pendingActions = pendingActionsProp || [
         {
             id: 1,
             type: 'grade',

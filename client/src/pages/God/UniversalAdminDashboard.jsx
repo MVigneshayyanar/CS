@@ -1,8 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Building2, Search, Save, X, MapPin, Calendar, GraduationCap, Users, Phone, Globe, Shield, Mail, User, UserPlus } from 'lucide-react';
+import { addCollege, addSuperAdmin, fetchColleges } from '@/services/godService';
+
+const toFriendlyGodSetupMessage = (message) => {
+  const normalized = (message || '').toLowerCase();
+  if (
+    normalized.includes('database setup incomplete') ||
+    normalized.includes('public.colleges') ||
+    normalized.includes('schema cache')
+  ) {
+    return 'God management tables are not set up yet. Run server/scripts/god_management_setup.sql in Supabase SQL editor, then retry.';
+  }
+
+  return message;
+};
 
 // Move Modal component OUTSIDE to prevent recreation on every render
-const Modal = ({ title, children, onSubmit, onClose }) => (
+const Modal = ({ title, children, onSubmit, onClose, isSubmitting = false }) => (
   <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
     <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
       <div className="flex justify-between items-center mb-6">
@@ -24,10 +38,11 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
           <button
             type="button"
             onClick={onSubmit}
+            disabled={isSubmitting}
             className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center shadow-lg"
           >
             <Save className="w-4 h-4 mr-2" />
-            Save
+            {isSubmitting ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
@@ -36,52 +51,13 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
 );
 
 const UniversalAdminDashboard = () => {
-  const [colleges, setColleges] = useState([
-    {
-      id: 1,
-      name: 'MIT Institute of Technology',
-      code: 'MIT',
-      location: 'Bangalore, Karnataka',
-      address: '123 Tech Street, Bangalore - 560001',
-      established: '1995',
-      type: 'Private',
-      affiliation: 'VTU',
-      phone: '+91-80-12345678',
-      email: 'admin@mit.edu',
-      website: 'www.mit.edu',
-      departments: ['Computer Science Engineering', 'Information Technology', 'Electronics & Communication', 'Electrical & Electronics'],
-      totalStudents: 2500,
-      totalFaculty: 180,
-      superAdmins: [
-        {
-          id: 1,
-          name: 'Dr. Rajesh Kumar',
-          email: 'rajesh.kumar@mit.edu',
-          phone: '+91-98765-12345',
-          empId: 'MIT-SA-001',
-          qualification: 'Ph.D in Computer Science',
-          experience: '20 years',
-          specialization: 'Educational Administration & Technology',
-          joiningDate: '2019-08-15'
-        }
-      ]
-    }
-  ]);
-
-  const [superAdmins, setSuperAdmins] = useState([
-    {
-      id: 1,
-      name: 'Dr. Rajesh Kumar',
-      email: 'rajesh.kumar@mit.edu',
-      phone: '+91-98765-12345',
-      empId: 'MIT-SA-001',
-      qualification: 'Ph.D in Computer Science',
-      experience: '20 years',
-      specialization: 'Educational Administration & Technology',
-      joiningDate: '2019-08-15',
-      assignedCollege: 'MIT Institute of Technology'
-    }
-  ]);
+  const [colleges, setColleges] = useState([]);
+  const [superAdmins, setSuperAdmins] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const [superAdminPasswords, setSuperAdminPasswords] = useState({});
+  const [expandedCollegeId, setExpandedCollegeId] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -117,6 +93,32 @@ const UniversalAdminDashboard = () => {
     assignedCollege: ''
   });
 
+  const getSuperAdminsFromColleges = (nextColleges) =>
+    nextColleges.flatMap((college) =>
+      (college.superAdmins || []).map((admin) => ({
+        ...admin,
+        assignedCollege: admin.assignedCollege || college.name,
+      }))
+    );
+
+  const loadDashboardData = async () => {
+    try {
+      const result = await fetchColleges();
+      const nextColleges = result?.data?.colleges || [];
+      setColleges(nextColleges);
+      setSuperAdmins(getSuperAdminsFromColleges(nextColleges));
+    } catch (error) {
+      const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to load colleges from backend.';
+      alert(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
   const resetForms = () => {
     setCollegeForm({
       name: '',
@@ -128,10 +130,7 @@ const UniversalAdminDashboard = () => {
       affiliation: '',
       phone: '',
       email: '',
-      website: '',
-      departments: [],
-      totalStudents: '',
-      totalFaculty: ''
+      website: ''
     });
     setSuperAdminForm({
       name: '',
@@ -153,13 +152,7 @@ const UniversalAdminDashboard = () => {
    
     if (item) {
       if (type === 'college') {
-        const formData = {
-          ...item,
-          totalStudents: item.totalStudents?.toString() || '',
-          totalFaculty: item.totalFaculty?.toString() || '',
-          departments: item.departments || []
-        };
-        setCollegeForm(formData);
+        setCollegeForm({ ...item });
       } else if (type === 'superadmin') {
         setSuperAdminForm({...item});
       }
@@ -180,64 +173,92 @@ const UniversalAdminDashboard = () => {
     resetForms();
   };
 
-  const handleCollegeSubmit = () => {
-    const newId = editingItem ? editingItem.id : Date.now();
-    const collegeData = {
-      ...collegeForm,
-      id: newId,
-      totalStudents: parseInt(collegeForm.totalStudents) || 0,
-      totalFaculty: parseInt(collegeForm.totalFaculty) || 0,
-      superAdmins: editingItem ? editingItem.superAdmins || [] : []
-    };
-   
+  const handleCollegeSubmit = async () => {
     if (editingItem) {
-      setColleges(prev => prev.map(c =>
-        c.id === editingItem.id ? collegeData : c
-      ));
-    } else {
-      setColleges(prev => [...prev, collegeData]);
+      const updatedColleges = colleges.map(c =>
+        c.id === editingItem.id
+          ? {
+              ...editingItem,
+              ...collegeForm,
+            }
+          : c
+      );
+      setColleges(updatedColleges);
+      setSuperAdmins(getSuperAdminsFromColleges(updatedColleges));
+      closeModal();
+      return;
     }
-    closeModal();
+
+    setIsSubmitting(true);
+    try {
+      const result = await addCollege(collegeForm);
+      const createdCollege = result?.data?.college;
+
+      if (createdCollege) {
+        const updatedColleges = [...colleges, createdCollege];
+        setColleges(updatedColleges);
+        setSuperAdmins(getSuperAdminsFromColleges(updatedColleges));
+      }
+
+      closeModal();
+    } catch (error) {
+      const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to create college.';
+      alert(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSuperAdminSubmit = () => {
-    const newId = editingItem ? editingItem.id : Date.now();
-    const superAdminData = { ...superAdminForm, id: newId };
-   
+  const handleSuperAdminSubmit = async () => {
     if (editingItem) {
-      // Update existing super admin
-      setSuperAdmins(prev => prev.map(sa =>
-        sa.id === editingItem.id ? superAdminData : sa
-      ));
-     
-      // Update in colleges
-      setColleges(prev => prev.map(college => {
-        if (college.name === superAdminForm.assignedCollege) {
+      const updatedSuperAdmins = superAdmins.map(sa =>
+        sa.id === editingItem.id ? { ...sa, ...superAdminForm } : sa
+      );
+      setSuperAdmins(updatedSuperAdmins);
+
+      const updatedColleges = colleges.map(college => {
+        if (college.name !== superAdminForm.assignedCollege) {
           return {
             ...college,
-            superAdmins: college.superAdmins.map(sa =>
-              sa.id === editingItem.id ? superAdminData : sa
-            )
+            superAdmins: (college.superAdmins || []).filter(sa => sa.id !== editingItem.id),
           };
         }
-        return college;
-      }));
-    } else {
-      // Add new super admin
-      setSuperAdmins(prev => [...prev, superAdminData]);
-     
-      // Add to assigned college
-      setColleges(prev => prev.map(college => {
-        if (college.name === superAdminForm.assignedCollege) {
-          return {
-            ...college,
-            superAdmins: [...(college.superAdmins || []), superAdminData]
-          };
-        }
-        return college;
-      }));
+
+        const existingAdmins = (college.superAdmins || []).filter(sa => sa.id !== editingItem.id);
+        return {
+          ...college,
+          superAdmins: [...existingAdmins, { ...editingItem, ...superAdminForm }],
+        };
+      });
+
+      setColleges(updatedColleges);
+      closeModal();
+      return;
     }
-    closeModal();
+
+    setIsSubmitting(true);
+    try {
+      const result = await addSuperAdmin(superAdminForm);
+      const credentials = result?.data?.credentials || null;
+      const superAdminData = result?.data?.superAdmin || null;
+
+      if (credentials && superAdminData) {
+        // Store password for later retrieval
+        setSuperAdminPasswords(prev => ({
+          ...prev,
+          [superAdminData.id]: credentials.password
+        }));
+      }
+
+      setGeneratedCredentials(credentials);
+      await loadDashboardData();
+      closeModal();
+    } catch (error) {
+      const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to create super admin.';
+      alert(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const deleteCollege = (id) => {
@@ -276,6 +297,14 @@ const UniversalAdminDashboard = () => {
     'Artificial Intelligence & Machine Learning'
   ];
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6 flex items-center justify-center">
+        <p className="text-neutral-400 text-lg">Loading college data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
       <div className="max-w-7xl mx-auto">
@@ -301,6 +330,22 @@ const UniversalAdminDashboard = () => {
             </span>
           </div>
         </div>
+
+        {/* Search */}
+        {generatedCredentials && (
+          <div className="mb-8 bg-emerald-600/10 border border-emerald-500/40 rounded-xl p-4 text-emerald-200">
+            <div className="font-semibold mb-2">Super Admin created successfully</div>
+            <div className="text-sm">Username: <span className="font-mono">{generatedCredentials.username}</span></div>
+            <div className="text-sm">Password: <span className="font-mono">{generatedCredentials.password}</span></div>
+            <button
+              type="button"
+              onClick={() => setGeneratedCredentials(null)}
+              className="mt-3 text-xs text-emerald-300 hover:text-emerald-100"
+            >
+              Hide credentials
+            </button>
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative mb-8">
@@ -389,81 +434,74 @@ const UniversalAdminDashboard = () => {
                 </div>
 
                 <div className="bg-neutral-900/50 border border-neutral-700 rounded-lg p-6">
-                  <div className="grid md:grid-cols-4 gap-6 mb-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-400">{college.departments?.length || 0}</div>
-                      <div className="text-neutral-400 text-sm">Departments</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-400">{college.totalStudents}</div>
-                      <div className="text-neutral-400 text-sm">Students</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-400">{college.totalFaculty}</div>
-                      <div className="text-neutral-400 text-sm">Faculty</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-teal-400">{college.superAdmins?.length || 0}</div>
-                      <div className="text-neutral-400 text-sm">Super Admins</div>
-                    </div>
-                  </div>
+                  <div className="grid md:grid-cols-1 gap-6">
+                    <div>
+                      <button
+                        onClick={() => setExpandedCollegeId(expandedCollegeId === college.id ? null : college.id)}
+                        className="w-full flex justify-between items-center mb-3 p-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg transition-colors"
+                      >
+                        <div className="flex items-center">
+                          <h4 className="font-semibold text-neutral-300 flex items-center">
+                            <Shield className="w-4 h-4 mr-2" />
+                            Super Admins ({college.superAdmins?.length || 0})
+                          </h4>
+                        </div>
+                        <span className="text-neutral-400">
+                          {expandedCollegeId === college.id ? '▼' : '▶'}
+                        </span>
+                      </button>
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-neutral-300 mb-3 flex items-center">
-                        <Building2 className="w-4 h-4 mr-2" />
-                        Departments
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {college.departments?.map((dept, index) => (
-                          <span key={index} className="bg-indigo-600/20 text-indigo-300 px-3 py-1 rounded-full text-sm">
-                            {dept}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                   
-                    <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-semibold text-neutral-300 flex items-center">
-                          <Shield className="w-4 h-4 mr-2" />
-                          Super Admins
-                        </h4>
-                        <button
-                          onClick={() => openModal('superadmin', null, college)}
-                          className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-3 py-1.5 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center text-sm shadow-md"
-                        >
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          Add Super Admin
-                        </button>
-                      </div>
-                      <div className="space-y-2">
-                        {college.superAdmins?.map((admin, index) => (
-                          <div key={index} className="bg-teal-600/20 text-teal-300 px-3 py-2 rounded-lg text-sm flex justify-between items-center">
-                            <div>
-                              <div className="font-medium">{admin.name}</div>
-                              <div className="text-xs text-teal-400">{admin.email}</div>
-                            </div>
-                            <div className="flex space-x-1">
-                              <button
-                                onClick={() => openModal('superadmin', admin)}
-                                className="text-blue-400 hover:text-blue-300 transition-colors p-1"
-                              >
-                                <Edit className="w-3 h-3" />
-                              </button>
-                              <button
-                                onClick={() => deleteSuperAdmin(admin.id, college.name)}
-                                className="text-red-400 hover:text-red-300 transition-colors p-1"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
-                            </div>
+                      {expandedCollegeId === college.id && (
+                        <>
+                          <div className="mb-3 flex justify-end">
+                            <button
+                              onClick={() => openModal('superadmin', null, college)}
+                              className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-3 py-1.5 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center text-sm shadow-md"
+                            >
+                              <UserPlus className="w-4 h-4 mr-1" />
+                              Add Super Admin
+                            </button>
                           </div>
-                        ))}
-                        {(!college.superAdmins || college.superAdmins.length === 0) && (
-                          <div className="text-neutral-500 text-sm italic">No super admins assigned</div>
-                        )}
-                      </div>
+                          <div className="space-y-2">
+                            {college.superAdmins?.map((admin, index) => (
+                              <div key={index} className="bg-teal-600/20 text-teal-300 px-3 py-2 rounded-lg text-sm flex justify-between items-center">
+                                <div>
+                                  <div className="font-medium">{admin.name}</div>
+                                  <div className="text-xs text-teal-400">Username: {admin.username || admin.empId}</div>
+                                  <div className="text-xs text-teal-400">{admin.email}</div>
+                                </div>
+                                <div className="flex space-x-1">
+                                  <button
+                                    onClick={() => {
+                                      const password = superAdminPasswords[admin.id] || admin.empId;
+                                      alert(`Username: ${admin.username || admin.empId}\nPassword: ${password}\nEmployee ID: ${admin.empId}`);
+                                    }}
+                                    className="text-green-400 hover:text-green-300 transition-colors p-1"
+                                    title="View credentials"
+                                  >
+                                    👁
+                                  </button>
+                                  <button
+                                    onClick={() => openModal('superadmin', admin)}
+                                    className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteSuperAdmin(admin.id, college.name)}
+                                    className="text-red-400 hover:text-red-300 transition-colors p-1"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            {(!college.superAdmins || college.superAdmins.length === 0) && (
+                              <div className="text-neutral-500 text-sm italic">No super admins assigned</div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="mt-4 text-xs text-neutral-500 border-t border-neutral-700 pt-4">
@@ -489,6 +527,7 @@ const UniversalAdminDashboard = () => {
             title={editingItem ? 'Edit College' : 'Add New College'} 
             onSubmit={handleCollegeSubmit}
             onClose={closeModal}
+            isSubmitting={isSubmitting}
           >
             <div className="space-y-6">
               {/* Basic Information */}
@@ -589,37 +628,6 @@ const UniversalAdminDashboard = () => {
                     onChange={(e) => setCollegeForm(prev => ({...prev, totalStudents: e.target.value}))}
                     className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
-                  <input
-                    type="number"
-                    placeholder="Total Faculty"
-                    value={collegeForm.totalFaculty}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, totalFaculty: e.target.value}))}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Departments */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Departments</h3>
-                <div className="grid grid-cols-2 gap-3 max-h-60 overflow-y-auto p-4 bg-neutral-900/50 rounded-lg border border-neutral-700">
-                  {availableDepartments.map(dept => (
-                    <label key={dept} className="flex items-center space-x-2 cursor-pointer hover:bg-neutral-800/50 p-2 rounded">
-                      <input
-                        type="checkbox"
-                        checked={collegeForm.departments.includes(dept)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setCollegeForm(prev => ({...prev, departments: [...prev.departments, dept]}));
-                          } else {
-                            setCollegeForm(prev => ({...prev, departments: prev.departments.filter(d => d !== dept)}));
-                          }
-                        }}
-                        className="rounded border-neutral-600 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-white">{dept}</span>
-                    </label>
-                  ))}
                 </div>
               </div>
             </div>
@@ -632,6 +640,7 @@ const UniversalAdminDashboard = () => {
             title={editingItem ? 'Edit Super Admin' : 'Assign Super Admin'} 
             onSubmit={handleSuperAdminSubmit}
             onClose={closeModal}
+            isSubmitting={isSubmitting}
           >
             <div className="space-y-6">
               {/* Personal Information */}

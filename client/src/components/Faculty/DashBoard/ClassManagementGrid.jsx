@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardTitle } from '../Labs/Card';
 
-const ClassManagementGrid = () => {
+const ClassManagementGrid = ({ classesData, onClassSelect }) => {
     const [sortBy, setSortBy] = useState('name');
     const [filterYear, setfilterYear] = useState('all');
 
-    const classes = [
+    const fallbackClasses = [
         {
             id: 1,
             name: 'CSE-A',
@@ -79,6 +79,8 @@ const ClassManagementGrid = () => {
         { year: 'IV', color: 'text-purple-400', roundedColor: 'bg-purple-400', totalExperiments: 10 },
     ];
 
+    const classes = useMemo(() => classesData || fallbackClasses, [classesData]);
+
     const filteredClasses = classes.filter(classItem => {
         if (filterYear === 'all') return true;
         return classItem.year === filterYear;
@@ -116,6 +118,7 @@ const ClassManagementGrid = () => {
                     {filteredClasses.map((classItem) => (
                         <div
                             key={classItem.id}
+                            onClick={() => onClassSelect && onClassSelect(classItem)}
                             className="bg-neutral-700/30 border border-neutral-600/30 rounded-xl p-5 hover:bg-neutral-700/50 hover:border-neutral-500/50 transition-all duration-300 cursor-pointer group"
                         >
                             <div className="flex items-center justify-between mb-4">
