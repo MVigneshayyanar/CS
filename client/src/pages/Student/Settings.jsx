@@ -17,7 +17,6 @@ import {
   Shield,
   Hash
 } from 'lucide-react';
-import axios from 'axios';
 import { changePassword } from '@/services/authService';
 
 const Settings = () => {
@@ -76,12 +75,16 @@ const Settings = () => {
 
   useEffect(() => {
     fetchUserPreferences();
-  }, []);
+  }, [userId]);
 
   const fetchUserPreferences = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/preferences?userId=${userId}`);
-      setPreferences(prev => ({ ...prev, ...response.data }));
+      const storageKey = `student_preferences_${userId || 'default'}`;
+      const savedPreferences = localStorage.getItem(storageKey);
+      if (savedPreferences) {
+        const parsed = JSON.parse(savedPreferences);
+        setPreferences(prev => ({ ...prev, ...parsed }));
+      }
     } catch (error) {
       console.error('Error fetching preferences:', error);
     }
@@ -107,7 +110,7 @@ const Settings = () => {
     
     setLoading(true);
     try {
-      await axios.put(`http://localhost:5000/api/change-password?userId=${userId}`, {
+      const response = await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
         token: authToken,
@@ -126,7 +129,8 @@ const Settings = () => {
   const handlePreferenceUpdate = async () => {
     setLoading(true);
     try {
-      await axios.put(`http://localhost:5000/api/preferences?userId=${userId}`, preferences);
+      const storageKey = `student_preferences_${userId || 'default'}`;
+      localStorage.setItem(storageKey, JSON.stringify(preferences));
       setMessage({ type: 'success', text: 'Your preferences have been saved successfully!' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save preferences. Please try again.' });

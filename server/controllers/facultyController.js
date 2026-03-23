@@ -1,4 +1,4 @@
-const { getFacultyDashboardData } = require("../services/facultyService");
+const { getFacultyDashboardData, getFacultyLabsData } = require("../services/facultyService");
 
 const getFacultyDashboard = async (req, res, next) => {
   try {
@@ -13,7 +13,21 @@ const getFacultyDashboard = async (req, res, next) => {
   }
 };
 
+const getFacultyLabs = async (req, res, next) => {
+  try {
+    const labsData = await getFacultyLabsData(req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      message: "Faculty labs fetched successfully",
+      data: labsData,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getFacultyDashboard,
+  getFacultyLabs,
 };
 

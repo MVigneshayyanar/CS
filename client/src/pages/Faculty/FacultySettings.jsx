@@ -54,12 +54,31 @@ const FacultySettings = () => {
     }
   });
 
+  React.useEffect(() => {
+    try {
+      const userId = sessionStorage.getItem('userId') || 'default';
+      const storageKey = `faculty_preferences_${userId}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setPreferences((prev) => ({ ...prev, ...JSON.parse(saved) }));
+      }
+    } catch (error) {
+      console.error('Error loading faculty preferences:', error);
+    }
+  }, []);
+
   const handlePreferenceUpdate = async () => {
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const userId = sessionStorage.getItem('userId') || 'default';
+      const storageKey = `faculty_preferences_${userId}`;
+      localStorage.setItem(storageKey, JSON.stringify(preferences));
       setMessage({ type: 'success', text: 'Your preferences have been saved successfully!' });
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to save preferences. Please try again.' });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const renderContent = () => {

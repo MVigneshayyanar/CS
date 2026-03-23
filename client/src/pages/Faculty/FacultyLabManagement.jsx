@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ClassCard from '../../components/Faculty/Labs/ClassCard';
 import  SubjectCard from '../../components/Faculty/Labs/SubjectCard.jsx';
 import ExperimentCard from '../../components/Faculty/Labs/ExperimentCard.jsx';
@@ -6,6 +6,7 @@ import TabularDataSheet from '../../components/Faculty/Labs/TabularDataSheet.jsx
 import StudentCompletionView from '../../components/Faculty/Labs/StudentCompletionView.jsx';
 import LabManualView from '../../components/Faculty/Labs/LabManualView.jsx';
 import ExperimentsList from '../../components/Faculty/Labs/ExperimentsList.jsx';
+import { fetchFacultyLabs } from '@/services/facultyService';
 
 const FacultyLabManagement = () => {
     const [currentView, setCurrentView] = useState('subjects');
@@ -16,39 +17,52 @@ const FacultyLabManagement = () => {
     const [showDataSheet, setShowDataSheet] = useState(false);
     const [showLabManual, setShowLabManual] = useState(false);
     const [showStudentCompletion, setShowStudentCompletion] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [labsPayload, setLabsPayload] = useState({ subjects: [], classes: [], experiments: [] });
 
-    // Sample data
-    const subjects = [
-        { id: 1, name: "Computer Programming", totalClasses: 4, totalStudents: 120 },
-        { id: 2, name: "Data Structures", totalClasses: 3, totalStudents: 90 },
-        { id: 3, name: "Database Systems", totalClasses: 2, totalStudents: 60 },
-        { id: 4, name: "Web Development", totalClasses: 3, totalStudents: 75 }
-    ];
+    useEffect(() => {
+        const loadLabs = async () => {
+            try {
+                const result = await fetchFacultyLabs();
+                setLabsPayload(result?.data || { subjects: [], classes: [], experiments: [] });
+            } catch (error) {
+                const message = error?.response?.data?.message || 'Failed to load faculty labs from backend';
+                alert(message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    const classes = {
-        1: [
-            { id: 1, name: "CSE-A", section: "Section A", students: 30, experiments: 8, completionRate: 85 },
-            { id: 2, name: "CSE-B", section: "Section B", students: 30, experiments: 8, completionRate: 78 },
-            { id: 3, name: "CSE-C", section: "Section C", students: 30, experiments: 8, completionRate: 92 },
-            { id: 4, name: "CSE-D", section: "Section D", students: 30, experiments: 8, completionRate: 73 }
-        ]
-    };
+        loadLabs();
+    }, []);
 
-    const experiments = [
-        { id: 1, name: "Hello World Program", number: 1, completedBy: 28, totalStudents: 30, avgScore: 95 },
-        { id: 2, name: "Variables and Data Types", number: 2, completedBy: 27, totalStudents: 30, avgScore: 88 },
-        { id: 3, name: "Control Structures", number: 3, completedBy: 25, totalStudents: 30, avgScore: 82 },
-        { id: 4, name: "Functions and Methods", number: 4, completedBy: 24, totalStudents: 30, avgScore: 79 },
-        { id: 5, name: "Arrays and Strings", number: 5, completedBy: 22, totalStudents: 30, avgScore: 85 }
-    ];
+    const subjects = labsPayload.subjects || [];
+    const classesBySubject = useMemo(() => {
+        const groups = {};
+        (labsPayload.classes || []).forEach((classItem) => {
+            const subjectId = classItem.subjectId;
+            if (!groups[subjectId]) {
+                groups[subjectId] = [];
+            }
+            groups[subjectId].push(classItem);
+        });
+        return groups;
+    }, [labsPayload.classes]);
 
-    const classData = [
-        { id: "CSE001", name: "Rajesh Kumar", experiments: [true, true, true, false, true, false, false, false, false, false] },
-        { id: "CSE002", name: "Priya Sharma", experiments: [true, true, false, true, false, true, false, false, false, false] },
-        { id: "CSE003", name: "Amit Singh", experiments: [true, true, true, true, true, false, false, false, false, false] },
-        { id: "CSE004", name: "Sneha Patel", experiments: [true, false, true, false, true, false, false, false, false, false] },
-        { id: "CSE005", name: "Vikram Gupta", experiments: [true, true, false, false, false, false, false, false, false, false] }
-    ];
+    const experiments = useMemo(() => {
+        if (!selectedClass) {
+            return [];
+        }
+        return (labsPayload.experiments || []).filter((exp) => exp.className === selectedClass.name);
+    }, [labsPayload.experiments, selectedClass]);
+
+    const classData = (selectedClass?.students || 0) > 0
+        ? Array.from({ length: selectedClass.students }).slice(0, 10).map((_, index) => ({
+            id: `${selectedClass.name}-${index + 1}`,
+            name: `Student ${index + 1}`,
+            experiments: Array.from({ length: Math.max(10, experiments.length || 10) }, (_, expIndex) => expIndex < Math.round((selectedClass.completionRate || 0) / 10)),
+        }))
+        : [];
 
     // Event handlers
     const handleSubjectClick = (subject) => {
@@ -92,6 +106,7 @@ const FacultyLabManagement = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white p-6">
             <div className="max-w-6xl mx-auto">
+                {isLoading && <div className="text-neutral-400 mb-6">Loading lab management data...</div>}
                 {/* Header */}
                 <div className="mb-12">
                     <div className="flex items-center justify-between mb-6">
@@ -151,7 +166,7 @@ const FacultyLabManagement = () => {
                                 </button>
                             </div>
 
-                            {(classes[selectedSubject.id] || []).map((classItem) => (
+                            {(classesBySubject[selectedSubject.id] || []).map((classItem) => (
                                 <ClassCard
                                     key={classItem.id}
                                     className={classItem.name}

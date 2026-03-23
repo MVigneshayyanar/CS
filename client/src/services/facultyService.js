@@ -23,3 +23,10 @@ export const fetchFacultyDashboard = async () => {
   return response.data;
 };
 
+export const fetchFacultyLabs = async () => {
+  const response = await facultyApi.get("/faculty/labs", {
+    headers: authHeaders(),
+  });
+  return response.data;
+};
+

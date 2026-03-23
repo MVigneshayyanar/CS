@@ -3,116 +3,7 @@ import { Beaker, Search, ArrowLeft, Code } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import SectionHeader from "../../components/Student/SectionHeader.jsx";
 import ExperimentRow from "../../components/Student/ExperimentRow.jsx";
-
-const sampleExperiments = {
-  Java: [
-    {
-      id: 1,
-      sno: 1,
-      title: "Java Object-Oriented Programming Fundamentals",
-      domain: "OOP Concepts",
-      description:
-        "Master the core concepts of OOP in Java including classes, objects, inheritance, polymorphism, and encapsulation.",
-      status: "completed",
-      progress: 100,
-      dateDue: "2025-08-15",
-      difficulty: "Beginner",
-      estimatedTime: "4 hours",
-    },
-    {
-      id: 2,
-      sno: 2,
-      title: "Java Collections Framework Implementation",
-      domain: "Data Structures",
-      description:
-        "Implement and work with various Java collections including ArrayList, HashMap, and TreeSet with custom comparators.",
-      status: "pending",
-      progress: 65,
-      dateDue: "2025-08-30",
-      difficulty: "Intermediate",
-      estimatedTime: "8 hours",
-    },
-    {
-      id: 3,
-      sno: 3,
-      title: "Java Exception Handling and File I/O",
-      domain: "Error Handling",
-      description:
-        "Learn to handle exceptions gracefully and perform file operations using Java I/O streams.",
-      status: "pending",
-      progress: 0,
-      dateDue: "2025-09-15",
-      difficulty: "Intermediate",
-      estimatedTime: "6 hours",
-    },
-    {
-      id: 4,
-      sno: 4,
-      title: "Java Multithreading and Concurrency",
-      domain: "Threading",
-      description:
-        "Understand thread creation, synchronization, and concurrent programming in Java.",
-      status: "pending",
-      progress: 0,
-      dateDue: "2025-09-20",
-      difficulty: "Advanced",
-      estimatedTime: "10 hours",
-    },
-    {
-      id: 5,
-      sno: 5,
-      title: "Java Database Connectivity (JDBC)",
-      domain: "Database",
-      description:
-        "Connect Java applications to databases using JDBC and perform CRUD operations.",
-      status: "overdue",
-      progress: 25,
-      dateDue: "2025-08-25",
-      difficulty: "Intermediate",
-      estimatedTime: "7 hours",
-    },
-  ],
-  HTML: [
-    {
-      id: 8,
-      sno: 1,
-      title: "HTML5 Semantic Elements",
-      domain: "Web Structure",
-      description: "Learn modern HTML5 semantic elements for better web structure.",
-      status: "completed",
-      progress: 100,
-      dateDue: "2025-07-30",
-      difficulty: "Beginner",
-      estimatedTime: "3 hours",
-    },
-    {
-      id: 9,
-      sno: 2,
-      title: "CSS Grid and Flexbox Layout",
-      domain: "CSS Layout",
-      description: "Master modern CSS layout techniques with Grid and Flexbox.",
-      status: "pending",
-      progress: 70,
-      dateDue: "2025-09-05",
-      difficulty: "Intermediate",
-      estimatedTime: "6 hours",
-    },
-  ],
-  Python: [
-    {
-      id: 10,
-      sno: 1,
-      title: "Python Function Basics - Factorial Calculator",
-      domain: "Python Programming", 
-      description: "Learn Python function basics by implementing a factorial calculator with proper error handling.",
-      status: "pending",
-      progress: 0,
-      dateDue: "2025-09-12",
-      difficulty: "Beginner",
-      estimatedTime: "2 hours",
-    },
-  ],
-};
+import { fetchStudentLabs } from "@/services/studentService";
 
 const Experiments = () => {
   const [experiments, setExperiments] = useState([]);
@@ -134,12 +25,29 @@ const Experiments = () => {
     const fetchExperiments = async () => {
       try {
         setLoading(true);
-        setTimeout(() => {
-          const allExperiments = Object.values(sampleExperiments).flat();
-          setExperiments(allExperiments);
-          setFilteredExperiments(allExperiments);
-          setLoading(false);
-        }, 1000);
+        const result = await fetchStudentLabs();
+        const labs = result?.data?.labs || [];
+        const allExperiments = labs.flatMap((lab) =>
+          (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => ({
+            id: `${lab.id}-${index}`,
+            lab: lab.name,
+            labKey: lab.name,
+            labAlias: lab.language || lab.name,
+            sno: index + 1,
+            title: exp.title || `Experiment ${index + 1}`,
+            domain: exp.domain || lab.name || "General",
+            description: exp.description || "No description available",
+            status: exp.status || (exp.progress >= 100 ? "completed" : "pending"),
+            progress: exp.progress || 0,
+            dateDue: exp.deadline || new Date().toISOString().split('T')[0],
+            difficulty: exp.difficulty || "Intermediate",
+            estimatedTime: exp.estimatedTime || "3 hours",
+          }))
+        );
+
+        setExperiments(allExperiments);
+        setFilteredExperiments(allExperiments);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching experiments:", error);
         setLoading(false);
@@ -154,7 +62,12 @@ const Experiments = () => {
 
     // If labFilter is not 'all', filter experiments by lab first
     if (labFilter !== "all") {
-      filtered = sampleExperiments[labFilter] || [];
+      const target = labFilter.toLowerCase();
+      filtered = filtered.filter((exp) =>
+        (exp.lab || "").toLowerCase() === target ||
+        (exp.labAlias || "").toLowerCase() === target ||
+        (exp.labKey || "").toLowerCase() === target
+      );
     }
 
     // Apply search filter

@@ -1,52 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BookOpen, Code } from "lucide-react";
 import SectionHeader from "../../components/Student/SectionHeader.jsx";
 import LabCard from "../../components/Student/LabCard.jsx";
-
-const labs = [
-  {
-    id: 1,
-    name: "Java",
-    fullName: "JAVA Programming",
-    instructor: "NITHYA",
-    progress: 85,
-    date: "05/10",
-    students: 24,
-    duration: "3 weeks",
-  },
-  {
-    id: 2,
-    name: "C++",
-    fullName: "C++ Fundamentals",
-    instructor: "SHINY", 
-    progress: 78,
-    date: "05/10",
-    students: 21,
-    duration: "4 weeks",
-  },
-  {
-    id: 3,
-    name: "HTML",
-    fullName: "HTML & Web Development",
-    instructor: "KALPANA",
-    progress: 92,
-    date: "05/10", 
-    students: 28,
-    duration: "2 weeks",
-  },
-  {
-    id: 4,
-    name: "Python",
-    fullName: "Python Development",
-    instructor: "LALITHA",
-    progress: 67,
-    date: "05/10",
-    students: 25,
-    duration: "5 weeks",
-  },
-];
+import { fetchStudentLabs } from "@/services/studentService";
 
 export default function Labs() {
+  const [labs, setLabs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadLabs = async () => {
+      try {
+        const result = await fetchStudentLabs();
+        setLabs(result?.data?.labs || []);
+      } catch (error) {
+        const message = error?.response?.data?.message || "Failed to load labs from backend";
+        alert(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadLabs();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
       <div className="max-w-6xl mx-auto px-6 pt-15">
@@ -71,6 +48,8 @@ export default function Labs() {
         </div>       
         
         <div className="space-y-4">
+          {isLoading && <div className="text-neutral-400">Loading labs...</div>}
+          {!isLoading && labs.length === 0 && <div className="text-neutral-500">No labs assigned yet.</div>}
           {labs.map((lab) => (
             <LabCard key={lab.id} lab={lab} />
           ))}

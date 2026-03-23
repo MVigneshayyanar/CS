@@ -1,4 +1,8 @@
-const { getStudentDashboardData } = require("../services/studentService");
+const {
+  getStudentDashboardData,
+  getStudentLabsData,
+  getStudentStatisticsData,
+} = require("../services/studentService");
 
 const getStudentDashboard = async (req, res, next) => {
   try {
@@ -13,7 +17,35 @@ const getStudentDashboard = async (req, res, next) => {
   }
 };
 
+const getStudentLabs = async (req, res, next) => {
+  try {
+    const labs = await getStudentLabsData(req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      message: "Student labs fetched successfully",
+      data: { labs },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getStudentStatistics = async (req, res, next) => {
+  try {
+    const statistics = await getStudentStatisticsData(req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      message: "Student statistics fetched successfully",
+      data: statistics,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getStudentDashboard,
+  getStudentLabs,
+  getStudentStatistics,
 };
 
