@@ -1,39 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSidebar } from '../../context/SidebarContext';
 import {
   Users, 
   UserCheck, 
   FlaskConical, 
-  BarChart3, 
-  Settings, 
   ChevronLeft, 
-  Shield, 
-  Database, 
-  Activity
+  Building2,
+  LogOut
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ onLogout }) => {
   const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
 
   const menuItems = [
     {
       title: 'Student Management',
       icon: Users,
-      path: '/students',
-      active: location.pathname.startsWith('/students')
+      path: '/students'
     },
     {
       title: 'Faculty Management',
       icon: UserCheck,
-      path: '/faculty',
-      active: location.pathname.startsWith('/faculty')
+      path: '/faculty'
     },
     {
       title: 'Lab Management',
       icon: FlaskConical,
-      path: '/labs',
-      active: location.pathname.startsWith('/labs')
+      path: '/labs'
     // },
     // {
     //   title: 'System Analytics',
@@ -72,7 +66,7 @@ const AdminSidebar = () => {
       <div className="p-4 border-b border-neutral-800">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg">
-            <Shield className="w-6 h-6 text-white" />
+            <Building2 className="w-6 h-6 text-white" />
           </div>
           {!isCollapsed && (
             <div>
@@ -86,45 +80,60 @@ const AdminSidebar = () => {
       {/* Menu Items */}
       <nav className="mt-6 px-3">
         {menuItems.map((item) => (
-          <Link
+          <NavLink
             key={item.path}
             to={item.path}
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all group relative ${
-              item.active
+            end={item.path === '/students' || item.path === '/faculty' || item.path === '/labs'}
+            className={({ isActive }) => `flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all group relative ${
+              isActive
                 ? 'bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/30 text-red-400'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
             }`}
           >
-            <item.icon className={`w-5 h-5 ${item.active ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
-            {!isCollapsed && (
-              <span className="font-medium">{item.title}</span>
+            {({ isActive }) => (
+              <>
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
+                {!isCollapsed && (
+                  <span className="font-medium">{item.title}</span>
+                )}
+                
+                {/* Tooltip for collapsed state */}
+                {isCollapsed && (
+                  <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
+                                 whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
+                                 text-white text-xs border border-neutral-700 shadow-xl 
+                                 opacity-0 group-hover:opacity-100 transition-opacity 
+                                 pointer-events-none z-50">
+                    {item.title}
+                  </span>
+                )}
+              </>
             )}
-            
-            {/* Tooltip for collapsed state */}
-            {isCollapsed && (
-              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
-                             whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
-                             text-white text-xs border border-neutral-700 shadow-xl 
-                             opacity-0 group-hover:opacity-100 transition-opacity 
-                             pointer-events-none z-50">
-                {item.title}
-              </span>
-            )}
-          </Link>
+          </NavLink>
         ))}
       </nav>
 
-      {/* Admin Status */}
-      {!isCollapsed && (
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/30 rounded-lg p-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-              <span className="text-red-300 text-sm font-medium">Admin Access</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Logout */}
+      <div className="absolute bottom-4 left-4 right-4">
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all group relative text-neutral-400 hover:text-red-300 hover:bg-red-500/10"
+        >
+          <LogOut className="w-5 h-5 text-neutral-500 group-hover:text-red-300" />
+          {!isCollapsed && <span className="font-medium">Logout</span>}
+          {isCollapsed && (
+            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
+                           whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
+                           text-white text-xs border border-neutral-700 shadow-xl 
+                           opacity-0 group-hover:opacity-100 transition-opacity 
+                           pointer-events-none z-50">
+              Logout
+            </span>
+          )}
+        </button>
+      </div>
+
+
     </div>
   );
 };

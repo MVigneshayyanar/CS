@@ -99,7 +99,7 @@ function App() {
       case "Faculty":
         return <FacultySidebar />;
       case "Admin":
-        return <AdminSidebar />;
+        return <AdminSidebar onLogout={handleLogout} />;
       case "God":
       case "SuperAdmin":
       default:
@@ -109,7 +109,7 @@ function App() {
 
   // Add this helper function to determine if sidebar should be shown
   const hasSidebar = () => {
-    return userType === "Student" || userType === "Faculty" || userType === "Admin";
+    return userType === "Student" || userType === "Faculty";
   };
 
   return (

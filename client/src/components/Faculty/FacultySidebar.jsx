@@ -279,7 +279,7 @@ export default function Sidebar() {
 
         {/* Sections */}
         <div className={`px-3 pt-3 text-xs uppercase tracking-wider text-white/40 transition-opacity duration-500 ${collapsed ? "md:opacity-0" : "opacity-100"}`}>
-          Student Portal
+          Faculty Portal
         </div>
 
         {/* Nav */}
