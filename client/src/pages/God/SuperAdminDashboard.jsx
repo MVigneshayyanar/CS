@@ -10,7 +10,7 @@ import {
 // Move Modal component OUTSIDE to prevent recreation on every render
 const Modal = ({ title, children, onSubmit, onClose }) => (
   <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl shadow-2xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">{title}</h2>
         <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors p-1">
@@ -182,7 +182,39 @@ const SuperAdminDashboard = () => {
     resetForm();
   };
 
+  const validateAdminForm = () => {
+    const requiredFields = [
+      { key: 'name', label: 'Full Name' },
+      { key: 'email', label: 'Email Address' },
+      { key: 'phone', label: 'Phone Number' },
+      { key: 'empId', label: 'Employee ID' },
+      { key: 'department', label: 'Department' },
+      { key: 'qualification', label: 'Qualification' },
+      { key: 'experience', label: 'Experience' },
+      { key: 'specialization', label: 'Specialization' },
+      { key: 'joiningDate', label: 'Joining Date' },
+    ];
+
+    const missingFields = requiredFields
+      .filter(({ key }) => {
+        const value = adminForm[key];
+        return typeof value === 'string' ? !value.trim() : !value;
+      })
+      .map(({ label }) => label);
+
+    if (missingFields.length > 0) {
+      alert(`Please fill all mandatory fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!validateAdminForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (editingItem) {

@@ -140,7 +140,7 @@ const FacultyManagement = () => {
   }, []);
 
   return (
-    <div className="space-y-8 p-15">
+    <div className="space-y-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
@@ -149,10 +149,10 @@ const FacultyManagement = () => {
           <p className="text-neutral-400 mt-2">Add and view faculty from backend database</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 flex items-center gap-2">
-            <Database className="w-4 h-4" />
-            Backend Synced
-          </div>
+          {/* <div className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 flex items-center gap-2"> */}
+            {/* <Database className="w-4 h-4" /> */}
+            {/* Backend Synced */}
+          {/* </div> */}
           <button onClick={openCreateModal} className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg">
             <Plus className="w-4 h-4 mr-2" />
             Add Faculty

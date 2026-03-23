@@ -16,9 +16,9 @@ const toFriendlyGodSetupMessage = (message) => {
 };
 
 // Move Modal component OUTSIDE to prevent recreation on every render
-const Modal = ({ title, children, onSubmit, onClose, isSubmitting = false }) => (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+const Modal = ({ title, children, onSubmit, onClose, isSubmitting = false, scrollable = true }) => (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto p-4 sm:p-6">
+    <div className={`bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl shadow-2xl ${scrollable ? 'max-h-[90vh] overflow-y-auto' : ''}`}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-white">{title}</h2>
         <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors p-1">
@@ -528,6 +528,7 @@ const UniversalAdminDashboard = () => {
             onSubmit={handleCollegeSubmit}
             onClose={closeModal}
             isSubmitting={isSubmitting}
+            scrollable={false}
           >
             <div className="space-y-6">
               {/* Basic Information */}
