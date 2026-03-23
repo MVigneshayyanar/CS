@@ -2,6 +2,7 @@ const {
   getAllowedRolesByPortal,
   getAllowedRolesByLoginType,
   loginWithRoles,
+  changePasswordForUser,
 } = require("../services/authService");
 
 const performLogin = async ({ identifier, password, allowedRoles, successMessage }) => {
@@ -91,9 +92,53 @@ const getGodProtectedData = (req, res) => {
   });
 };
 
+const changeStudentPassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const result = await changePasswordForUser({
+      userId: req.auth?.sub,
+      currentPassword,
+      newPassword,
+      allowedRoles: ["Student"],
+    });
+
+    return res.status(200).json({
+      ok: true,
+      message: "Password updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const result = await changePasswordForUser({
+      userId: req.auth?.sub,
+      currentPassword,
+      newPassword,
+      allowedRoles: ["Student", "Faculty", "Admin", "SuperAdmin", "God"],
+    });
+
+    return res.status(200).json({
+      ok: true,
+      message: "Password updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   loginByPortal,
   loginByType,
   getCurrentSession,
   getGodProtectedData,
+  changeStudentPassword,
+  changePassword,
 };
