@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import logo from "@/assets/logo.svg";
+import { loginByPortal } from "@/services/authService";
 
 const LoginCard = ({ onLogin }) => {
   const [userType, setUserType] = useState("Student");
@@ -7,32 +8,7 @@ const LoginCard = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock user database
-  const mockUsers = {
-    Student: {
-      student1: "pass123",
-      john: "password",
-      jane: "secret",
-      demo: "demo",
-    },
-    Staff: {
-      staff1: "pass123",
-      admin: "admin123",       // Admin user
-      superadmin: "super123",  // Super admin
-      god: "godmode",          // God mode
-      teacher: "teach123",
-      demo: "demo",
-    },
-  };
-
-  // Map special users to higher roles
-  const roleMap = {
-    admin: "Admin",
-    superadmin: "SuperAdmin",
-    god: "God",
-  };
-
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -42,36 +18,37 @@ const LoginCard = ({ onLogin }) => {
       return;
     }
 
-    setTimeout(() => {
-      const userDatabase = mockUsers[userType];
+    try {
+      const result = await loginByPortal({
+        identifier: username,
+        password,
+        portal: userType,
+      });
 
-      if (userDatabase && userDatabase[username] === password) {
-        // Default user role
-        let actualUserType = userType === "Staff" ? "Faculty" : userType;
+      const { token, user } = result?.data || {};
+      const actualUserType = user?.role;
 
-        // Override if in roleMap
-        if (userType === "Staff" && roleMap[username]) {
-          actualUserType = roleMap[username];
-        }
-
-        console.log("Login successful for:", username, "as", actualUserType);
-
-        // Store authentication data
-        sessionStorage.setItem("isAuthenticated", "true");
-        sessionStorage.setItem("userType", actualUserType);
-        sessionStorage.setItem("userId", `mock_${actualUserType}_${username}`);
-        sessionStorage.setItem("username", username);
-
-        // Call parent login handler
-        if (onLogin) {
-          onLogin(actualUserType);
-        }
-      } else {
-        alert("Invalid username or password. Please try again.");
+      if (!actualUserType) {
+        throw new Error("Login response missing user role");
       }
 
+      sessionStorage.setItem("isAuthenticated", "true");
+      sessionStorage.setItem("userType", actualUserType);
+      sessionStorage.setItem("userId", user?.id || `user_${actualUserType}_${username}`);
+      sessionStorage.setItem("username", user?.username || username);
+      if (token) {
+        sessionStorage.setItem("authToken", token);
+      }
+
+      if (onLogin) {
+        onLogin(actualUserType);
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message || "Login failed. Please check your credentials.";
+      alert(message);
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -177,26 +154,14 @@ const LoginCard = ({ onLogin }) => {
         </button>
       </form>
 
-      {/* Demo Credentials */}
+      {/* Login Source */}
       <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg">
         <h4 className="text-xs font-semibold text-gray-300 mb-2">
-          Demo Credentials:
+          Authentication:
         </h4>
         <div className="text-xs text-gray-400 space-y-1">
           <div>
-            <strong>Student:</strong> demo/demo, student1/pass123
-          </div>
-          <div>
-            <strong>Faculty:</strong> demo/demo, teacher/teach123
-          </div>
-          <div>
-            <strong>Admin:</strong> admin/admin123
-          </div>
-          <div>
-            <strong>Super Admin:</strong> superadmin/super123
-          </div>
-          <div>
-            <strong>God Mode:</strong> god/godmode
+            Uses backend API and Supabase users table for all roles.
           </div>
         </div>
       </div>
