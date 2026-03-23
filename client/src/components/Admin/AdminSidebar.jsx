@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { 
+import { useSidebar } from '../../context/SidebarContext';
+import {
   Users, 
   UserCheck, 
   FlaskConical, 
   BarChart3, 
   Settings, 
-  ChevronLeft,
-  Shield,
-  Database,
+  ChevronLeft, 
+  Shield, 
+  Database, 
   Activity
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const AdminSidebar = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const location = useLocation();
+  const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
 
   const menuItems = [
     {
@@ -65,7 +65,7 @@ const AdminSidebar = () => {
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-6 bg-neutral-800 border border-neutral-700 rounded-full p-1 hover:bg-neutral-700 transition-colors"
       >
-        <ChevronLeft className={`w-4 h-4 text-neutral-400 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
+        <ChevronLeft className={`w-4 h-4 text-neutral-400 transition-transform ${isCollapsed ? 'rotate-180' : ''} dark:invert-0 light:invert`} />
       </button>
 
       {/* Header */}
@@ -89,7 +89,7 @@ const AdminSidebar = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all group ${
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all group relative ${
               item.active
                 ? 'bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/30 text-red-400'
                 : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
@@ -98,6 +98,17 @@ const AdminSidebar = () => {
             <item.icon className={`w-5 h-5 ${item.active ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
             {!isCollapsed && (
               <span className="font-medium">{item.title}</span>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
+                             whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
+                             text-white text-xs border border-neutral-700 shadow-xl 
+                             opacity-0 group-hover:opacity-100 transition-opacity 
+                             pointer-events-none z-50">
+                {item.title}
+              </span>
             )}
           </Link>
         ))}

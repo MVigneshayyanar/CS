@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import { 
   User, 
   Lock, 
@@ -19,6 +20,7 @@ import {
 import axios from 'axios';
 
 const Settings = () => {
+  const { theme: globalTheme, setTheme: setGlobalTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -76,7 +78,7 @@ const Settings = () => {
 
   const fetchUserPreferences = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/preferences?userId=${userId}`);
+      const response = await axios.get(`http://localhost:5000/api/preferences?userId=${userId}`);
       setPreferences(prev => ({ ...prev, ...response.data }));
     } catch (error) {
       console.error('Error fetching preferences:', error);
@@ -92,7 +94,7 @@ const Settings = () => {
     
     setLoading(true);
     try {
-      await axios.put(`http://localhost:8080/change-password?userId=${userId}`, {
+      await axios.put(`http://localhost:5000/api/change-password?userId=${userId}`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
@@ -108,7 +110,7 @@ const Settings = () => {
   const handlePreferenceUpdate = async () => {
     setLoading(true);
     try {
-      await axios.put(`http://localhost:8080/preferences?userId=${userId}`, preferences);
+      await axios.put(`http://localhost:5000/api/preferences?userId=${userId}`, preferences);
       setMessage({ type: 'success', text: 'Your preferences have been saved successfully!' });
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to save preferences. Please try again.' });
@@ -127,94 +129,94 @@ const Settings = () => {
   const renderAcademicProfileSection = () => (
     <div className="space-y-6 ">
       <div>
-        <h3 className="text-xl font-semibold text-white mb-4">My Academic Profile</h3>
-        <p className="text-neutral-400 text-sm mb-6">
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">My Academic Profile</h3>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">
           Your academic information is managed by the university administration and cannot be modified here.
         </p>
         
         <div className="space-y-6">
-          <div className="bg-neutral-800/30 rounded-lg p-6 border border-neutral-700/50">
-            <h4 className="text-lg font-medium text-white mb-4 flex items-center">
-              <User className="w-5 h-5 mr-2 text-teal-400" />
+          <div className="bg-neutral-100 dark:bg-neutral-800/30 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700/50">
+            <h4 className="text-lg font-medium text-neutral-900 dark:text-white mb-4 flex items-center">
+              <User className="w-5 h-5 mr-2 text-teal-600 dark:text-teal-400" />
               Personal Details
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Full Name</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Full Name</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.name}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Student ID</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300 flex items-center">
-                  <Hash className="w-4 h-4 mr-2 text-neutral-500" />
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Student ID</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300 flex items-center">
+                  <Hash className="w-4 h-4 mr-2 text-neutral-400 dark:text-neutral-500" />
                   {academicData.studentId}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Roll Number</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Roll Number</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.rollNumber}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Email Address</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300 flex items-center">
-                  <Mail className="w-4 h-4 mr-2 text-neutral-500" />
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Email Address</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300 flex items-center">
+                  <Mail className="w-4 h-4 mr-2 text-neutral-400 dark:text-neutral-500" />
                   {academicData.email}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-neutral-800/30 rounded-lg p-6 border border-neutral-700/50">
-            <h4 className="text-lg font-medium text-white mb-4 flex items-center">
-              <GraduationCap className="w-5 h-5 mr-2 text-teal-400" />
+          <div className="bg-neutral-100 dark:bg-neutral-800/30 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700/50">
+            <h4 className="text-lg font-medium text-neutral-900 dark:text-white mb-4 flex items-center">
+              <GraduationCap className="w-5 h-5 mr-2 text-teal-600 dark:text-teal-400" />
               Academic Information
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Department</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Department</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.department}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Program</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Program</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.program}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Current Semester</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Current Semester</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.semester}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Year of Study</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Year of Study</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.yearOfStudy}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Batch</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Batch</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   {academicData.batch}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Section</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-2">Section</label>
+                <div className="w-full px-4 py-3 bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-700 dark:text-neutral-300">
                   Section {academicData.section}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-4">
-            <p className="text-amber-300 text-sm flex items-start">
+          <div className="bg-amber-100 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/30 rounded-lg p-4">
+            <p className="text-amber-700 dark:text-amber-300 text-sm flex items-start">
               <Shield className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
               <span>
                 <strong>Note:</strong> Academic information is maintained by the university administration. 
@@ -230,25 +232,25 @@ const Settings = () => {
   const renderPasswordSection = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-semibold text-white mb-4">Change My Password</h3>
-        <p className="text-neutral-400 text-sm mb-6">Update your account password for security</p>
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Change My Password</h3>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Update your account password for security</p>
 
         <form onSubmit={handlePasswordChange} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-2">Current Password</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-300 mb-2">Current Password</label>
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
+                className="w-full px-4 py-3 bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
                 placeholder="Enter your current password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-3 text-neutral-400 hover:text-white transition-colors"
+                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-white transition-colors"
               >
                 {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -256,13 +258,13 @@ const Settings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-2">New Password</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-300 mb-2">New Password</label>
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
+                className="w-full px-4 py-3 bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
                 placeholder="Enter new password"
                 required
                 minLength={8}
@@ -270,29 +272,29 @@ const Settings = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-3 text-neutral-400 hover:text-white transition-colors"
+                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-white transition-colors"
               >
                 {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-xs text-neutral-400 mt-1">Must be at least 8 characters long</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Must be at least 8 characters long</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-2">Confirm New Password</label>
+            <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-300 mb-2">Confirm New Password</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={passwordData.confirmPassword}
                 onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                className="w-full px-4 py-3 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
+                className="w-full px-4 py-3 bg-white dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg text-neutral-900 dark:text-white focus:ring-2 focus:ring-teal-500 focus:border-transparent pr-10 backdrop-blur-sm"
                 placeholder="Confirm new password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3 text-neutral-400 hover:text-white transition-colors"
+                className="absolute right-3 top-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-white transition-colors"
               >
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -315,25 +317,28 @@ const Settings = () => {
   const renderAppearanceSection = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-semibold text-white mb-4">Display Settings</h3>
-        <p className="text-neutral-400 text-sm mb-6">Customize how the application looks and feels</p>
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Display Settings</h3>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Customize how the application looks and feels</p>
 
         <div className="space-y-4">
-          <div className="p-4 bg-neutral-800/50 rounded-lg border border-neutral-700/50 backdrop-blur-sm">
-            <label className="block text-sm font-medium text-white mb-3">Theme Preference</label>
+          <div className="p-4 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700/50 backdrop-blur-sm">
+            <label className="block text-sm font-medium text-neutral-700 dark:text-white mb-3">Theme Preference</label>
             <div className="flex space-x-4">
               <label className="flex items-center cursor-pointer">
                 <input
                   type="radio"
                   name="theme"
                   value="dark"
-                  checked={preferences.theme === 'dark'}
-                  onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
+                  checked={globalTheme === 'dark'}
+                  onChange={(e) => {
+                    setPreferences({...preferences, theme: e.target.value});
+                    setGlobalTheme(e.target.value);
+                  }}
                   className="sr-only peer"
                 />
-                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-teal-600 peer-checked:ring-2 peer-checked:ring-teal-400 transition-all duration-300">
-                  <Monitor className="w-4 h-4 text-white" />
-                  <span className="text-white">Dark Mode</span>
+                <div className="flex items-center space-x-3 p-3 bg-neutral-200 dark:bg-neutral-700/50 rounded-lg peer-checked:bg-teal-600 peer-checked:text-white transition-all duration-300">
+                  <Monitor className="w-4 h-4" />
+                  <span>Dark Mode</span>
                 </div>
               </label>
               <label className="flex items-center cursor-pointer">
@@ -341,13 +346,16 @@ const Settings = () => {
                   type="radio"
                   name="theme"
                   value="light"
-                  checked={preferences.theme === 'light'}
-                  onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
+                  checked={globalTheme === 'light'}
+                  onChange={(e) => {
+                    setPreferences({...preferences, theme: e.target.value});
+                    setGlobalTheme(e.target.value);
+                  }}
                   className="sr-only peer"
                 />
-                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-teal-600 peer-checked:ring-2 peer-checked:ring-teal-400 transition-all duration-300">
-                  <Monitor className="w-4 h-4 text-white" />
-                  <span className="text-white">Light Mode</span>
+                <div className="flex items-center space-x-3 p-3 bg-neutral-200 dark:bg-neutral-700/50 rounded-lg peer-checked:bg-teal-600 peer-checked:text-white transition-all duration-300">
+                  <Monitor className="w-4 h-4" />
+                  <span>Light Mode</span>
                 </div>
               </label>
             </div>
@@ -360,13 +368,13 @@ const Settings = () => {
   const renderLearningSection = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-xl font-semibold text-white mb-4">Learning Preferences</h3>
-        <p className="text-neutral-400 text-sm mb-6">Customize your learning experience and code editor</p>
+        <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-4">Learning Preferences</h3>
+        <p className="text-neutral-500 dark:text-neutral-400 text-sm mb-6">Customize your learning experience and code editor</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-4 bg-neutral-800/50 rounded-lg border border-neutral-700/50 backdrop-blur-sm">
-            <h4 className="text-sm font-medium text-white mb-3 flex items-center">
-              <Code className="w-4 h-4 mr-2" />
+          <div className="p-4 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700/50 backdrop-blur-sm">
+            <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3 flex items-center">
+              <Code className="w-4 h-4 mr-2 text-teal-600 dark:text-teal-400" />
               My Programming Languages
             </h4>
             <div className="space-y-2">
@@ -385,17 +393,17 @@ const Settings = () => {
                         }
                       }
                     })}
-                    className="w-4 h-4 text-teal-600 bg-neutral-700 border-neutral-600 rounded focus:ring-teal-500 focus:ring-2"
+                    className="w-4 h-4 text-teal-600 bg-neutral-200 dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 rounded focus:ring-teal-500 focus:ring-2"
                   />
-                  <span className="ml-2 text-sm text-neutral-300">{lang}</span>
+                  <span className="ml-2 text-sm text-neutral-700 dark:text-neutral-300">{lang}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="p-4 bg-neutral-800/50 rounded-lg border border-neutral-700/50 backdrop-blur-sm">
-            <h4 className="text-sm font-medium text-white mb-3 flex items-center">
-              <Monitor className="w-4 h-4 mr-2" />
+          <div className="p-4 bg-neutral-100 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700/50 backdrop-blur-sm">
+            <h4 className="text-sm font-medium text-neutral-900 dark:text-white mb-3 flex items-center">
+              <Monitor className="w-4 h-4 mr-2 text-teal-600 dark:text-teal-400" />
               Code Editor Settings
             </h4>
             <div className="space-y-2">
@@ -414,9 +422,9 @@ const Settings = () => {
                         }
                       }
                     })}
-                    className="w-4 h-4 text-teal-600 bg-neutral-700 border-neutral-600 rounded focus:ring-teal-500 focus:ring-2"
+                    className="w-4 h-4 text-teal-600 bg-neutral-200 dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 rounded focus:ring-teal-500 focus:ring-2"
                   />
-                  <span className="ml-2 text-sm text-neutral-300 capitalize">
+                  <span className="ml-2 text-sm text-neutral-700 dark:text-neutral-300 capitalize">
                     {setting.replace(/([A-Z])/g, ' $1').trim()}
                   </span>
                 </label>
@@ -428,7 +436,7 @@ const Settings = () => {
         <button
           onClick={handlePreferenceUpdate}
           disabled={loading}
-          className="flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 transition-all duration-300"
+          className="mt-6 flex items-center px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 transition-all duration-300"
         >
           <Save className="w-4 h-4 mr-2" />
           {loading ? 'Saving...' : 'Save My Preferences'}

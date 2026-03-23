@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useSidebar } from "./context/SidebarContext";
 
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -31,6 +32,7 @@ import SuperAdminDashboard from "./pages/God/SuperAdminDashboard";
 import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
 
 function App() {
+  const { isCollapsed } = useSidebar();
   const [userType, setUserType] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
   const [mainOffset, setMainOffset] = useState("");
@@ -105,9 +107,9 @@ function App() {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-black">
+      <div className="flex min-h-screen bg-neutral-950 dark:bg-black theme-transition">
         {getSidebar()}
-        <div className={`flex-1 transition-all duration-300 ${hasSidebar() ? mainOffset : ''}`}>
+        <div className={`flex-1 transition-all duration-300 ${hasSidebar() ? (isCollapsed ? 'md:ml-20' : 'md:ml-64') : ''}`}>
           {getTopbar()}
           <main className="p-0 m-0">
             <Routes>

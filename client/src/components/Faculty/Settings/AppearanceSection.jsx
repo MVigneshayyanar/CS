@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTheme } from 'next-themes';
 import { Monitor, Save } from './SettingsIcons';
 
 const AppearanceSection = ({ preferences, setPreferences, loading, handlePreferenceUpdate }) => {
+  const { theme, setTheme } = useTheme();
   return (
     <div className="space-y-6">
       <div>
@@ -17,8 +19,11 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
                   type="radio"
                   name="theme"
                   value="dark"
-                  checked={preferences.theme === 'dark'}
-                  onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
+                  checked={theme === 'dark' || preferences.theme === 'dark'}
+                  onChange={(e) => {
+                    setPreferences({...preferences, theme: e.target.value});
+                    setTheme(e.target.value);
+                  }}
                   className="sr-only peer"
                 />
                 <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400 transition-all duration-300">
@@ -31,8 +36,11 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
                   type="radio"
                   name="theme"
                   value="light"
-                  checked={preferences.theme === 'light'}
-                  onChange={(e) => setPreferences({...preferences, theme: e.target.value})}
+                  checked={theme === 'light' || preferences.theme === 'light'}
+                  onChange={(e) => {
+                    setPreferences({...preferences, theme: e.target.value});
+                    setTheme(e.target.value);
+                  }}
                   className="sr-only peer"
                 />
                 <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400 transition-all duration-300">

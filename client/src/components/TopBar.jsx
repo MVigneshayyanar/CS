@@ -16,23 +16,8 @@ const TopBar = ({ facultyName = "Dr. Sarah Johnson", department = "Computer Scie
                 </div>
 
                 {/* Search and Actions */}
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <div
-                            className="flex items-center gap-3 p-2 bg-neutral-800/50 border border-neutral-700/30 rounded-lg hover:bg-neutral-700/50 hover:border-neutral-600/50 transition-all duration-200"
-                        >
-                            <div className="w-8 h-8 bg-gradient-to-r from-teal-400 to-cyan-400 rounded-full flex items-center justify-center">
-                                <span className="text-sm font-semibold text-white">
-                                    {facultyName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                                </span>
-                            </div>
-                            <div className="text-left">
-                                <p className="text-sm font-medium text-white">{facultyName}</p>
-                                <p className="text-xs text-neutral-400">{department}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
+                
             </div>
         </div>
     );

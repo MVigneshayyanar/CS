@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useSidebar } from "../../context/SidebarContext";
 import brandLogo from "../../assets/logo.svg";
 
 // ====== THEME SWITCH ======
@@ -151,17 +152,10 @@ const themes = {
 };
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem("sb:collapsed") === "1"
-  );
+  const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
-  // Save collapsed state to localStorage and close mobile menu on route change
-  useEffect(
-    () => localStorage.setItem("sb:collapsed", collapsed ? "1" : "0"),
-    [collapsed]
-  );
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
   // Get current student info
@@ -242,13 +236,13 @@ export default function Sidebar() {
           </NavLink>
 
           <button
-            onClick={() => setCollapsed((v) => !v)}
+            onClick={toggleCollapsed}
             className="hidden md:grid h-8 w-8 place-content-center rounded-full hover:bg-white/10 transition-colors duration-200"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             <svg
               viewBox="0 0 24 24"
-              className={`h-4 w-4 transition-transform duration-500 ${chevronRotation}`}
+              className={`h-4 w-4 transition-transform duration-500 text-white dark:text-white dark:invert-0 light:invert ${collapsed ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2"

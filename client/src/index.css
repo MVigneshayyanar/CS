@@ -10,25 +10,35 @@
   body {
     background-color: #000000;
     color: #ffffff; /* text-white optional for visibility */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
+.theme-transition {
+  transition: all 0.3s ease !important;
+}
 
+html.light {
+  filter: invert(1) hue-rotate(180deg) contrast(0.9);
+}
 
-/* :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+html.light body {
+  background-color: #111; /* inverts to very light grey */
+  color: #000; /* inverts to white */
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+/* Keep images, videos, and code editors as they were */
+html.light img,
+html.light video,
+html.light .monaco-editor,
+html.light [data-no-invert] {
   background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-} */
+} 
 /* 
 a {
   font-weight: 500;
