@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, UserCog, Search, Save, X, Mail, User, Building2, GraduationCap, Shield, Phone } from 'lucide-react';
+import {
+  fetchSuperAdminCollege,
+  createDepartmentHead,
+  updateDepartmentHead,
+  deleteDepartmentHead,
+} from '@/services/superAdminService';
 
 // Move Modal component OUTSIDE to prevent recreation on every render
 const Modal = ({ title, children, onSubmit, onClose }) => (
@@ -36,51 +42,16 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
 );
 
 const SuperAdminDashboard = () => {
-  const [currentCollege] = useState('MIT Institute of Technology');
- 
-  const [departments] = useState([
-    { id: 1, name: 'Computer Science Engineering', code: 'CSE', totalStudents: 800, totalFaculty: 45 },
-    { id: 2, name: 'Information Technology', code: 'IT', totalStudents: 600, totalFaculty: 35 },
-    { id: 3, name: 'Electronics & Communication', code: 'ECE', totalStudents: 500, totalFaculty: 30 },
-    { id: 4, name: 'Electrical & Electronics', code: 'EEE', totalStudents: 400, totalFaculty: 25 },
-    { id: 5, name: 'Mechanical Engineering', code: 'MECH', totalStudents: 350, totalFaculty: 22 },
-    { id: 6, name: 'Civil Engineering', code: 'CIVIL', totalStudents: 300, totalFaculty: 20 }
-  ]);
-
-  const [admins, setAdmins] = useState([
-    {
-      id: 1,
-      name: 'Dr. Priya Nair',
-      email: 'priya.nair@mit.edu',
-      phone: '+91-98765-43210',
-      empId: 'MIT-CSE-001',
-      department: 'Computer Science Engineering',
-      role: 'Department Head',
-      qualification: 'Ph.D in Computer Science',
-      experience: '15 years',
-      specialization: 'Artificial Intelligence & Machine Learning',
-      joiningDate: '2020-08-15',
-      permissions: ['manage_students', 'manage_faculty', 'manage_labs', 'view_reports', 'conduct_exams']
-    },
-    {
-      id: 2,
-      name: 'Dr. Rajesh Kumar',
-      email: 'rajesh.kumar@mit.edu',
-      phone: '+91-98765-43211',
-      empId: 'MIT-IT-001',
-      department: 'Information Technology',
-      role: 'Department Head',
-      qualification: 'Ph.D in Information Technology',
-      experience: '12 years',
-      specialization: 'Database Systems & Cloud Computing',
-      joiningDate: '2021-01-10',
-      permissions: ['manage_students', 'manage_faculty', 'manage_labs', 'view_reports']
-    }
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [college, setCollege] = useState(null);
+  const [departments, setDepartments] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const [newDepartmentName, setNewDepartmentName] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [adminForm, setAdminForm] = useState({
     name: '',
@@ -119,7 +90,81 @@ const SuperAdminDashboard = () => {
       joiningDate: '',
       permissions: []
     });
+    setNewDepartmentName('');
   };
+
+  const addDepartmentOption = () => {
+    const name = newDepartmentName.trim();
+    if (!name) {
+      return;
+    }
+
+    const alreadyExists = departments.some(
+      (dept) => dept.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      alert('Department already exists. Please select it from the list.');
+      return;
+    }
+
+    const nextDepartment = {
+      id: Date.now(),
+      name,
+      code: name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase(),
+      totalStudents: 0,
+      totalFaculty: 0,
+    };
+
+    setDepartments((prev) => [...prev, nextDepartment]);
+    setAdminForm((prev) => ({ ...prev, department: name }));
+    setNewDepartmentName('');
+  };
+
+  const mapDepartments = (departmentNames) =>
+    (departmentNames || []).map((name, index) => ({
+      id: `dept-${index}-${name}`,
+      name,
+      code: name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase(),
+      totalStudents: 0,
+      totalFaculty: 0,
+    }));
+
+  const loadCollegeData = async () => {
+    try {
+      const result = await fetchSuperAdminCollege();
+      const collegeData = result?.data?.college;
+
+      if (!collegeData) {
+        throw new Error('No college data in response');
+      }
+
+      setCollege(collegeData);
+      setAdmins(collegeData.departmentHeads || []);
+
+      const incomingDepartments = mapDepartments(collegeData.departments || []);
+      if (incomingDepartments.length) {
+        setDepartments(incomingDepartments);
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message || error.message || 'Failed to load college data from backend';
+      alert(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCollegeData();
+  }, []);
 
   const openModal = (item = null) => {
     setEditingItem(item);
@@ -137,35 +182,80 @@ const SuperAdminDashboard = () => {
     resetForm();
   };
 
-  const handleSubmit = () => {
-    const newId = Date.now();
-   
-    if (editingItem) {
-      setAdmins(admins.map(a =>
-        a.id === editingItem.id
-          ? { ...adminForm, id: editingItem.id, role: 'Department Head' }
-          : a
-      ));
-    } else {
-      setAdmins([...admins, {
-        ...adminForm,
-        id: newId,
-        role: 'Department Head'
-      }]);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      if (editingItem) {
+        const result = await updateDepartmentHead(editingItem.id, adminForm);
+        const updated = result?.data?.departmentHead;
+        if (updated) {
+          setAdmins((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+        }
+      } else {
+        const result = await createDepartmentHead(adminForm);
+        const created = result?.data?.departmentHead;
+        const credentials = result?.data?.credentials;
+
+        if (created) {
+          setAdmins((prev) => [...prev, { ...created, password: credentials?.password || created.empId }]);
+        }
+
+        const createdDepartment = adminForm.department?.trim();
+        if (createdDepartment) {
+          const exists = departments.some((dept) => dept.name.toLowerCase() === createdDepartment.toLowerCase());
+          if (!exists) {
+            setDepartments((prev) => [
+              ...prev,
+              {
+                id: `dept-local-${Date.now()}`,
+                name: createdDepartment,
+                code: createdDepartment
+                  .split(' ')
+                  .map((part) => part[0])
+                  .join('')
+                  .toUpperCase(),
+                totalStudents: 0,
+                totalFaculty: 0,
+              },
+            ]);
+          }
+        }
+      }
+
+      closeModal();
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to save department head';
+      alert(message);
+    } finally {
+      setIsSubmitting(false);
     }
-    closeModal();
   };
 
-  const deleteAdmin = (id) => {
-    setAdmins(admins.filter(a => a.id !== id));
+  const showDepartmentHeadCredentials = (admin) => {
+    const username = admin.username || admin.empId;
+    const password = admin.password || admin.empId;
+    alert(`Username: ${username}\nPassword: ${password}\nEmployee ID: ${admin.empId}`);
   };
 
-  const filteredAdmins = admins.filter(admin =>
-    admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.empId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const deleteAdmin = async (id) => {
+    try {
+      await deleteDepartmentHead(id);
+      setAdmins((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to delete department head';
+      alert(message);
+    }
+  };
+
+  const filteredAdmins = admins.filter((admin) => {
+    const keyword = searchTerm.toLowerCase();
+    return (
+      (admin.name || '').toLowerCase().includes(keyword) ||
+      (admin.email || '').toLowerCase().includes(keyword) ||
+      (admin.department || '').toLowerCase().includes(keyword) ||
+      (admin.empId || '').toLowerCase().includes(keyword)
+    );
+  });
 
   const getPermissionLabel = (permission) => {
     return permission.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -174,6 +264,16 @@ const SuperAdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
       <div className="max-w-7xl mx-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-neutral-400 text-lg">Loading college data...</p>
+          </div>
+        ) : !college ? (
+          <div className="flex items-center justify-center min-h-screen">
+            <p className="text-neutral-400 text-lg">No college data found. Please login as a Super Admin.</p>
+          </div>
+        ) : (
+          <>
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -182,10 +282,10 @@ const SuperAdminDashboard = () => {
                 <Shield className="w-8 h-8 mr-4 text-teal-400" />
                 Super Admin Dashboard
               </h1>
-              <p className="text-neutral-400 mt-2 text-lg">Assign department heads and manage college administration</p>
+              <p className="text-neutral-400 mt-2 text-lg">Manage college administration and department heads</p>
               <div className="flex items-center space-x-2 mt-3">
                 <Building2 className="w-4 h-4 text-neutral-500" />
-                <span className="text-neutral-500">{currentCollege}</span>
+                <span className="text-neutral-500">{college.name}</span>
               </div>
               <div className="flex items-center space-x-6 mt-4 text-sm text-neutral-500">
                 <span className="flex items-center">
@@ -193,8 +293,8 @@ const SuperAdminDashboard = () => {
                   {admins.length} Department Heads
                 </span>
                 <span className="flex items-center">
-                  <Building2 className="w-4 h-4 mr-1" />
-                  {departments.length} Departments
+                  <GraduationCap className="w-4 h-4 mr-1" />
+                  {college.code}
                 </span>
               </div>
             </div>
@@ -262,7 +362,11 @@ const SuperAdminDashboard = () => {
               <div className="flex justify-between items-start mb-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-4 mb-3">
-                    <h3 className="text-xl font-bold text-white flex items-center">
+                    <h3
+                      className="text-xl font-bold text-white flex items-center cursor-pointer"
+                      onClick={() => showDepartmentHeadCredentials(admin)}
+                      title="Click to view username and password"
+                    >
                       <UserCog className="w-5 h-5 mr-2 text-teal-400" />
                       {admin.name}
                     </h3>
@@ -307,6 +411,13 @@ const SuperAdminDashboard = () => {
                 </div>
                
                 <div className="flex space-x-3">
+                  <button
+                    onClick={() => showDepartmentHeadCredentials(admin)}
+                    className="text-green-400 hover:text-green-300 transition-colors p-2 bg-green-600/10 rounded-lg hover:bg-green-600/20"
+                    title="View Username and Password"
+                  >
+                    <User className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => openModal(admin)}
                     className="text-blue-400 hover:text-blue-300 transition-colors p-2 bg-blue-600/10 rounded-lg hover:bg-blue-600/20"
@@ -358,6 +469,9 @@ const SuperAdminDashboard = () => {
             onClose={closeModal}
           >
             <div className="space-y-6">
+              {isSubmitting && (
+                <div className="text-sm text-teal-300">Saving department head to database...</div>
+              )}
               {/* Personal Information */}
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Personal Information</h3>
@@ -401,6 +515,22 @@ const SuperAdminDashboard = () => {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Professional Information</h3>
                 <div className="grid md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add new department (e.g., Biotechnology)"
+                      value={newDepartmentName}
+                      onChange={(e) => setNewDepartmentName(e.target.value)}
+                      className="flex-1 p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={addDepartmentOption}
+                      className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg"
+                    >
+                      Add Department
+                    </button>
+                  </div>
                   <select
                     value={adminForm.department}
                     onChange={(e) => setAdminForm({...adminForm, department: e.target.value})}
@@ -450,6 +580,8 @@ const SuperAdminDashboard = () => {
               
             </div>
           </Modal>
+        )}
+          </>
         )}
       </div>
     </div>

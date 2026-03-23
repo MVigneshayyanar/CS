@@ -56,3 +56,12 @@ Configure in server .env:
 - Staff portal allows role Faculty, Admin, SuperAdmin.
 
 All successful logins return a JWT token used for protected routes.
+
+## 5. God dashboard tables (required for Add College / Add Super Admin)
+
+Run this script in Supabase SQL Editor:
+
+- `server/scripts/god_management_setup.sql`
+
+If you see errors like `Could not find the table 'public.colleges' in the schema cache`, this script has not been applied (or Supabase schema cache has not refreshed yet). Apply the script, wait a few seconds, then retry.
+

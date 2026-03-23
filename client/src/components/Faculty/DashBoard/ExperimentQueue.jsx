@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardTitle } from '../Labs/Card';
 
-const ExperimentQueue = () => {
+const ExperimentQueue = ({ experimentQueueData }) => {
     const [activeTab, setActiveTab] = useState('active');
 
-    const experiments = {
+    const fallbackExperiments = {
         active: [
             {
                 id: 1,
@@ -81,6 +81,8 @@ const ExperimentQueue = () => {
             }
         ]
     };
+
+    const experiments = experimentQueueData || fallbackExperiments;
 
     const getPriorityColor = (priority) => {
         switch (priority) {

@@ -17,8 +17,8 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardTitle } from '../Labs/Card';
 
-const PerformanceCharts = () => {
-    const classPerformanceData = [
+const PerformanceCharts = ({ classPerformanceDataProp, progressDistributionDataProp }) => {
+    const classPerformanceData = classPerformanceDataProp || [
         { className: 'CSE-A', avgScore: 88, completion: 92 },
         { className: 'CSE-B', avgScore: 85, completion: 89 },
         { className: 'CSE-C', avgScore: 92, completion: 95 },
@@ -27,8 +27,7 @@ const PerformanceCharts = () => {
         { className: 'ECE-B', avgScore: 83, completion: 86 }
     ];
 
-    const progressDistributionData = [
-        {},
+    const progressDistributionData = progressDistributionDataProp || [
         { range: '90-100%', students: 142, color: '#10b981' },
         { range: '80-89%', students: 98, color: '#3b82f6' },
         { range: '70-79%', students: 67, color: '#f59e0b' },

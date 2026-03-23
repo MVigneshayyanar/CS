@@ -5,10 +5,30 @@ import PerformanceCharts from '../../components/Faculty/DashBoard/PerformanceCha
 import ActivitySidebar from '../../components/Faculty/DashBoard/ActivitySidebar';
 import ClassManagementGrid from '../../components/Faculty/DashBoard/ClassManagementGrid';
 import ExperimentQueue from '../../components/Faculty/DashBoard/ExperimentQueue';
+import { useEffect } from 'react';
+import { fetchFacultyDashboard } from '@/services/facultyService';
 
 const FacultyDashboard = () => {
     const [selectedClass, setSelectedClass] = useState(null);
     const [activeView, setActiveView] = useState('dashboard'); // dashboard, class-detail, etc.
+    const [isLoading, setIsLoading] = useState(true);
+    const [dashboardData, setDashboardData] = useState(null);
+
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                const result = await fetchFacultyDashboard();
+                setDashboardData(result?.data || null);
+            } catch (error) {
+                const message = error?.response?.data?.message || 'Failed to load faculty dashboard from backend';
+                alert(message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadDashboard();
+    }, []);
 
     const handleClassSelect = (classItem) => {
         setSelectedClass(classItem);
@@ -18,7 +38,34 @@ const FacultyDashboard = () => {
     const renderDashboardView = () => (
         <>
             {/* Quick Stats Overview */}
-            <QuickStatsCards />
+            <QuickStatsCards
+                statsData={[
+                    {
+                        title: "Total Classes",
+                        value: `${dashboardData?.quickStats?.totalClasses || 0}`,
+                        color: "from-blue-900/30 to-blue-800/30 border-blue-700/30",
+                        icon: <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" /></svg>,
+                    },
+                    {
+                        title: "Total Students",
+                        value: `${dashboardData?.quickStats?.totalStudents || 0}`,
+                        color: "from-emerald-900/30 to-emerald-800/30 border-emerald-700/30",
+                        icon: <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2h5" /><circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth={2} /></svg>,
+                    },
+                    {
+                        title: "Pending Submissions",
+                        value: `${dashboardData?.quickStats?.pendingSubmissions || 0}`,
+                        color: "from-amber-900/30 to-amber-800/30 border-amber-700/30",
+                        icon: <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+                    },
+                    {
+                        title: "Overall Completion",
+                        value: `${dashboardData?.quickStats?.overallCompletion || 0}%`,
+                        color: "from-purple-900/30 to-purple-800/30 border-purple-700/30",
+                        icon: <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5" /></svg>,
+                    },
+                ]}
+            />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
@@ -26,20 +73,26 @@ const FacultyDashboard = () => {
                 {/* Main Content Area */}
                 <div className="xl:col-span-3 space-y-6">
                     {/* Performance Analytics */}
-                    <PerformanceCharts />
+                    <PerformanceCharts
+                        classPerformanceDataProp={dashboardData?.classPerformanceData}
+                        progressDistributionDataProp={dashboardData?.progressDistributionData}
+                    />
 
                     {/* Class Management */}
-                    <ClassManagementGrid onClassSelect={handleClassSelect} />
+                    <ClassManagementGrid onClassSelect={handleClassSelect} classesData={dashboardData?.classes} />
                 </div>
                 
                 {/* Left Sidebar - Activity & Actions */}
                 <div className="xl:col-span-1">
-                    <ActivitySidebar />
+                    <ActivitySidebar
+                        recentActivitiesProp={dashboardData?.recentActivities}
+                        pendingActionsProp={dashboardData?.pendingActions}
+                    />
                 </div>
 
                 <div className="xl:col-span-4 space-y-6">
                     {/* Experiment Queue */}
-                    <ExperimentQueue />
+                    <ExperimentQueue experimentQueueData={dashboardData?.experimentQueue} />
                 </div>
             </div>
         </>
@@ -103,6 +156,7 @@ const FacultyDashboard = () => {
                 <div className="max-w-7xl mr-auto ml-auto">
                     {activeView === 'dashboard' && renderDashboardView()}
                     {activeView === 'class-detail' && renderClassDetailView()}
+                    {isLoading && <div className="text-neutral-400">Loading dashboard...</div>}
                 </div>
             </div>
 

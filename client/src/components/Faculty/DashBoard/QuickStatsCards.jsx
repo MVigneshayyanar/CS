@@ -34,8 +34,8 @@ const StatCard = ({ title, value, change, changeType, icon, color }) => (
     </Card>
 );
 
-const QuickStatsCards = () => {
-    const stats = [
+const QuickStatsCards = ({ statsData }) => {
+    const stats = statsData || [
         {
             title: "Total Classes",
             value: "12",
