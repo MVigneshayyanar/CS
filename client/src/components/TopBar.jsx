@@ -10,7 +10,7 @@ const TopBar = ({ facultyName = "Dr. Sarah Johnson", department = "Computer Scie
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-3">
                         <div>
-                            <h1 className="text-lg text-neutral-300">Welcome back</h1>
+                            <h1 className="text-lg text-neutral-300"></h1>
                         </div>
                     </div>
                 </div>
