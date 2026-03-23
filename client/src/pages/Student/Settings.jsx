@@ -17,6 +17,7 @@ import {
   Hash
 } from 'lucide-react';
 import axios from 'axios';
+import { changePassword } from '@/services/authService';
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState('profile');
@@ -69,6 +70,7 @@ const Settings = () => {
   });
 
   const userId = sessionStorage.getItem('userId');
+  const authToken = sessionStorage.getItem('authToken');
 
   useEffect(() => {
     fetchUserPreferences();
@@ -85,21 +87,35 @@ const Settings = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
+
+    if (!authToken) {
+      setMessage({ type: 'error', text: 'Session expired. Please login again.' });
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setMessage({ type: 'error', text: 'New password must be at least 8 characters long' });
       return;
     }
     
     setLoading(true);
     try {
-      await axios.put(`http://localhost:8080/change-password?userId=${userId}`, {
+      const response = await changePassword({
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
+        newPassword: passwordData.newPassword,
+        token: authToken,
       });
-      setMessage({ type: 'success', text: 'Your password has been updated successfully!' });
+
+      setMessage({ type: 'success', text: response?.message || 'Your password has been updated successfully!' });
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to change password. Please check your current password.' });
+      const errorMessage = error?.response?.data?.message || 'Failed to change password. Please check your current password.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
     }

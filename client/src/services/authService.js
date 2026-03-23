@@ -48,3 +48,23 @@ export const loginByRole = async ({ identifier, password, role }) => {
 
   return response.data;
 };
+
+export const changePassword = async ({ currentPassword, newPassword, token }) => {
+  const response = await authApi.put(
+    "/auth/password/change",
+    {
+      currentPassword,
+      newPassword,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const changeStudentPassword = async ({ currentPassword, newPassword, token }) =>
+  changePassword({ currentPassword, newPassword, token });
