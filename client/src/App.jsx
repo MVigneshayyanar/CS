@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { useSidebar } from "./context/SidebarContext";
 
 import Sidebar from "./components/Sidebar";
@@ -33,6 +34,7 @@ import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
 
 function App() {
   const { isCollapsed } = useSidebar();
+  const { setTheme } = useTheme();
   const [userType, setUserType] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
   const [mainOffset, setMainOffset] = useState("");
@@ -53,11 +55,16 @@ function App() {
     sessionStorage.setItem("isAuthenticated", "true");
     sessionStorage.setItem("userType", type);
     setUserType(type);
+    
+    // Explicitly reset theme on login to avoid theme leakage from previous user
+    // This allows unique sessions to start with a fresh slate
+    setTheme("dark");
   };
 
   const handleLogout = () => {
     sessionStorage.clear();
     setUserType(null);
+    setTheme("dark"); // Also reset to dark on logout
   };
 
   const getTopbar = () => {
