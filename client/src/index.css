@@ -2,6 +2,15 @@
 
 :root {
   font-family: 'Roboto', sans-serif;
+/* Hide all scrollbars but allow scrolling with mouse wheel */
+html, body, * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
+  display: none;
+}
 }
 @import "tailwindcss";
 

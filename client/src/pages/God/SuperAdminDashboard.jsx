@@ -116,8 +116,7 @@ const SuperAdminDashboard = () => {
         .map((part) => part[0])
         .join('')
         .toUpperCase(),
-      totalStudents: 0,
-      totalFaculty: 0,
+      totalStaff: 0,
     };
 
     setDepartments((prev) => [...prev, nextDepartment]);
@@ -125,18 +124,22 @@ const SuperAdminDashboard = () => {
     setNewDepartmentName('');
   };
 
-  const mapDepartments = (departmentNames) =>
-    (departmentNames || []).map((name, index) => ({
-      id: `dept-${index}-${name}`,
-      name,
-      code: name
-        .split(' ')
-        .map((part) => part[0])
-        .join('')
-        .toUpperCase(),
-      totalStudents: 0,
-      totalFaculty: 0,
-    }));
+  const mapDepartments = (departmentNames, departmentHeads = []) =>
+    (departmentNames || []).map((name, index) => {
+      const staffInDept = departmentHeads.filter(
+        (head) => (head.department || '').toLowerCase() === name.toLowerCase()
+      );
+      return {
+        id: `dept-${index}-${name}`,
+        name,
+        code: name
+          .split(' ')
+          .map((part) => part[0])
+          .join('')
+          .toUpperCase(),
+        totalStaff: staffInDept.length,
+      };
+    });
 
   const loadCollegeData = async () => {
     try {
@@ -148,9 +151,10 @@ const SuperAdminDashboard = () => {
       }
 
       setCollege(collegeData);
-      setAdmins(collegeData.departmentHeads || []);
+      const heads = collegeData.departmentHeads || [];
+      setAdmins(heads);
 
-      const incomingDepartments = mapDepartments(collegeData.departments || []);
+      const incomingDepartments = mapDepartments(collegeData.departments || [], heads);
       if (incomingDepartments.length) {
         setDepartments(incomingDepartments);
       }
@@ -214,8 +218,7 @@ const SuperAdminDashboard = () => {
                   .map((part) => part[0])
                   .join('')
                   .toUpperCase(),
-                totalStudents: 0,
-                totalFaculty: 0,
+                totalStaff: 1,
               },
             ]);
           }
@@ -322,17 +325,13 @@ const SuperAdminDashboard = () => {
                 </div>
                 <div className="space-y-2 text-sm text-neutral-400">
                   <div className="flex justify-between">
-                    <span>Students:</span>
-                    <span className="text-blue-400 font-medium">{dept.totalStudents}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Faculty:</span>
-                    <span className="text-green-400 font-medium">{dept.totalFaculty}</span>
+                    <span>Staff:</span>
+                    <span className="text-blue-400 font-medium">{dept.totalStaff}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Head:</span>
                     <span className="text-white font-medium">
-                      {admins.find(admin => admin.department === dept.name)?.name.split(' ')[1] || 'Not Assigned'}
+                      {admins.find(admin => (admin.department || '').toLowerCase() === (dept.name || '').toLowerCase())?.name || 'Not Assigned'}
                     </span>
                   </div>
                 </div>

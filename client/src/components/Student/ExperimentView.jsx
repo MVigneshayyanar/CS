@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Clock, Code, Beaker, AlertTriangle, Shield } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { fetchStudentLabs } from '@/services/studentService';
 import JudgePage from '../../pages/JudgePage.jsx';
 
 // Custom debounce hook for auto-save functionality
@@ -27,11 +28,43 @@ const useDebounce = (callback, delay) => {
   return debouncedCallback;
 };
 
+// Default starter code per language
+const getDefaultCode = (language) => {
+  switch ((language || '').toLowerCase()) {
+    case 'python':
+      return `# Write your Python solution here\n\n`;
+    case 'java':
+      return `public class Main {\n  public static void main(String[] args) {\n    // Write your Java solution here\n  }\n}`;
+    case 'c':
+      return `#include <stdio.h>\n\nint main() {\n    // Write your C solution here\n    return 0;\n}`;
+    case 'c++':
+    case 'cpp':
+      return `#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ solution here\n    return 0;\n}`;
+    case 'javascript':
+      return `// Write your JavaScript solution here\n\n`;
+    default:
+      return `// Write your solution here\n\n`;
+  }
+};
+
+// Map lab language string to JudgePage language key
+const mapLanguageKey = (lang) => {
+  const l = (lang || '').toLowerCase();
+  if (l === 'c++') return 'cpp';
+  if (['python', 'java', 'c', 'cpp', 'javascript'].includes(l)) return l;
+  return 'python'; // fallback
+};
+
 const ExperimentView = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const experimentId = searchParams.get('id');
+  const experimentId = searchParams.get('id'); // format: "<labId>-<index>"
   
+  // Experiment data from backend
+  const [experiment, setExperiment] = useState(null);
+  const [labLanguage, setLabLanguage] = useState('python');
+  const [isLoadingExp, setIsLoadingExp] = useState(true);
+
   // Enhanced anti-cheat state management
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showExitWarning, setShowExitWarning] = useState(false);
@@ -44,48 +77,101 @@ const ExperimentView = () => {
   const [warningMessage, setWarningMessage] = useState('');
   
   // Auto-save state
-  const [code, setCode] = useState(`# Write your Python solution here
-def factorial(n):
-    """
-    Calculate the factorial of a number
-    Args:
-        n (int): A non-negative integer
-    Returns:
-        int: The factorial of n
-    """
-    if n < 0:
-        return None  # or raise ValueError("Factorial is not defined for negative numbers")
-    elif n == 0 or n == 1:
-        return 1
-    else:
-        result = 1
-        for i in range(2, n + 1):
-            result *= i
-        return result
-
-# Test your function
-print("Testing factorial function:")
-print(f"factorial(5) = {factorial(5)}")
-print(f"factorial(0) = {factorial(0)}")
-print(f"factorial(3) = {factorial(3)}")
-print(f"factorial(1) = {factorial(1)}")`);
-  
+  const [code, setCode] = useState('');
   const [lastSaved, setLastSaved] = useState(new Date());
+
+  // Fetch the actual experiment from backend based on URL id
+  useEffect(() => {
+    const loadExperiment = async () => {
+      try {
+        setIsLoadingExp(true);
+        const result = await fetchStudentLabs();
+        const labs = result?.data?.labs || [];
+
+        // experimentId format is "<labId>-<experimentIndex>"
+        let foundExperiment = null;
+        let foundLanguage = 'python';
+
+        for (const lab of labs) {
+          const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
+          for (let i = 0; i < experiments.length; i++) {
+            const expId = `${lab.id}-${i}`;
+            if (expId === experimentId) {
+              foundExperiment = {
+                ...experiments[i],
+                id: expId,
+                sno: i + 1,
+                title: experiments[i].title || `Experiment ${i + 1}`,
+                domain: experiments[i].domain || lab.originalName || lab.fullName || lab.name || 'General',
+                description: experiments[i].description || 'No description available',
+                difficulty: experiments[i].difficulty || 'Intermediate',
+                estimatedTime: experiments[i].estimatedTime || '3 hours',
+                language: lab.language || lab.name || 'Python',
+                question: experiments[i].description || experiments[i].question || 'Complete the experiment as described.',
+                testCases: Array.isArray(experiments[i].testCases) ? experiments[i].testCases : [],
+              };
+              foundLanguage = lab.language || lab.name || 'python';
+              break;
+            }
+          }
+          if (foundExperiment) break;
+        }
+
+        if (foundExperiment) {
+          setExperiment(foundExperiment);
+          setLabLanguage(foundLanguage);
+
+          // Load saved code or set default for the language
+          const savedCode = localStorage.getItem(`experiment_${experimentId}_code`);
+          if (savedCode) {
+            setCode(savedCode);
+          } else {
+            setCode(getDefaultCode(foundLanguage));
+          }
+        } else {
+          // Fallback: experiment not found
+          setExperiment({
+            id: experimentId,
+            sno: 1,
+            title: 'Experiment Not Found',
+            domain: 'Unknown',
+            description: 'This experiment could not be loaded. Please go back and try again.',
+            difficulty: 'N/A',
+            estimatedTime: 'N/A',
+            language: 'python',
+            question: 'Experiment data could not be loaded.',
+            testCases: [],
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load experiment:', error);
+        setExperiment({
+          id: experimentId,
+          sno: 1,
+          title: 'Error Loading Experiment',
+          domain: 'Unknown',
+          description: 'Failed to load experiment data from the server.',
+          difficulty: 'N/A',
+          estimatedTime: 'N/A',
+          language: 'python',
+          question: 'Failed to load experiment data. Please try again.',
+          testCases: [],
+        });
+      } finally {
+        setIsLoadingExp(false);
+      }
+    };
+
+    if (experimentId) {
+      loadExperiment();
+    }
+  }, [experimentId]);
 
   // Auto-save functionality with debounce
   const debouncedSave = useDebounce((codeToSave) => {
-    console.log('Auto-saving code:', codeToSave);
     setLastSaved(new Date());
     localStorage.setItem(`experiment_${experimentId}_code`, codeToSave);
   }, 2000);
-
-  // Load saved code on component mount
-  useEffect(() => {
-    const savedCode = localStorage.getItem(`experiment_${experimentId}_code`);
-    if (savedCode) {
-      setCode(savedCode);
-    }
-  }, [experimentId]);
 
   // Handle code changes
   const handleCodeChange = (newCode) => {
@@ -108,100 +194,24 @@ print(f"factorial(1) = {factorial(1)}")`);
     
     console.warn('🚨 CHEAT ATTEMPT DETECTED:', cheatLog);
     
-    // Store cheat attempts in localStorage for reporting
     const existingLogs = JSON.parse(localStorage.getItem('cheat_attempts') || '[]');
     existingLogs.push(cheatLog);
     localStorage.setItem('cheat_attempts', JSON.stringify(existingLogs));
     
-    // Show warning
     setWarningMessage(`Violation detected: ${type}. Attempt #${newAttempts}`);
     setShowCheatWarning(true);
     
-    // Auto-hide warning after 4 seconds
     setTimeout(() => setShowCheatWarning(false), 4000);
     
-    // Escalate after multiple attempts
     if (newAttempts >= 3) {
       handleSevereViolation(type);
     }
   };
 
-  // Handle severe violations (3+ attempts) - Fixed semicolon issue
-  const handleSevereViolation = (type) => {
+  const handleSevereViolation = (_type) => {
     setWarningMessage(`Multiple violations detected. Exam may be terminated.`);
     setShowViolationWarning(true);
-    
-    // Optional: You can implement automatic exam termination here
-    // setTimeout(() => {
-    //   if (isFullscreen) exitFullscreen();
-    //   navigate('/labs/experiments');
-    // }, 5000);
   };
-
-  // Experiment data
-  const getExperimentData = (id) => {
-    const allExperiments = {
-      1: {
-        id: 1,
-        sno: 1,
-        title: 'Python Function Basics - Factorial Calculator',
-        domain: 'Python Programming',
-        description: 'Learn Python function basics by implementing a factorial calculator with proper error handling.',
-        difficulty: 'Beginner',
-        estimatedTime: '2 hours',
-        language: 'python',
-        question: `# Python Function Basics - Factorial Calculator
-
-## Problem Statement
-Write a Python function to calculate the factorial of a given number.
-
-## Requirements
-1. **Function Definition**: Define a function called \`factorial(n)\` that:
-   - Takes one parameter \`n\` (integer)
-   - Returns the factorial of \`n\` (n!)
-   - Handles edge cases properly
-
-2. **Mathematical Definition**:
-   - \`n! = n × (n-1) × (n-2) × ... × 2 × 1\`
-   - \`0! = 1\` (by mathematical convention)
-   - \`1! = 1\`
-
-3. **Edge Cases to Handle**:
-   - Factorial of 0 should return 1
-   - Factorial of negative numbers should return \`None\` or raise an appropriate error
-   - Handle only integer inputs
-
-## Examples
-- \`factorial(5)\` should return \`120\` (5 × 4 × 3 × 2 × 1)
-- \`factorial(0)\` should return \`1\`
-- \`factorial(1)\` should return \`1\`
-- \`factorial(3)\` should return \`6\`
-
-## Implementation Approaches
-You can use either:
-1. **Iterative approach**: Use a for loop to multiply numbers
-2. **Recursive approach**: Function calls itself
-
-## Test Your Solution
-Make sure your function works correctly with all the test cases provided.
-
-## Tips
-- Start with the base cases (0 and 1)
-- Use a loop from 2 to n for the iterative approach
-- Remember to handle negative numbers appropriately`,
-        testCases: [
-          { input: "factorial(5)", expected: "120" },
-          { input: "factorial(0)", expected: "1" },
-          { input: "factorial(3)", expected: "6" },
-          { input: "factorial(1)", expected: "1" }
-        ]
-      }
-    };
-    
-    return allExperiments[id] || allExperiments[1];
-  };
-
-  const experiment = getExperimentData(parseInt(experimentId));
 
   // Enhanced fullscreen management
   const checkFullscreenStatus = () => {
@@ -289,7 +299,6 @@ Make sure your function works correctly with all the test cases provided.
     const preventKeyShortcuts = (e) => {
       if (!examMode) return;
 
-      // Prevent ESC key - Critical for exam integrity
       if (e.key === 'Escape' || e.keyCode === 27) {
         e.preventDefault();
         e.stopPropagation();
@@ -297,7 +306,6 @@ Make sure your function works correctly with all the test cases provided.
         return false;
       }
 
-      // Prevent F11 key
       if (e.key === 'F11' || e.keyCode === 122) {
         e.preventDefault();
         e.stopPropagation();
@@ -305,7 +313,6 @@ Make sure your function works correctly with all the test cases provided.
         return false;
       }
 
-      // Prevent other dangerous shortcuts
       if (
         (e.ctrlKey && ['c', 'v', 'x', 'a', 't', 'n', 'w', 's', 'r'].includes(e.key.toLowerCase())) ||
         (e.altKey && e.key === 'Tab') ||
@@ -323,7 +330,6 @@ Make sure your function works correctly with all the test cases provided.
       }
     };
 
-    // Prevent selection of text outside code editor
     const preventSelection = (e) => {
       if (examMode && !e.target.closest('.monaco-editor')) {
         e.preventDefault();
@@ -331,7 +337,6 @@ Make sure your function works correctly with all the test cases provided.
       }
     };
 
-    // Add all event listeners with high priority
     document.addEventListener('contextmenu', preventContextMenu, { capture: true });
     document.addEventListener('keydown', preventKeyShortcuts, { capture: true });
     document.addEventListener('keyup', preventKeyShortcuts, { capture: true });
@@ -351,11 +356,9 @@ Make sure your function works correctly with all the test cases provided.
       const currentFullscreenStatus = checkFullscreenStatus();
       
       if (!currentFullscreenStatus && examMode) {
-        // User exited fullscreen during exam
         logCheatAttempt('fullscreen_exit', 'Exited fullscreen mode during exam');
         setShowExitWarning(true);
         
-        // Force back to fullscreen after a short delay
         setTimeout(() => {
           if (examMode) {
             enterFullscreen();
@@ -388,7 +391,7 @@ Make sure your function works correctly with all the test cases provided.
     }
   }, [examMode]);
 
-  // Handle exit experiment - properly exit fullscreen first
+  // Handle exit experiment
   const handleExitExperiment = () => {
     setExamMode(false);
     if (isFullscreen) {
@@ -399,10 +402,19 @@ Make sure your function works correctly with all the test cases provided.
     }, 100);
   };
 
-  // Handle violation - but don't automatically terminate
-  const handleViolation = () => {
-    logCheatAttempt('manual_violation', 'Manual violation triggered');
-  };
+  // Loading state
+  if (isLoadingExp) {
+    return (
+      <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-400 mx-auto mb-4"></div>
+          <p className="text-neutral-400">Loading experiment...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!experiment) return null;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white overflow-hidden">
@@ -499,7 +511,7 @@ Make sure your function works correctly with all the test cases provided.
             <div className="flex items-center gap-3">
               <Beaker className="w-6 h-6 text-teal-400" />
               <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                PYTHON EXPERIMENT
+                {(labLanguage || 'EXPERIMENT').toUpperCase()}
               </h1>
               <span className="text-sm text-neutral-400">•</span>
               <span className="text-sm text-neutral-300">{experiment.title}</span>
@@ -531,7 +543,7 @@ Make sure your function works correctly with all the test cases provided.
           </div>
         </div>
 
-        {/* Split Screen Layout - Unchanged */}
+        {/* Split Screen Layout */}
         <div className="flex-1 flex overflow-hidden">
           
           {/* Left Panel - Problem Statement */}
@@ -599,7 +611,7 @@ Make sure your function works correctly with all the test cases provided.
                         <div>
                           <span className="text-neutral-400 text-sm font-medium">Expected Output:</span>
                           <pre className="text-emerald-300 font-mono text-sm mt-1 bg-neutral-800/50 p-2 rounded">
-                            {testCase.expected}
+                            {testCase.expected || testCase.expectedOutput}
                           </pre>
                         </div>
                       </div>
@@ -621,7 +633,7 @@ Make sure your function works correctly with all the test cases provided.
                   <h3 className="text-lg font-semibold text-white">Code Editor</h3>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
-                      Python Environment
+                      {(labLanguage || 'Python').charAt(0).toUpperCase() + (labLanguage || 'Python').slice(1)} Environment
                     </span>
                     {examMode && (
                       <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded border border-red-500/20">
@@ -636,9 +648,14 @@ Make sure your function works correctly with all the test cases provided.
               </div>
             </div>
 
-            {/* Judge Page Integration */}
-            <div className="flex-1 bg-neutral-800/30 m-4 rounded-xl overflow-hidden">
-              <JudgePage />
+            {/* Judge Page Integration - pass the correct language */}
+            <div className="flex-1 bg-neutral-800/30 m-4 rounded-xl overflow-y-auto">
+              <JudgePage 
+                initialLanguage={mapLanguageKey(labLanguage)} 
+                initialCode={code}
+                onCodeChange={handleCodeChange}
+                testCases={experiment.testCases}
+              />
             </div>
           </div>
         </div>

@@ -42,7 +42,13 @@ const getAssignedLabsForStudent = async (username) => {
 
   const usernameLower = (username || "").toLowerCase();
   return (data || []).filter((lab) =>
-    (lab.students || []).some((student) => (student || "").toString().toLowerCase() === usernameLower)
+    (lab.students || []).some((student) => {
+      const studentVal =
+        typeof student === "object" && student !== null
+          ? student.username || student.name || student.rollNo || student.id || ""
+          : student || "";
+      return studentVal.toString().toLowerCase() === usernameLower;
+    })
   );
 };
 
@@ -95,12 +101,15 @@ const getStudentLabsData = async (username) => {
     return {
       id: lab.id,
       name: lab.language || lab.name,
+      originalName: lab.name,
+      language: lab.language,
       fullName: lab.name,
       instructor: lab.faculty || "N/A",
       progress,
       date: formatDate(lab.created_at),
       students: Array.isArray(lab.students) ? lab.students.length : 0,
       duration: `${Math.max(1, experiments.length)} week${experiments.length === 1 ? "" : "s"}`,
+      experiments: experiments,
     };
   });
 };

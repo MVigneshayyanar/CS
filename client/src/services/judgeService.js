@@ -7,7 +7,7 @@ const JUDGE0_URL =
 const RAPIDAPI_KEY =
   "f59165b74emshebbcc10d5f819f3p10ce75jsn4ac2f2918bfb";
 
-export const submitCode = async (source_code, language) => {
+export const submitCode = async (source_code, language, stdin = "") => {
   // Judge0 uses numeric IDs for languages
   const languageMap = {
     java: 62, // Java (OpenJDK 13.0.1)
@@ -23,7 +23,7 @@ export const submitCode = async (source_code, language) => {
       {
         source_code,
         language_id: languageMap[language],
-        stdin: "", // optional custom input
+        stdin, // passing standard input here
       },
       {
         headers: {

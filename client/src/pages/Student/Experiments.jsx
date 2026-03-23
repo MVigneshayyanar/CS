@@ -30,12 +30,12 @@ const Experiments = () => {
         const allExperiments = labs.flatMap((lab) =>
           (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => ({
             id: `${lab.id}-${index}`,
-            lab: lab.name,
-            labKey: lab.name,
+            lab: lab.originalName || lab.fullName || lab.name,
+            labKey: lab.originalName || lab.fullName || lab.name,
             labAlias: lab.language || lab.name,
             sno: index + 1,
             title: exp.title || `Experiment ${index + 1}`,
-            domain: exp.domain || lab.name || "General",
+            domain: exp.domain || lab.originalName || lab.fullName || lab.name || "General",
             description: exp.description || "No description available",
             status: exp.status || (exp.progress >= 100 ? "completed" : "pending"),
             progress: exp.progress || 0,

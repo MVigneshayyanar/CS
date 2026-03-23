@@ -108,8 +108,9 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
     lineNumbers: "on",
     roundedSelection: false,
     scrollbar: {
-      vertical: "visible",
-      horizontal: "visible"
+      vertical: "auto",
+      horizontal: "auto",
+      alwaysConsumeMouseWheel: false
     }
   };
 
