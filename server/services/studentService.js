@@ -25,35 +25,29 @@ const formatDate = (value) => {
   return date.toLocaleDateString("en-GB");
 };
 
-const getStudentDashboardData = async (username) => {
+const getAssignedLabsForStudent = async (username) => {
   ensureSupabase();
 
   const { data, error } = await supabase
     .from(labsTable)
-    .select("name, language, students, experiments, created_at")
+    .select("id, name, language, faculty, students, experiments, created_at")
     .order("created_at", { ascending: false });
 
   if (error) {
     if (error.code === "PGRST205") {
-      return {
-        progressData: [],
-        stats: [
-          { value: "0", label: "Total Labs", color: "teal" },
-          { value: "0%", label: "Avg Progress", color: "emerald" },
-          { value: "0", label: "Pending Tasks", color: "amber" },
-          { value: "0", label: "Due This Week", color: "cyan" },
-        ],
-        assignedTasks: [],
-        incompleteTasks: [],
-      };
+      return [];
     }
-    throw createHttpError(`Failed to load student dashboard: ${error.message}`, 500);
+    throw createHttpError(`Failed to load student labs: ${error.message}`, 500);
   }
 
   const usernameLower = (username || "").toLowerCase();
-  const assignedLabs = (data || []).filter((lab) =>
+  return (data || []).filter((lab) =>
     (lab.students || []).some((student) => (student || "").toString().toLowerCase() === usernameLower)
   );
+};
+
+const getStudentDashboardData = async (username) => {
+  const assignedLabs = await getAssignedLabsForStudent(username);
 
   const progressData = assignedLabs.map((lab, index) => {
     const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
@@ -90,7 +84,79 @@ const getStudentDashboardData = async (username) => {
   };
 };
 
+const getStudentLabsData = async (username) => {
+  const assignedLabs = await getAssignedLabsForStudent(username);
+
+  return assignedLabs.map((lab) => {
+    const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
+    const completed = experiments.filter((exp) => exp.status === "completed" || exp.progress >= 100).length;
+    const progress = experiments.length ? Math.round((completed / experiments.length) * 100) : 0;
+
+    return {
+      id: lab.id,
+      name: lab.language || lab.name,
+      fullName: lab.name,
+      instructor: lab.faculty || "N/A",
+      progress,
+      date: formatDate(lab.created_at),
+      students: Array.isArray(lab.students) ? lab.students.length : 0,
+      duration: `${Math.max(1, experiments.length)} week${experiments.length === 1 ? "" : "s"}`,
+    };
+  });
+};
+
+const getStudentStatisticsData = async (username) => {
+  const assignedLabs = await getAssignedLabsForStudent(username);
+
+  const myLabsData = assignedLabs.map((lab) => {
+    const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
+    const completed = experiments.filter((exp) => exp.status === "completed" || exp.progress >= 100).length;
+    const progress = experiments.length ? Math.round((completed / experiments.length) * 100) : 0;
+    return {
+      name: (lab.language || lab.name || "LAB").toUpperCase(),
+      progress,
+      assignments: experiments.length,
+      completed,
+    };
+  });
+
+  const totalAssignments = myLabsData.reduce((sum, item) => sum + item.assignments, 0);
+  const completedAssignments = myLabsData.reduce((sum, item) => sum + item.completed, 0);
+  const avgProgress = myLabsData.length
+    ? Math.round(myLabsData.reduce((sum, item) => sum + item.progress, 0) / myLabsData.length)
+    : 0;
+
+  const skillRadarData = [
+    { skill: "OOP", A: Math.max(40, avgProgress - 5) },
+    { skill: "Arrays", A: Math.max(45, avgProgress + 2) },
+    { skill: "Data Structures", A: Math.max(35, avgProgress - 8) },
+    { skill: "Algorithms", A: Math.max(30, avgProgress - 12) },
+    { skill: "Recursion", A: Math.max(30, avgProgress - 10) },
+    { skill: "Debugging", A: Math.max(45, avgProgress + 4) },
+  ];
+
+  const activityItems = assignedLabs.slice(0, 5).map((lab, index) => ({
+    id: index + 1,
+    title: `Worked on ${lab.name}`,
+    time: `${index + 1} day${index ? "s" : ""} ago`,
+  }));
+
+  return {
+    metrics: {
+      labsCompleted: `${myLabsData.filter((lab) => lab.progress >= 100).length}/${myLabsData.length}`,
+      studyHours: `${Math.max(8, totalAssignments * 3)}h`,
+      assignmentsDue: Math.max(0, totalAssignments - completedAssignments),
+    },
+    myLabsData,
+    skillRadarData,
+    activityItems,
+    avgProgress,
+  };
+};
+
 module.exports = {
   getStudentDashboardData,
+  getStudentLabsData,
+  getStudentStatisticsData,
 };
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Clock,
   Calendar,
@@ -22,6 +22,7 @@ import {
   Cell,
   Tooltip,
 } from "recharts";
+import { fetchStudentStatistics } from "@/services/studentService";
 
 const StatCard = ({
   title,
@@ -147,21 +148,41 @@ const ProgressCard = ({ lab }) => {
 };
 
 export default function Statistics() {
-  const myLabsData = [
-    { name: "JAVA", progress: 78, assignments: 8, completed: 6 },
-    { name: "C++", progress: 92, assignments: 7, completed: 7 },
-    { name: "PYTHON", progress: 88, assignments: 9, completed: 8 },
-    { name: "DART", progress: 43, assignments: 5, completed: 2 },
-  ];
+  const [isLoading, setIsLoading] = useState(true);
+  const [statisticsData, setStatisticsData] = useState({
+    metrics: {
+      labsCompleted: "0/0",
+      studyHours: "0h",
+      assignmentsDue: 0,
+    },
+    myLabsData: [],
+    skillRadarData: [],
+    activityItems: [],
+  });
 
-  const skillRadarData = [
-    { skill: "OOP", A: 85 },
-    { skill: "Arrays", A: 92 },
-    { skill: "Data Structures", A: 78 },
-    { skill: "Algorithms", A: 68 },
-    { skill: "Recursion", A: 75 },
-    { skill: "Memory Management", A: 82 },
-  ];
+  useEffect(() => {
+    const loadStatistics = async () => {
+      try {
+        const result = await fetchStudentStatistics();
+        setStatisticsData(result?.data || {
+          metrics: { labsCompleted: "0/0", studyHours: "0h", assignmentsDue: 0 },
+          myLabsData: [],
+          skillRadarData: [],
+          activityItems: [],
+        });
+      } catch (error) {
+        const message = error?.response?.data?.message || "Failed to load statistics from backend";
+        alert(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadStatistics();
+  }, []);
+
+  const myLabsData = statisticsData.myLabsData || [];
+  const skillRadarData = statisticsData.skillRadarData || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
@@ -185,26 +206,28 @@ export default function Statistics() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Labs Completed"
-            value="3/4"
+            value={statisticsData.metrics?.labsCompleted || "0/0"}
             subtitle="This semester"
             icon={CheckCircle}
             color="blue"
           />
           <StatCard
             title="Study Hours"
-            value="77h"
+            value={statisticsData.metrics?.studyHours || "0h"}
             subtitle="This semester"
             icon={Clock}
             color="purple"
           />
           <StatCard
             title="Assignments Due"
-            value="2"
+            value={`${statisticsData.metrics?.assignmentsDue ?? 0}`}
             subtitle="Next 7 days"
             icon={Calendar}
             color="orange"
           />
         </div>
+
+        {isLoading && <div className="mb-6 text-neutral-400">Loading statistics...</div>}
 
         {/* Tabs Layout */}
         <Tabs.Root defaultValue="progress" className="w-full">
@@ -245,6 +268,7 @@ export default function Statistics() {
               {myLabsData.map((lab) => (
                 <ProgressCard key={lab.name} lab={lab} />
               ))}
+              {!myLabsData.length && <div className="text-neutral-500">No lab statistics available.</div>}
             </div>
           </Tabs.Content>
 
@@ -268,33 +292,21 @@ export default function Statistics() {
             <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
               <h3 className="text-xl font-semibold text-white mb-4">Recent Activity Timeline</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-neutral-800 last:border-b-0">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-emerald-400 rounded-full mr-3 animate-pulse"></div>
-                    <span className="text-neutral-300">
-                      Completed PYTHON Assignment 4
-                    </span>
+                {(statisticsData.activityItems || []).map((item, index) => (
+                  <div
+                    key={item.id || index}
+                    className={`flex items-center justify-between py-3 ${index < (statisticsData.activityItems || []).length - 1 ? 'border-b border-neutral-800' : ''}`}
+                  >
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-emerald-400 rounded-full mr-3 animate-pulse"></div>
+                      <span className="text-neutral-300">{item.title}</span>
+                    </div>
+                    <span className="text-neutral-500 text-sm">{item.time}</span>
                   </div>
-                  <span className="text-neutral-500 text-sm">2 hours ago</span>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-neutral-800 last:border-b-0">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-cyan-400 rounded-full mr-3"></div>
-                    <span className="text-neutral-300">
-                      Started C++ debugging challenges
-                    </span>
-                  </div>
-                  <span className="text-neutral-500 text-sm">5 hours ago</span>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-amber-400 rounded-full mr-3"></div>
-                    <span className="text-neutral-300">
-                      Achieved 15-day study streak 🔥
-                    </span>
-                  </div>
-                  <span className="text-neutral-500 text-sm">Yesterday</span>
-                </div>
+                ))}
+                {!(statisticsData.activityItems || []).length && (
+                  <div className="text-neutral-500">No recent activity.</div>
+                )}
               </div>
             </div>
           </Tabs.Content>

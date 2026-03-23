@@ -16,7 +16,7 @@ const ensureSupabase = () => {
 
 const toClassName = (lab, index) => `CLS-${(index + 1).toString().padStart(2, "0")}`;
 
-const getFacultyDashboardData = async (facultyIdentifier) => {
+const loadScopedLabs = async (facultyIdentifier) => {
   ensureSupabase();
 
   const { data, error } = await supabase
@@ -26,31 +26,23 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
 
   if (error) {
     if (error.code === "PGRST205") {
-      return {
-        quickStats: {
-          totalClasses: 0,
-          totalStudents: 0,
-          pendingSubmissions: 0,
-          overallCompletion: 0,
-        },
-        classPerformanceData: [],
-        progressDistributionData: [],
-        recentActivities: [],
-        pendingActions: [],
-        classes: [],
-        experimentQueue: {
-          active: [],
-          pending: [],
-          completed: [],
-        },
-      };
+      return [];
     }
     throw createHttpError(`Failed to load faculty dashboard: ${error.message}`, 500);
   }
 
   const key = (facultyIdentifier || "").toLowerCase();
-  const labs = (data || []).filter((lab) => (lab.faculty || "").toLowerCase().includes(key));
-  const scopedLabs = labs.length ? labs : data || [];
+  const exact = (data || []).filter((lab) => (lab.faculty || "").toLowerCase() === key);
+  if (exact.length) {
+    return exact;
+  }
+
+  const fuzzy = (data || []).filter((lab) => (lab.faculty || "").toLowerCase().includes(key));
+  return fuzzy.length ? fuzzy : (data || []);
+};
+
+const getFacultyDashboardData = async (facultyIdentifier) => {
+  const scopedLabs = await loadScopedLabs(facultyIdentifier);
 
   const classes = scopedLabs.map((lab, index) => {
     const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
@@ -163,7 +155,67 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
   };
 };
 
+const getFacultyLabsData = async (facultyIdentifier) => {
+  const scopedLabs = await loadScopedLabs(facultyIdentifier);
+
+  const subjectsMap = new Map();
+  scopedLabs.forEach((lab) => {
+    const subjectName = lab.name || "Unnamed Subject";
+    const studentsCount = Array.isArray(lab.students) ? lab.students.length : 0;
+    if (!subjectsMap.has(subjectName)) {
+      subjectsMap.set(subjectName, {
+        id: subjectsMap.size + 1,
+        name: subjectName,
+        totalClasses: 0,
+        totalStudents: 0,
+      });
+    }
+    const entry = subjectsMap.get(subjectName);
+    entry.totalClasses += 1;
+    entry.totalStudents += studentsCount;
+  });
+
+  const subjects = Array.from(subjectsMap.values());
+  const classData = scopedLabs.map((lab, index) => ({
+    id: lab.id,
+    subjectId: subjects.find((subject) => subject.name === (lab.name || "Unnamed Subject"))?.id,
+    name: toClassName(lab, index),
+    section: `Section ${String.fromCharCode(65 + (index % 4))}`,
+    students: Array.isArray(lab.students) ? lab.students.length : 0,
+    experiments: Array.isArray(lab.experiments) ? lab.experiments.length : 0,
+    completionRate: Array.isArray(lab.experiments) && lab.experiments.length
+      ? Math.round(
+          (lab.experiments.filter((exp) => exp.status === "completed" || exp.progress >= 100).length /
+            lab.experiments.length) *
+            100
+        )
+      : 0,
+  }));
+
+  const experiments = scopedLabs.flatMap((lab) =>
+    (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => ({
+      id: `${lab.id}-${index}`,
+      subject: lab.name,
+      className: classData.find((item) => item.id === lab.id)?.name || "N/A",
+      name: exp.title || `Experiment ${index + 1}`,
+      number: index + 1,
+      completedBy: Array.isArray(lab.students) ? Math.max(0, Math.min(lab.students.length, Math.round((exp.progress || 0) / 10))) : 0,
+      totalStudents: Array.isArray(lab.students) ? lab.students.length : 0,
+      avgScore: exp.avgScore || Math.max(60, (exp.progress || 0)),
+      description: exp.description || "",
+      testCases: Array.isArray(exp.testCases) ? exp.testCases : [],
+    }))
+  );
+
+  return {
+    subjects,
+    classes: classData,
+    experiments,
+  };
+};
+
 module.exports = {
   getFacultyDashboardData,
+  getFacultyLabsData,
 };
 

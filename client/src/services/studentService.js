@@ -23,3 +23,17 @@ export const fetchStudentDashboard = async () => {
   return response.data;
 };
 
+export const fetchStudentLabs = async () => {
+  const response = await studentApi.get("/student/labs", {
+    headers: authHeaders(),
+  });
+  return response.data;
+};
+
+export const fetchStudentStatistics = async () => {
+  const response = await studentApi.get("/student/statistics", {
+    headers: authHeaders(),
+  });
+  return response.data;
+};
+

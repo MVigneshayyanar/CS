@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DashboardHeader from '../../components/Faculty/DashBoard/DashboardHeader';
 import QuickStatsCards from '../../components/Faculty/DashBoard/QuickStatsCards';
 import PerformanceCharts from '../../components/Faculty/DashBoard/PerformanceCharts';
 import ActivitySidebar from '../../components/Faculty/DashBoard/ActivitySidebar';
@@ -154,9 +153,14 @@ const FacultyDashboard = () => {
             {/* Main Content */}
             <div className="px-6 py-8">
                 <div className="max-w-7xl mr-auto ml-auto">
-                    {activeView === 'dashboard' && renderDashboardView()}
-                    {activeView === 'class-detail' && renderClassDetailView()}
-                    {isLoading && <div className="text-neutral-400">Loading dashboard...</div>}
+                    {isLoading ? (
+                        <div className="text-neutral-400">Loading dashboard...</div>
+                    ) : (
+                        <>
+                            {activeView === 'dashboard' && renderDashboardView()}
+                            {activeView === 'class-detail' && renderClassDetailView()}
+                        </>
+                    )}
                 </div>
             </div>
 
