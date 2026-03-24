@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const { verifyAccessToken } = require("../services/authService");
 
 const requireAuth = (req, _res, next) => {
   try {
@@ -11,9 +11,7 @@ const requireAuth = (req, _res, next) => {
     }
 
     const token = authHeader.slice(7);
-    const secret = process.env.JWT_SECRET || "dev-jwt-secret-change-me";
-
-    const payload = jwt.verify(token, secret);
+    const payload = verifyAccessToken(token);
     req.auth = payload;
 
     return next();

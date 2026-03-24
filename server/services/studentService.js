@@ -25,6 +25,11 @@ const formatDate = (value) => {
   return date.toLocaleDateString("en-GB");
 };
 
+const isCompletedProgram = (program) => {
+  const status = (program?.status || "").toString().toLowerCase();
+  return status === "completed" || Number(program?.progress || 0) >= 100;
+};
+
 const getAssignedLabsForStudent = async (username) => {
   ensureSupabase();
 
@@ -163,9 +168,60 @@ const getStudentStatisticsData = async (username) => {
   };
 };
 
+const getStudentReportsData = async (username) => {
+  const assignedLabs = await getAssignedLabsForStudent(username);
+
+  const allPrograms = assignedLabs.flatMap((lab) => {
+    const sectionName = lab.language || lab.name || "General";
+    const programs = Array.isArray(lab.experiments) ? lab.experiments : [];
+
+    return programs.map((program, index) => {
+      const completed = isCompletedProgram(program);
+      return {
+        id: `${lab.id || sectionName}-${index + 1}`,
+        section: sectionName,
+        programName: program.title || `${sectionName} Program ${index + 1}`,
+        status: completed ? "completed" : "not_completed",
+        progress: Math.max(0, Math.min(100, Number(program.progress || (completed ? 100 : 0)))),
+        deadline: formatDate(program.deadline || lab.created_at),
+      };
+    });
+  });
+
+  const completedPrograms = allPrograms.filter((program) => program.status === "completed");
+  const notCompletedPrograms = allPrograms.filter((program) => program.status === "not_completed");
+
+  const sectionMap = new Map();
+  allPrograms.forEach((program) => {
+    if (!sectionMap.has(program.section)) {
+      sectionMap.set(program.section, []);
+    }
+    sectionMap.get(program.section).push(program);
+  });
+
+  const sections = Array.from(sectionMap.entries()).map(([section, programs]) => ({
+    section,
+    completed: programs.filter((program) => program.status === "completed").length,
+    notCompleted: programs.filter((program) => program.status === "not_completed").length,
+    programs,
+  }));
+
+  return {
+    summary: {
+      totalPrograms: allPrograms.length,
+      completedPrograms: completedPrograms.length,
+      notCompletedPrograms: notCompletedPrograms.length,
+    },
+    sections,
+    completedPrograms,
+    generatedAt: new Date().toISOString(),
+  };
+};
+
 module.exports = {
   getStudentDashboardData,
   getStudentLabsData,
   getStudentStatisticsData,
+  getStudentReportsData,
 };
 

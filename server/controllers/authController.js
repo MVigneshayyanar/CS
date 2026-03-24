@@ -3,6 +3,8 @@ const {
   getAllowedRolesByLoginType,
   loginWithRoles,
   changePasswordForUser,
+  rotateRefreshToken,
+  logoutWithRefreshToken,
 } = require("../services/authService");
 
 const performLogin = async ({ identifier, password, allowedRoles, successMessage }) => {
@@ -134,6 +136,36 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+const refreshSession = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = await rotateRefreshToken(refreshToken);
+
+    return res.status(200).json({
+      ok: true,
+      message: "Token refreshed successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const logoutSession = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const result = logoutWithRefreshToken(refreshToken);
+
+    return res.status(200).json({
+      ok: true,
+      message: "Logout successful",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   loginByPortal,
   loginByType,
@@ -141,4 +173,6 @@ module.exports = {
   getGodProtectedData,
   changeStudentPassword,
   changePassword,
+  refreshSession,
+  logoutSession,
 };

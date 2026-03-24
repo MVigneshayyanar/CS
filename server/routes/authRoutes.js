@@ -6,6 +6,8 @@ const {
 	getGodProtectedData,
 	changeStudentPassword,
 	changePassword,
+	refreshSession,
+	logoutSession,
 } = require("../controllers/authController");
 const { requireAuth, authorizeRoles } = require("../middleware/authMiddleware");
 
@@ -18,6 +20,8 @@ router.post("/login/super-admin", loginByType("SuperAdmin"));
 router.post("/login/admin", loginByType("Admin"));
 router.post("/login/faculty", loginByType("Faculty"));
 router.post("/login/student", loginByType("Student"));
+router.post("/refresh", refreshSession);
+router.post("/logout", logoutSession);
 
 router.get("/me", requireAuth, getCurrentSession);
 router.get("/god/protected", requireAuth, authorizeRoles("God"), getGodProtectedData);
