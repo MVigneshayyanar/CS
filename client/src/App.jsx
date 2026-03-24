@@ -18,7 +18,7 @@ import Statistics from "./pages/Student/Statistics";
 import Settings from "./pages/Student/Settings";
 
 // Faculty pages
-import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultyLabManagement from "./pages/faculty/FacultyLabManagement";
 import FacultySettings from "./pages/Faculty/FacultySettings";
 
