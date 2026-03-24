@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAuthHeaders } from "./authSession";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
@@ -7,25 +8,18 @@ const facultyApi = axios.create({
   timeout: 10000,
 });
 
-const authHeaders = () => {
-  const token = sessionStorage.getItem("authToken");
-  return token
-    ? {
-        Authorization: `Bearer ${token}`,
-      }
-    : {};
-};
-
 export const fetchFacultyDashboard = async () => {
+  const headers = await getAuthHeaders();
   const response = await facultyApi.get("/faculty/dashboard", {
-    headers: authHeaders(),
+    headers,
   });
   return response.data;
 };
 
 export const fetchFacultyLabs = async () => {
+  const headers = await getAuthHeaders();
   const response = await facultyApi.get("/faculty/labs", {
-    headers: authHeaders(),
+    headers,
   });
   return response.data;
 };

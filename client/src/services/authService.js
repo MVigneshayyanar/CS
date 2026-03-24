@@ -1,4 +1,9 @@
 import axios from "axios";
+import {
+  applyAuthSession,
+  getAuthHeaders,
+  logoutBackendSession,
+} from "./authSession";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
@@ -13,6 +18,13 @@ export const godModeLogin = async ({ username, password }) => {
     password,
   });
 
+  const data = response?.data?.data || {};
+  applyAuthSession({
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    user: data.user,
+  });
+
   return response.data;
 };
 
@@ -21,6 +33,13 @@ export const loginByPortal = async ({ identifier, password, portal }) => {
     identifier,
     password,
     portal,
+  });
+
+  const data = response?.data?.data || {};
+  applyAuthSession({
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    user: data.user,
   });
 
   return response.data;
@@ -46,10 +65,21 @@ export const loginByRole = async ({ identifier, password, role }) => {
     password,
   });
 
+  const data = response?.data?.data || {};
+  applyAuthSession({
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    user: data.user,
+  });
+
   return response.data;
 };
 
 export const changePassword = async ({ currentPassword, newPassword, token }) => {
+  const headers = token
+    ? { Authorization: `Bearer ${token}` }
+    : await getAuthHeaders();
+
   const response = await authApi.put(
     "/auth/password/change",
     {
@@ -57,9 +87,7 @@ export const changePassword = async ({ currentPassword, newPassword, token }) =>
       newPassword,
     },
     {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     }
   );
 
@@ -68,3 +96,5 @@ export const changePassword = async ({ currentPassword, newPassword, token }) =>
 
 export const changeStudentPassword = async ({ currentPassword, newPassword, token }) =>
   changePassword({ currentPassword, newPassword, token });
+
+export const logoutUser = async () => logoutBackendSession();

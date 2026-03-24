@@ -151,7 +151,7 @@ const themes = {
   },
 };
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -165,14 +165,9 @@ export default function Sidebar() {
 
   // Logout handler
   const handleLogout = () => {
-    // Clear all authentication data
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('userType');
-    sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('username');
-
-    // Reload the page to trigger the login screen
-    window.location.reload();
+    if (onLogout) {
+      onLogout();
+    }
   };
 
   const t = themes[VARIANT];

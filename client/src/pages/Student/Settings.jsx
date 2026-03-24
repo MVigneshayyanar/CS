@@ -160,7 +160,6 @@ const Settings = () => {
   });
 
   const userId = sessionStorage.getItem("userId");
-  const authToken = sessionStorage.getItem("authToken");
 
   useEffect(() => {
     try {
@@ -175,11 +174,6 @@ const Settings = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    if (!authToken)
-      return setMessage({
-        type: "error",
-        text: "Session expired. Please login again.",
-      });
     if (passwordData.newPassword !== passwordData.confirmPassword)
       return setMessage({ type: "error", text: "New passwords do not match." });
     if (passwordData.newPassword.length < 8)
@@ -192,7 +186,6 @@ const Settings = () => {
       const res = await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-        token: authToken,
       });
       setMessage({
         type: "success",

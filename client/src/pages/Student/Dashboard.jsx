@@ -8,7 +8,6 @@ import Banner from "./Banner";
 import { fetchStudentDashboard } from "@/services/studentService";
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const [progressData, setProgressData] = useState([]);
   const [stats, setStats] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
@@ -27,8 +26,6 @@ const Dashboard = () => {
           error?.response?.data?.message ||
           "Failed to load student dashboard from backend";
         alert(message);
-      } finally {
-        setIsLoading(false);
       }
     };
     loadDashboard();
@@ -64,28 +61,21 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
-            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-            Loading dashboard...
-          </div>
-        ) : (
-          <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
-            {/* Left Sidebar */}
-            <ProfilePanel stats={stats} />
+        <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
+          {/* Left Sidebar */}
+          <ProfilePanel stats={stats} />
 
-            {/* Main Content */}
-            <div className="flex flex-col gap-5">
-              <Banner />
-              <StatsSection stats={stats} />
-              <ProgressSection progressData={progressData} />
-              <AssignmentsSection
-                assignedTasks={assignedTasks}
-                incompleteTasks={incompleteTasks}
-              />
-            </div>
+          {/* Main Content */}
+          <div className="flex flex-col gap-5">
+            <Banner />
+            <StatsSection stats={stats} />
+            <ProgressSection progressData={progressData} />
+            <AssignmentsSection
+              assignedTasks={assignedTasks}
+              incompleteTasks={incompleteTasks}
+            />
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

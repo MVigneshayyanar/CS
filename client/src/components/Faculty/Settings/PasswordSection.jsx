@@ -10,12 +10,6 @@ const PasswordSection = ({ passwordData, setPasswordData, loading, setLoading, s
   const handlePasswordChange = async (e) => {
     e.preventDefault();
 
-    const authToken = sessionStorage.getItem('authToken');
-    if (!authToken) {
-      setMessage({ type: 'error', text: 'Session expired. Please login again.' });
-      return;
-    }
-
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setMessage({ type: 'error', text: 'New passwords do not match' });
       return;
@@ -31,7 +25,6 @@ const PasswordSection = ({ passwordData, setPasswordData, loading, setLoading, s
       const response = await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
-        token: authToken,
       });
 
       setMessage({ type: 'success', text: response?.message || 'Your password has been updated successfully!' });

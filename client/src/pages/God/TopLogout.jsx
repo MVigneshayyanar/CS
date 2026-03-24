@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { LogOut } from 'lucide-react';
 
-const TopLogout = ({ facultyName = "Dr. Sarah Johnson", department = "Computer Science" }) => {
+const TopLogout = ({ onLogout, facultyName = "Dr. Sarah Johnson", department = "Computer Science" }) => {
     const [showProfile, setShowProfile] = useState(false);
 
       const handleLogout = () => {
-    // Clear all authentication data
-    sessionStorage.removeItem('isAuthenticated');
-    sessionStorage.removeItem('userType');
-    sessionStorage.removeItem('userId');
-    sessionStorage.removeItem('username');
-
-    // Reload the page to trigger the login screen
-    window.location.reload();
+        if (onLogout) {
+            onLogout();
+        }
     };
 
     return (

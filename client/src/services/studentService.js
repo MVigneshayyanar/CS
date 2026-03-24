@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAuthHeaders } from "./authSession";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
@@ -7,32 +8,34 @@ const studentApi = axios.create({
   timeout: 10000,
 });
 
-const authHeaders = () => {
-  const token = sessionStorage.getItem("authToken");
-  return token
-    ? {
-        Authorization: `Bearer ${token}`,
-      }
-    : {};
-};
-
 export const fetchStudentDashboard = async () => {
+  const headers = await getAuthHeaders();
   const response = await studentApi.get("/student/dashboard", {
-    headers: authHeaders(),
+    headers,
   });
   return response.data;
 };
 
 export const fetchStudentLabs = async () => {
+  const headers = await getAuthHeaders();
   const response = await studentApi.get("/student/labs", {
-    headers: authHeaders(),
+    headers,
   });
   return response.data;
 };
 
 export const fetchStudentStatistics = async () => {
+  const headers = await getAuthHeaders();
   const response = await studentApi.get("/student/statistics", {
-    headers: authHeaders(),
+    headers,
+  });
+  return response.data;
+};
+
+export const fetchStudentReports = async () => {
+  const headers = await getAuthHeaders();
+  const response = await studentApi.get("/student/reports", {
+    headers,
   });
   return response.data;
 };
