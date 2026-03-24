@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useTheme } from 'next-themes';
-import { 
-  User, 
-  Lock, 
-  Palette, 
+import React, { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import {
+  User,
+  Lock,
+  Palette,
   BookOpen,
   Mail,
   Save,
@@ -17,531 +17,394 @@ import {
   Shield,
   Hash,
   Sun,
-  Moon
-} from 'lucide-react';
-import { changePassword } from '@/services/authService';
+  Moon,
+  Bell,
+} from "lucide-react";
+import { changePassword } from "@/services/authService";
+
+/* ─── tiny reusable pieces ─── */
+
+const Field = ({ label, value, icon: Icon }) => (
+  <div>
+    <label className="block text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+      {label}
+    </label>
+    <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-600 text-xs font-semibold">
+      {Icon && <Icon className="w-3 h-3 text-slate-400 flex-shrink-0" />}
+      {value}
+    </div>
+  </div>
+);
+
+const SectionCard = ({ icon: Icon, title, badge, children }) => (
+  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
+          <Icon className="w-3.5 h-3.5 text-teal-600" />
+        </div>
+        <h3 className="text-sm font-extrabold text-slate-800">{title}</h3>
+      </div>
+      {badge && (
+        <span className="text-[10px] font-bold bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full">
+          {badge}
+        </span>
+      )}
+    </div>
+    {children}
+  </div>
+);
+
+const PwField = ({
+  label,
+  show,
+  onToggle,
+  value,
+  onChange,
+  placeholder,
+  hint,
+}) => (
+  <div>
+    <label className="block text-[9.5px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">
+      {label}
+    </label>
+    <div className="relative">
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required
+        className="w-full px-3 py-2.5 pr-10 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+      >
+        {show ? (
+          <EyeOff className="w-3.5 h-3.5" />
+        ) : (
+          <Eye className="w-3.5 h-3.5" />
+        )}
+      </button>
+    </div>
+    {hint && (
+      <p className="text-[10px] text-slate-400 mt-1 font-medium">{hint}</p>
+    )}
+  </div>
+);
+
+const Toggle = ({ checked, onChange }) => (
+  <button
+    type="button"
+    onClick={() => onChange(!checked)}
+    className={`relative w-9 h-5 rounded-full transition-all duration-200 flex-shrink-0 ${checked ? "bg-teal-500" : "bg-slate-200"}`}
+  >
+    <span
+      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${checked ? "left-4" : "left-0.5"}`}
+    />
+  </button>
+);
+
+/* ─── main component ─── */
 
 const Settings = () => {
   const { theme: globalTheme, setTheme: setGlobalTheme } = useTheme();
-  const [activeSection, setActiveSection] = useState('profile');
+  const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [showPw, setShowPw] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
-  // Academic profile data (immutable)
   const [academicData] = useState({
-    studentId: 'CS2021001',
-    name: 'John Doe',
-    email: 'john.doe@university.edu',
-    phone: '+91 9876543210',
-    department: 'Computer Science',
-    semester: '6th Semester',
-    batch: '2021-2025',
-    section: 'A',
-    rollNumber: '21CSE001',
-    address: '123 Main Street, City, State - 123456',
-    dateOfAdmission: '2021-08-15',
-    yearOfStudy: '3rd Year',
-    program: 'Bachelor of Technology'
+    studentId: "CS2021001",
+    name: "John Doe",
+    email: "john.doe@university.edu",
+    phone: "+91 9876543210",
+    department: "Computer Science",
+    semester: "6th Semester",
+    batch: "2021-2025",
+    section: "A",
+    rollNumber: "21CSE001",
+    yearOfStudy: "3rd Year",
+    program: "Bachelor of Technology",
   });
 
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const [preferences, setPreferences] = useState({
-    theme: 'dark',
+    theme: "dark",
     learning: {
       preferredLanguages: {
-        'C': false,
-        'C++': false,
-        'Java': false,
-        'Python': false,
-        'SQL': false
+        C: false,
+        "C++": false,
+        Java: false,
+        Python: false,
+        SQL: false,
       },
       codeEditorSettings: {
         autoSave: true,
         syntaxHighlighting: true,
         lineNumbers: true,
-        darkTheme: true
-      }
-    }
+        darkTheme: true,
+      },
+    },
   });
 
-  const userId = sessionStorage.getItem('userId');
-  const authToken = sessionStorage.getItem('authToken');
+  const userId = sessionStorage.getItem("userId");
+  const authToken = sessionStorage.getItem("authToken");
 
   useEffect(() => {
-    fetchUserPreferences();
-  }, [userId]);
-
-  const fetchUserPreferences = async () => {
     try {
-      const storageKey = `student_preferences_${userId || 'default'}`;
-      const savedPreferences = localStorage.getItem(storageKey);
-      if (savedPreferences) {
-        const parsed = JSON.parse(savedPreferences);
-        setPreferences(prev => ({ ...prev, ...parsed }));
-      }
-    } catch (error) {
-      console.error('Error fetching preferences:', error);
+      const saved = localStorage.getItem(
+        `student_preferences_${userId || "default"}`,
+      );
+      if (saved) setPreferences((p) => ({ ...p, ...JSON.parse(saved) }));
+    } catch (e) {
+      console.error(e);
     }
-  };
+  }, [userId]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-
-    if (!authToken) {
-      setMessage({ type: 'error', text: 'Session expired. Please login again.' });
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ type: 'error', text: 'New passwords do not match' });
-      return;
-    }
-
-    if (passwordData.newPassword.length < 8) {
-      setMessage({ type: 'error', text: 'New password must be at least 8 characters long' });
-      return;
-    }
-    
+    if (!authToken)
+      return setMessage({
+        type: "error",
+        text: "Session expired. Please login again.",
+      });
+    if (passwordData.newPassword !== passwordData.confirmPassword)
+      return setMessage({ type: "error", text: "New passwords do not match." });
+    if (passwordData.newPassword.length < 8)
+      return setMessage({
+        type: "error",
+        text: "Password must be at least 8 characters.",
+      });
     setLoading(true);
     try {
-      const response = await changePassword({
+      const res = await changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
         token: authToken,
       });
-
-      setMessage({ type: 'success', text: response?.message || 'Your password has been updated successfully!' });
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      const errorMessage = error?.response?.data?.message || 'Failed to change password. Please check your current password.';
-      setMessage({ type: 'error', text: errorMessage });
+      setMessage({
+        type: "success",
+        text: res?.message || "Password updated successfully!",
+      });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: err?.response?.data?.message || "Failed to change password.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePreferenceUpdate = async () => {
+  const handleSavePrefs = async () => {
     setLoading(true);
     try {
-      const storageKey = `student_preferences_${userId || 'default'}`;
-      localStorage.setItem(storageKey, JSON.stringify(preferences));
-      setMessage({ type: 'success', text: 'Your preferences have been saved successfully!' });
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to save preferences. Please try again.' });
+      localStorage.setItem(
+        `student_preferences_${userId || "default"}`,
+        JSON.stringify(preferences),
+      );
+      setMessage({ type: "success", text: "Preferences saved successfully!" });
+    } catch {
+      setMessage({ type: "error", text: "Failed to save preferences." });
     } finally {
       setLoading(false);
     }
   };
 
-  const settingsNavigation = [
-    { id: 'profile', label: 'Academic Profile', icon: User },
-    { id: 'password', label: 'Change Password', icon: Lock },
-    { id: 'appearance', label: 'Display Settings', icon: Palette },
-    { id: 'learning', label: 'Learning Preferences', icon: BookOpen }
+  const toggleLang = (lang, val) =>
+    setPreferences((p) => ({
+      ...p,
+      learning: {
+        ...p.learning,
+        preferredLanguages: { ...p.learning.preferredLanguages, [lang]: val },
+      },
+    }));
+
+  const toggleEditor = (key, val) =>
+    setPreferences((p) => ({
+      ...p,
+      learning: {
+        ...p.learning,
+        codeEditorSettings: { ...p.learning.codeEditorSettings, [key]: val },
+      },
+    }));
+
+  const navItems = [
+    { id: "profile", label: "Academic Profile", icon: User },
+    { id: "password", label: "Change Password", icon: Lock },
+    { id: "appearance", label: "Display Settings", icon: Palette },
+    { id: "learning", label: "Learning Preferences", icon: BookOpen },
   ];
 
-  const renderAcademicProfileSection = () => (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-extrabold text-slate-800 mb-1">My Academic Profile</h3>
-        <p className="text-slate-400 text-xs mb-5">
-          Your academic information is managed by the university administration and cannot be modified here.
-        </p>
-        
-        <div className="space-y-4">
-          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
-              <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center mr-2">
-                <User className="w-3.5 h-3.5 text-teal-600" />
-              </div>
-              Personal Details
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Full Name</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.name}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Student ID</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium flex items-center">
-                  <Hash className="w-3.5 h-3.5 mr-2 text-slate-400" />
-                  {academicData.studentId}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Roll Number</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.rollNumber}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Email Address</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium flex items-center">
-                  <Mail className="w-3.5 h-3.5 mr-2 text-slate-400" />
-                  {academicData.email}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-            <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center">
-              <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center mr-2">
-                <GraduationCap className="w-3.5 h-3.5 text-teal-600" />
-              </div>
-              Academic Information
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Department</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.department}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Program</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.program}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Current Semester</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.semester}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Year of Study</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.yearOfStudy}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Batch</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  {academicData.batch}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Section</label>
-                <div className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium">
-                  Section {academicData.section}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200/50 rounded-2xl p-4">
-            <p className="text-amber-700 text-xs flex items-start font-medium">
-              <Shield className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0 text-amber-500" />
-              <span>
-                <strong>Note:</strong> Academic information is maintained by the university administration. 
-                To update any of these details, please contact the academic office or your department coordinator.
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+  /* strength meter */
+  const pwStrength = Math.min(
+    4,
+    [
+      passwordData.newPassword.length >= 8,
+      /[A-Z]/.test(passwordData.newPassword),
+      /[0-9]/.test(passwordData.newPassword),
+      /[^A-Za-z0-9]/.test(passwordData.newPassword),
+    ].filter(Boolean).length,
   );
 
-  const renderPasswordSection = () => (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-extrabold text-slate-800 mb-1">Change My Password</h3>
-        <p className="text-slate-400 text-xs mb-5">Update your account password for security</p>
-
-        <form onSubmit={handlePasswordChange} className="space-y-4 max-w-lg">
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Current Password</label>
-            <div className="relative">
-              <input
-                type={showCurrentPassword ? "text" : "password"}
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-300 pr-10 transition-all"
-                placeholder="Enter your current password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">New Password</label>
-            <div className="relative">
-              <input
-                type={showNewPassword ? "text" : "password"}
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-300 pr-10 transition-all"
-                placeholder="Enter new password"
-                required
-                minLength={8}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 mt-1 font-medium">Must be at least 8 characters long</p>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">Confirm New Password</label>
-            <div className="relative">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-300 pr-10 transition-all"
-                placeholder="Confirm new password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center px-5 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 focus:ring-2 focus:ring-teal-200 disabled:opacity-50 transition-all duration-300 shadow-sm shadow-teal-200"
-          >
-            <Lock className="w-3.5 h-3.5 mr-2" />
-            {loading ? 'Updating...' : 'Update Password'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-
-  const renderAppearanceSection = () => (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-extrabold text-slate-800 mb-1">Display Settings</h3>
-        <p className="text-slate-400 text-xs mb-5">Customize how the application looks and feels</p>
-
-        <div className="space-y-4">
-          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-            <label className="block text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider">Theme Preference</label>
-            <div className="flex gap-3">
-              <label className="flex-1 cursor-pointer">
-                <input
-                  type="radio"
-                  name="theme"
-                  value="dark"
-                  checked={globalTheme === 'dark'}
-                  onChange={(e) => {
-                    setPreferences({...preferences, theme: e.target.value});
-                    setGlobalTheme(e.target.value);
-                  }}
-                  className="sr-only peer"
-                />
-                <div className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-slate-200 rounded-xl text-slate-500 text-sm font-semibold peer-checked:border-teal-500 peer-checked:bg-teal-50 peer-checked:text-teal-700 transition-all duration-300">
-                  <Moon className="w-4 h-4" />
-                  Dark Mode
-                </div>
-              </label>
-              <label className="flex-1 cursor-pointer">
-                <input
-                  type="radio"
-                  name="theme"
-                  value="light"
-                  checked={globalTheme === 'light'}
-                  onChange={(e) => {
-                    setPreferences({...preferences, theme: e.target.value});
-                    setGlobalTheme(e.target.value);
-                  }}
-                  className="sr-only peer"
-                />
-                <div className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-slate-200 rounded-xl text-slate-500 text-sm font-semibold peer-checked:border-teal-500 peer-checked:bg-teal-50 peer-checked:text-teal-700 transition-all duration-300">
-                  <Sun className="w-4 h-4" />
-                  Light Mode
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderLearningSection = () => (
-    <div className="space-y-5">
-      <div>
-        <h3 className="text-base font-extrabold text-slate-800 mb-1">Learning Preferences</h3>
-        <p className="text-slate-400 text-xs mb-5">Customize your learning experience and code editor</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-            <h4 className="text-xs font-bold text-slate-800 mb-3 flex items-center">
-              <div className="w-6 h-6 rounded-lg bg-teal-50 flex items-center justify-center mr-2">
-                <Code className="w-3 h-3 text-teal-600" />
-              </div>
-              My Programming Languages
-            </h4>
-            <div className="space-y-2.5">
-              {Object.entries(preferences.learning.preferredLanguages).map(([lang, checked]) => (
-                <label key={lang} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => setPreferences({
-                      ...preferences,
-                      learning: {
-                        ...preferences.learning,
-                        preferredLanguages: {
-                          ...preferences.learning.preferredLanguages,
-                          [lang]: e.target.checked
-                        }
-                      }
-                    })}
-                    className="w-4 h-4 text-teal-600 bg-white border-slate-300 rounded focus:ring-teal-500 focus:ring-2"
-                  />
-                  <span className="text-sm text-slate-600 font-medium group-hover:text-slate-800">{lang}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-            <h4 className="text-xs font-bold text-slate-800 mb-3 flex items-center">
-              <div className="w-6 h-6 rounded-lg bg-teal-50 flex items-center justify-center mr-2">
-                <Monitor className="w-3 h-3 text-teal-600" />
-              </div>
-              Code Editor Settings
-            </h4>
-            <div className="space-y-2.5">
-              {Object.entries(preferences.learning.codeEditorSettings).map(([setting, checked]) => (
-                <label key={setting} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={(e) => setPreferences({
-                      ...preferences,
-                      learning: {
-                        ...preferences.learning,
-                        codeEditorSettings: {
-                          ...preferences.learning.codeEditorSettings,
-                          [setting]: e.target.checked
-                        }
-                      }
-                    })}
-                    className="w-4 h-4 text-teal-600 bg-white border-slate-300 rounded focus:ring-teal-500 focus:ring-2"
-                  />
-                  <span className="text-sm text-slate-600 font-medium capitalize group-hover:text-slate-800">
-                    {setting.replace(/([A-Z])/g, ' $1').trim()}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <button
-          onClick={handlePreferenceUpdate}
-          disabled={loading}
-          className="mt-5 flex items-center px-5 py-2.5 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 focus:ring-2 focus:ring-teal-200 disabled:opacity-50 transition-all duration-300 shadow-sm shadow-teal-200"
-        >
-          <Save className="w-3.5 h-3.5 mr-2" />
-          {loading ? 'Saving...' : 'Save My Preferences'}
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderContent = () => {
-    switch(activeSection) {
-      case 'profile': return renderAcademicProfileSection();
-      case 'password': return renderPasswordSection();
-      case 'appearance': return renderAppearanceSection();
-      case 'learning': return renderLearningSection();
-      default: return renderAcademicProfileSection();
-    }
-  };
+  const strengthColors = [
+    "bg-slate-200",
+    "bg-red-400",
+    "bg-amber-400",
+    "bg-teal-400",
+    "bg-teal-600",
+  ];
 
   return (
     <div className="min-h-screen bg-[#f0f4f8]">
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
-
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
+        {/* ── Top bar ── */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
               <SettingsIcon className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
-                MY ACCOUNT
+                My Account
               </h1>
-              <p className="text-xs text-slate-400">View your academic profile and manage account preferences</p>
+              <p className="text-xs text-slate-400">
+                Manage your profile and preferences
+              </p>
             </div>
           </div>
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all shadow-sm">
+            <Bell className="w-3.5 h-3.5" />
+            Notifications
+          </button>
         </div>
 
-        {/* Message */}
+        {/* ── Alert ── */}
         {message.text && (
-          <div className={`mb-6 p-4 rounded-2xl text-sm font-medium ${
-            message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-            'bg-red-50 text-red-700 border border-red-200'
-          }`}>
+          <div
+            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${
+              message.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-red-50 text-red-600 border-red-200"
+            }`}
+          >
             {message.text}
+            <button
+              onClick={() => setMessage({ type: "", text: "" })}
+              className="ml-auto text-lg leading-none opacity-40 hover:opacity-80"
+            >
+              ×
+            </button>
           </div>
         )}
 
-        {/* Settings Content */}
-        <div className="flex flex-col lg:flex-row gap-5">
+        <div className="flex gap-5 items-start">
+          {/* ══ LEFT SIDEBAR ══ */}
+          <div className="w-56 flex-shrink-0 flex flex-col gap-4 sticky top-8">
+            {/* Profile card with teal banner */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              {/* Banner */}
+              <div className="relative bg-teal-600 h-16 overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white opacity-10" />
+                <div className="absolute -right-1 top-6 w-14 h-14 rounded-full bg-white opacity-10" />
+              </div>
+              {/* Body */}
+              <div className="px-5 pb-5 text-center">
+                <div className="relative inline-block -mt-7 mb-2.5">
+                  <div
+                    className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-700 border-3 border-white flex items-center justify-center text-white text-lg font-extrabold shadow-lg"
+                    style={{ border: "3px solid white" }}
+                  >
+                    {academicData.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </div>
+                  <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
+                </div>
+                <p className="text-sm font-extrabold text-slate-900">
+                  {academicData.name}
+                </p>
+                <p className="text-[11px] text-teal-600 font-bold mt-0.5">
+                  {academicData.studentId}
+                </p>
+                <p className="text-[10.5px] text-slate-400 mt-0.5">
+                  {academicData.program}
+                </p>
+                <span className="inline-block mt-2 text-[10px] font-extrabold bg-teal-50 text-teal-700 px-3 py-1 rounded-full">
+                  Active Student
+                </span>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="bg-slate-50 rounded-xl py-2.5 text-center">
+                    <div className="text-lg font-extrabold text-teal-600">
+                      38
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-semibold">
+                      Courses
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl py-2.5 text-center">
+                    <div className="text-lg font-extrabold text-amber-500">
+                      12
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-semibold">
+                      Certs
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {/* Sidebar Navigation */}
-          <div className="lg:w-1/4">
-            <nav className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm sticky top-8">
+            {/* Nav */}
+            <nav className="bg-white rounded-2xl border border-slate-100 shadow-sm p-2.5">
               <ul className="space-y-1">
-                {settingsNavigation.map((item) => {
-                  const Icon = item.icon;
+                {navItems.map(({ id, label, icon: Icon }) => {
+                  const active = activeSection === id;
                   return (
-                    <li key={item.id}>
+                    <li key={id}>
                       <button
-                        onClick={() => setActiveSection(item.id)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 text-left rounded-xl transition-all duration-200 ${
-                          activeSection === item.id
-                            ? 'bg-teal-50 text-teal-700 shadow-sm shadow-teal-100/50'
-                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                        onClick={() => {
+                          setActiveSection(id);
+                          setMessage({ type: "", text: "" });
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
+                          active ? "bg-teal-50" : "hover:bg-slate-50"
                         }`}
                       >
-                        <div className="flex items-center">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${
-                            activeSection === item.id ? 'bg-teal-100' : 'bg-slate-100'
-                          }`}>
-                            <Icon className={`w-4 h-4 ${activeSection === item.id ? 'text-teal-600' : 'text-slate-400'}`} />
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center ${active ? "bg-teal-100" : "bg-slate-100"}`}
+                          >
+                            <Icon
+                              className={`w-3.5 h-3.5 ${active ? "text-teal-600" : "text-slate-400"}`}
+                            />
                           </div>
-                          <span className="font-semibold text-sm">{item.label}</span>
+                          <span
+                            className={`text-[11.5px] font-bold ${active ? "text-teal-700" : "text-slate-500"}`}
+                          >
+                            {label}
+                          </span>
                         </div>
-                        <ChevronRight className={`w-3.5 h-3.5 ${activeSection === item.id ? 'text-teal-500' : 'text-slate-300'}`} />
+                        <ChevronRight
+                          className={`w-3 h-3 flex-shrink-0 ${active ? "text-teal-400" : "text-slate-300"}`}
+                        />
                       </button>
                     </li>
                   );
@@ -550,13 +413,351 @@ const Settings = () => {
             </nav>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:w-3/4">
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-              {renderContent()}
+          {/* ══ MAIN CONTENT ══ */}
+          <div className="flex-1 min-w-0 flex flex-col gap-4">
+            {/* Teal Banner */}
+            <div className="relative bg-teal-600 rounded-2xl px-6 py-5 flex items-center justify-between overflow-hidden">
+              <div className="relative z-10">
+                <h2 className="text-lg font-extrabold text-white mb-1">
+                  {activeSection === "profile" && "Academic Profile"}
+                  {activeSection === "password" && "Change Password"}
+                  {activeSection === "appearance" && "Display Settings"}
+                  {activeSection === "learning" && "Learning Preferences"}
+                </h2>
+                <p className="text-teal-100 text-xs max-w-sm leading-relaxed">
+                  {activeSection === "profile" &&
+                    "Your university-managed information and academic details all in one place."}
+                  {activeSection === "password" &&
+                    "Keep your account secure by updating your password regularly."}
+                  {activeSection === "appearance" &&
+                    "Customize how the platform looks and feels for your workflow."}
+                  {activeSection === "learning" &&
+                    "Set your programming language and code editor preferences."}
+                </p>
+              </div>
+              {/* Hex deco */}
+              <div className="flex gap-2 opacity-90 pointer-events-none select-none">
+                <div className="flex flex-col gap-2">
+                  <div
+                    style={{
+                      width: 44,
+                      height: 52,
+                      background: "rgba(255,255,255,.15)",
+                      clipPath:
+                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 28,
+                      height: 34,
+                      background: "rgba(255,215,0,.3)",
+                      clipPath:
+                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+                      alignSelf: "flex-end",
+                    }}
+                  />
+                </div>
+                <div className="flex flex-col gap-2 mt-3">
+                  <div
+                    style={{
+                      width: 28,
+                      height: 34,
+                      background: "rgba(255,215,0,.3)",
+                      clipPath:
+                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      width: 44,
+                      height: 52,
+                      background: "rgba(255,255,255,.15)",
+                      clipPath:
+                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
+            {/* ── PROFILE SECTION ── */}
+            {activeSection === "profile" && (
+              <>
+                <SectionCard
+                  icon={User}
+                  title="Personal Details"
+                  badge="Read only"
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Full Name" value={academicData.name} />
+                    <Field
+                      label="Student ID"
+                      value={academicData.studentId}
+                      icon={Hash}
+                    />
+                    <Field
+                      label="Roll Number"
+                      value={academicData.rollNumber}
+                    />
+                    <Field
+                      label="Email Address"
+                      value={academicData.email}
+                      icon={Mail}
+                    />
+                  </div>
+                </SectionCard>
+
+                <SectionCard
+                  icon={GraduationCap}
+                  title="Academic Information"
+                  badge="Read only"
+                >
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Department" value={academicData.department} />
+                    <Field label="Program" value={academicData.program} />
+                    <Field
+                      label="Current Semester"
+                      value={academicData.semester}
+                    />
+                    <Field
+                      label="Year of Study"
+                      value={academicData.yearOfStudy}
+                    />
+                    <Field label="Batch" value={academicData.batch} />
+                    <Field
+                      label="Section"
+                      value={`Section ${academicData.section}`}
+                    />
+                  </div>
+                </SectionCard>
+
+                <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
+                  <Shield className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                    <strong>Note:</strong> Academic information is maintained by
+                    the university. To update any details, please contact the
+                    academic office or your department coordinator.
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* ── PASSWORD SECTION ── */}
+            {activeSection === "password" && (
+              <SectionCard icon={Lock} title="Update Your Password">
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <PwField
+                      label="Current Password"
+                      show={showPw.current}
+                      onToggle={() =>
+                        setShowPw((p) => ({ ...p, current: !p.current }))
+                      }
+                      value={passwordData.currentPassword}
+                      onChange={(e) =>
+                        setPasswordData((p) => ({
+                          ...p,
+                          currentPassword: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter your current password"
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <PwField
+                          label="New Password"
+                          show={showPw.new}
+                          onToggle={() =>
+                            setShowPw((p) => ({ ...p, new: !p.new }))
+                          }
+                          value={passwordData.newPassword}
+                          onChange={(e) =>
+                            setPasswordData((p) => ({
+                              ...p,
+                              newPassword: e.target.value,
+                            }))
+                          }
+                          placeholder="Enter new password"
+                          hint="At least 8 characters"
+                        />
+                        {/* Strength bar */}
+                        {passwordData.newPassword && (
+                          <div className="flex gap-1 mt-2">
+                            {[1, 2, 3, 4].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-1 flex-1 rounded-full transition-all ${i <= pwStrength ? strengthColors[pwStrength] : "bg-slate-100"}`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <PwField
+                        label="Confirm New Password"
+                        show={showPw.confirm}
+                        onToggle={() =>
+                          setShowPw((p) => ({ ...p, confirm: !p.confirm }))
+                        }
+                        value={passwordData.confirmPassword}
+                        onChange={(e) =>
+                          setPasswordData((p) => ({
+                            ...p,
+                            confirmPassword: e.target.value,
+                          }))
+                        }
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-xs font-extrabold rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-all shadow-sm shadow-teal-200"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    {loading ? "Updating..." : "Update Password"}
+                  </button>
+                </form>
+              </SectionCard>
+            )}
+
+            {/* ── APPEARANCE SECTION ── */}
+            {activeSection === "appearance" && (
+              <SectionCard icon={Palette} title="Theme Preference">
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    {
+                      val: "dark",
+                      label: "Dark Mode",
+                      Icon: Moon,
+                      preview: (
+                        <div className="h-8 bg-slate-800 rounded-lg flex items-center px-3 gap-2 mt-2">
+                          <div className="w-2 h-2 rounded-full bg-slate-600" />
+                          <div className="w-2 h-2 rounded-full bg-slate-600" />
+                          <div className="w-2 h-2 rounded-full bg-teal-500" />
+                        </div>
+                      ),
+                    },
+                    {
+                      val: "light",
+                      label: "Light Mode",
+                      Icon: Sun,
+                      preview: (
+                        <div className="h-8 bg-slate-100 rounded-lg flex items-center px-3 gap-2 mt-2 border border-slate-200">
+                          <div className="w-2 h-2 rounded-full bg-slate-300" />
+                          <div className="w-2 h-2 rounded-full bg-slate-300" />
+                          <div className="w-2 h-2 rounded-full bg-teal-400" />
+                        </div>
+                      ),
+                    },
+                  ].map(({ val, label, Icon, preview }) => {
+                    const sel = globalTheme === val;
+                    return (
+                      <label key={val} className="cursor-pointer">
+                        <input
+                          type="radio"
+                          name="theme"
+                          value={val}
+                          checked={sel}
+                          onChange={() => {
+                            setPreferences((p) => ({ ...p, theme: val }));
+                            setGlobalTheme(val);
+                          }}
+                          className="sr-only"
+                        />
+                        <div
+                          className={`p-3.5 border-2 rounded-2xl transition-all ${sel ? "border-teal-500 bg-teal-50" : "border-slate-200 bg-slate-50 hover:border-slate-300"}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div
+                              className={`flex items-center gap-2 text-xs font-extrabold ${sel ? "text-teal-700" : "text-slate-500"}`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                              {label}
+                            </div>
+                            <div
+                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${sel ? "border-teal-500 bg-teal-500" : "border-slate-300"}`}
+                            >
+                              {sel && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                              )}
+                            </div>
+                          </div>
+                          {preview}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+            )}
+
+            {/* ── LEARNING SECTION ── */}
+            {activeSection === "learning" && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Languages */}
+                  <SectionCard icon={Code} title="Programming Languages">
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {Object.entries(
+                        preferences.learning.preferredLanguages,
+                      ).map(([lang, on]) => (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => toggleLang(lang, !on)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-extrabold border-2 transition-all ${
+                            on
+                              ? "bg-teal-50 border-teal-400 text-teal-700"
+                              : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
+                          }`}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
+                  </SectionCard>
+
+                  {/* Editor */}
+                  <SectionCard icon={Monitor} title="Code Editor Settings">
+                    <div className="space-y-2 mt-1">
+                      {Object.entries(
+                        preferences.learning.codeEditorSettings,
+                      ).map(([key, val]) => (
+                        <div
+                          key={key}
+                          className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl border border-slate-100"
+                        >
+                          <span className="text-xs font-semibold text-slate-600 capitalize">
+                            {key.replace(/([A-Z])/g, " $1").trim()}
+                          </span>
+                          <Toggle
+                            checked={val}
+                            onChange={(v) => toggleEditor(key, v)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </SectionCard>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleSavePrefs}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-xs font-extrabold rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-all shadow-sm shadow-teal-200"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {loading ? "Saving..." : "Save My Preferences"}
+                  </button>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Changes are saved to your browser storage
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
