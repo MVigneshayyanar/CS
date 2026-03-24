@@ -1,66 +1,84 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Clock, Users, Target, Calendar } from "lucide-react";
-import Progress from "./Progress";
+
+const Progress = ({ value }) => (
+  <div className="bg-slate-100 rounded-full overflow-hidden h-2">
+    <div 
+      className="bg-gradient-to-r from-teal-400 to-teal-600 h-full transition-all duration-500 ease-out rounded-full"
+      style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+    />
+  </div>
+);
 
 export default function LabCard({ lab }) {
+  // Generate a random gradient for the card header based on lab name
+  const gradients = [
+    "from-teal-400 to-emerald-500",
+    "from-blue-400 to-indigo-500",
+    "from-purple-400 to-pink-500",
+    "from-orange-400 to-rose-500",
+    "from-cyan-400 to-blue-500"
+  ];
+  const gradient = gradients[lab.name.charCodeAt(0) % gradients.length];
+
   return (
     <Link 
       to={`/labs/experiments?lab=${encodeURIComponent(lab.name)}`}
-      className="block"
+      className="block group"
     >
-      <div className="bg-neutral-800/30 rounded-xl p-6 border border-neutral-700/50 hover:border-teal-500/50 hover:bg-neutral-800/50 transition-all duration-300 group cursor-pointer">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4 flex-1">
-            <div className="p-3 rounded-lg bg-gradient-to-br from-teal-600/20 to-teal-500/10 border border-teal-500/20">
-              <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-lg flex items-center justify-center text-sm font-bold text-neutral-900">
-                {lab.name.charAt(0)}
-              </div>
+      <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden h-full flex flex-col">
+        {/* Background Accent */}
+        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-5 -mr-16 -mt-16 rounded-full group-hover:scale-150 transition-transform duration-700`} />
+        
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-teal-200/50 transform group-hover:rotate-6 transition-transform duration-500`}>
+              {lab.name.charAt(0)}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-white font-semibold text-lg group-hover:text-teal-300 transition-colors">
-                  {lab.name}
-                </h3>
-                <span className="px-2 py-1 bg-neutral-700/50 text-neutral-300 rounded text-xs">
-                  {lab.fullName}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-4 mb-3 text-sm text-neutral-400">
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>{lab.instructor}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Target className="w-4 h-4" />
-                  <span>{lab.students} students</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{lab.duration}</span>
-                </div>
-              </div>
-              
-              {/* Progress Section */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-neutral-300">Progress</span>
-                  <span className="font-bold text-sm text-white">{lab.progress}%</span>
-                </div>
-                <Progress
-                  value={lab.progress}
-                  className="h-2"
-                />
+            <div className="flex flex-col items-end">
+               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Due Date</span>
+               <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
+                <Calendar className="w-3.5 h-3.5 text-teal-500" />
+                {lab.date}
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-1 text-neutral-400 text-xs whitespace-nowrap">
-              <Calendar className="w-3 h-3" />
-              Due: {lab.date}
+
+          {/* Title & Info */}
+          <div className="mb-6 flex-1">
+            <h3 className="text-xl font-black text-slate-800 mb-2 group-hover:text-teal-600 transition-colors tracking-tight">
+              {lab.name}
+            </h3>
+            <p className="text-sm text-slate-500 font-medium line-clamp-2 mb-4 leading-relaxed">
+              Explore the core concepts of {lab.fullName} with hands-on experiments.
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-[11px] font-bold text-slate-600">
+                <Users className="w-3.5 h-3.5 text-teal-500" />
+                {lab.instructor}
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-[11px] font-bold text-slate-600">
+                <Clock className="w-3.5 h-3.5 text-teal-500" />
+                {lab.duration}
+              </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-neutral-400 group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
+          </div>
+          
+          {/* Progress Section */}
+          <div className="mt-auto pt-6 border-t border-slate-50">
+            <div className="flex justify-between items-end mb-3">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Current Progress</span>
+                <span className="text-2xl font-black text-slate-800 leading-none mt-1">{lab.progress}%</span>
+              </div>
+              <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center group-hover:bg-teal-500 transition-colors duration-300">
+                <ChevronRight className="w-5 h-5 text-teal-600 group-hover:text-white transition-all transform group-hover:translate-x-0.5" />
+              </div>
+            </div>
+            <Progress value={lab.progress} />
           </div>
         </div>
       </div>

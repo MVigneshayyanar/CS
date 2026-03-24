@@ -5,8 +5,34 @@ const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
+const configuredOrigins = (process.env.CLIENT_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isLocalhostOrigin = (origin) => /^http:\/\/localhost:\d+$/.test(origin);
+
+const corsOrigin = (origin, callback) => {
+  if (!origin) {
+    callback(null, true);
+    return;
+  }
+
+  if (configuredOrigins.includes(origin)) {
+    callback(null, true);
+    return;
+  }
+
+  if (process.env.NODE_ENV !== "production" && isLocalhostOrigin(origin)) {
+    callback(null, true);
+    return;
+  }
+
+  callback(new Error(`CORS blocked for origin: ${origin}`));
+};
+
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || true,
+  origin: corsOrigin,
   credentials: true,
 }));
 app.use(express.json());

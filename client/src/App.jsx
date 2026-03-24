@@ -114,11 +114,10 @@ function App() {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-neutral-950 dark:bg-black theme-transition">
+      <div className="flex min-h-screen bg-[#f0f4f8] theme-transition">
         {getSidebar()}
-        <div className={`flex-1 transition-all duration-300 ${hasSidebar() ? (isCollapsed ? 'md:ml-20' : 'md:ml-64') : ''}`}>
-          {getTopbar()}
-          <main className="p-0 m-0">
+        <div className={`flex-1 transition-all duration-500 ${hasSidebar() ? (isCollapsed ? 'md:ml-28' : 'md:ml-72') : ''}`}>
+          <main className="p-6 m-0">
             <Routes>
               {userType === "Student" ? (
                 <>

@@ -1,14 +1,15 @@
-import React from 'react';
-import StatCard from './StatCard';
+import React from "react";
+import StatCard from "./StatCard";
 
 const StatsSection = ({ stats }) => (
-  <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6 mb-16 max-w-4xl mx-auto">
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
     {stats.map((stat, index) => (
       <StatCard
         key={index}
         value={stat.value}
         label={stat.label}
         color={stat.color}
+        icon={stat.icon}
       />
     ))}
   </div>

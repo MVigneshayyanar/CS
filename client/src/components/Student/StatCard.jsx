@@ -1,21 +1,51 @@
-import React from 'react';
+import React from "react";
 
-const StatCard = ({ value, label, color = "teal" }) => {
-  const colorVariants = {
-    teal: "text-teal-400",
-    emerald: "text-emerald-400",
-    amber: "text-amber-400",
-    cyan: "text-cyan-400"
-  };
+const colorMap = {
+  teal: {
+    num: "text-teal-600",
+    iconBg: "bg-teal-50",
+    border: "border-teal-100",
+  },
+  emerald: {
+    num: "text-emerald-600",
+    iconBg: "bg-emerald-50",
+    border: "border-emerald-100",
+  },
+  amber: {
+    num: "text-amber-500",
+    iconBg: "bg-amber-50",
+    border: "border-amber-100",
+  },
+  cyan: {
+    num: "text-cyan-600",
+    iconBg: "bg-cyan-50",
+    border: "border-cyan-100",
+  },
+  blue: {
+    num: "text-blue-600",
+    iconBg: "bg-blue-50",
+    border: "border-blue-100",
+  },
+  red: { num: "text-red-500", iconBg: "bg-red-50", border: "border-red-100" },
+};
 
+const StatCard = ({ value, label, color = "teal", icon: Icon }) => {
+  const c = colorMap[color] || colorMap.teal;
   return (
-    <div className="bg-neutral-900/30 backdrop-blur-sm p-6 rounded-xl border border-neutral-800/30 text-center">
-      <div className={`text-2xl font-bold mb-1 ${colorVariants[color]}`}>
+    <div
+      className={`bg-white rounded-2xl border ${c.border} shadow-sm p-4 flex flex-col items-center gap-2 text-center`}
+    >
+      {Icon && (
+        <div
+          className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.iconBg}`}
+        >
+          <Icon className={`w-5 h-5 ${c.num}`} />
+        </div>
+      )}
+      <div className={`text-3xl font-extrabold leading-none ${c.num}`}>
         {value}
       </div>
-      <div className="text-neutral-400 text-sm">
-        {label}
-      </div>
+      <div className="text-xs text-slate-400 font-semibold">{label}</div>
     </div>
   );
 };

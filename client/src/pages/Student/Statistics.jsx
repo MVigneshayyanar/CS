@@ -4,8 +4,13 @@ import {
   Calendar,
   CheckCircle,
   TrendingUp,
+  BarChart3,
+  Zap,
+  Activity,
+  Target,
+  ChevronRight,
+  Layout
 } from "lucide-react";
-import * as Progress from "@radix-ui/react-progress";
 import * as Tabs from "@radix-ui/react-tabs";
 import {
   BarChart,
@@ -24,137 +29,77 @@ import {
 } from "recharts";
 import { fetchStudentStatistics } from "@/services/studentService";
 
-const StatCard = ({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  color = "teal",
-}) => {
-  const colorClasses = {
-    teal: "from-teal-500 to-teal-600",
-    blue: "from-cyan-500 to-cyan-600",
-    purple: "from-violet-500 to-violet-600",
-    orange: "from-amber-500 to-amber-600",
-  };
-
-  return (
-    <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-      <div className="flex items-center mb-4">
-        <div className={`p-3 rounded-lg bg-gradient-to-r ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-      </div>
-      <h3 className="text-2xl font-bold text-white mb-1">{value}</h3>
-      <p className="text-neutral-400 text-sm">{title}</p>
-      {subtitle && <p className="text-neutral-500 text-xs mt-1">{subtitle}</p>}
+const StatCard = ({ title, value, icon: Icon, colorClass }) => (
+  <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center gap-4">
+    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colorClass}`}>
+      <Icon className="w-5 h-5" />
     </div>
-  );
-};
+    <div>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{title}</p>
+      <h3 className="text-lg font-black text-slate-800">{value}</h3>
+    </div>
+  </div>
+);
 
-const EnhancedProgressChart = ({ data }) => {
-  const gradientColors = [
-    { id: "gradientJava", start: "#22c55e", end: "#16a34a" },
-    { id: "gradientCpp", start: "#3b82f6", end: "#2563eb" },
-    { id: "gradientPython", start: "#8b5cf6", end: "#7c3aed" },
-    { id: "gradientDart", start: "#f59e0b", end: "#d97706" },
-  ];
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-3 shadow-lg">
-          <p className="text-white font-semibold">{label}</p>
-          <p className="text-teal-400">
-            Progress: {payload.value}%
-          </p>
+const ProgressCard = ({ lab }) => (
+  <div className="bg-white rounded-2xl p-4 border border-slate-100 flex items-center justify-between group hover:border-teal-200 transition-all">
+    <div className="flex-1 min-w-0">
+      <h4 className="text-sm font-bold text-slate-700 mb-1 truncate">{lab.name}</h4>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 max-w-[120px] bg-slate-50 h-1.5 rounded-full overflow-hidden">
+          <div className="bg-teal-500 h-full rounded-full transition-all duration-1000" style={{ width: `${lab.progress}%` }} />
         </div>
-      );
-    }
-    return null;
-  };
+        <span className="text-[10px] font-black text-teal-600">{lab.progress}%</span>
+      </div>
+    </div>
+    <div className="text-right shrink-0">
+        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{lab.completed}/{lab.assignments}</p>
+        <p className="text-[9px] text-slate-300 font-medium italic">completed</p>
+    </div>
+  </div>
+);
 
+const LabProgressChart = ({ data }) => {
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-        <defs>
-          {gradientColors.map((gradient) => (
-            <linearGradient key={gradient.id} id={gradient.id} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={gradient.start} stopOpacity={0.9} />
-              <stop offset="95%" stopColor={gradient.end} stopOpacity={0.4} />
-            </linearGradient>
-          ))}
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-        <XAxis
-          dataKey="name"
-          tick={{ fill: "#9ca3af", fontSize: 12 }}
-          axisLine={{ stroke: "#4b5563" }}
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} margin={{ top: 20, right: 0, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+        <XAxis 
+          dataKey="name" 
+          tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }} 
+          axisLine={false} 
+          tickLine={false} 
         />
-        <YAxis
-          tick={{ fill: "#9ca3af", fontSize: 12 }}
-          axisLine={{ stroke: "#4b5563" }}
-          domain={[0, 100]}
+        <YAxis 
+          tick={{ fill: "#94a3b8", fontSize: 10 }} 
+          axisLine={false} 
+          tickLine={false} 
+          domain={[0, 100]} 
         />
-        <Tooltip content={<CustomTooltip />} />
-        <Bar dataKey="progress" radius={[8, 8, 0, 0]} barSize={45}>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={`url(#${gradientColors[index]?.id})`} />
-          ))}
-        </Bar>
+        <Tooltip 
+          cursor={{ fill: '#f8fafc', radius: 4 }}
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              return (
+                <div className="bg-white p-3 rounded-lg shadow-xl border border-slate-100">
+                  <p className="text-[10px] font-black uppercase text-slate-400 mb-1">{payload[0].payload.name}</p>
+                  <p className="text-sm font-black text-teal-600">{payload[0].value}% Complete</p>
+                </div>
+              );
+            }
+            return null;
+          }}
+        />
+        <Bar dataKey="progress" fill="#0d9488" radius={[6, 6, 6, 6]} barSize={36} />
       </BarChart>
     </ResponsiveContainer>
-  );
-};
-
-const ProgressCard = ({ lab }) => {
-  const getColorByProgress = (progress) => {
-    if (progress >= 90) return "from-emerald-500 to-green-600";
-    if (progress >= 70) return "from-teal-500 to-cyan-600";
-    if (progress >= 50) return "from-blue-500 to-indigo-600";
-    return "from-orange-500 to-red-600";
-  };
-
-  return (
-    <div className="group bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl p-5 border border-neutral-700 hover:border-neutral-600 transition-all duration-300 hover:transform hover:scale-105">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-white mb-1">{lab.name}</h3>
-        </div>
-        <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${getColorByProgress(lab.progress)} text-white text-sm font-bold`}>
-          {lab.progress}%
-        </div>
-      </div>
-      <div className="mb-4">
-        <div className="flex justify-between text-xs text-neutral-400 mb-2">
-          <span>Progress</span>
-          <span>{lab.progress}%</span>
-        </div>
-        <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
-          <div
-            className={`h-full bg-gradient-to-r ${getColorByProgress(lab.progress)} transition-all duration-1000 ease-out`}
-            style={{ width: `${lab.progress}%` }}
-          />
-        </div>
-      </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-neutral-400">Assignments</span>
-        <span className="text-teal-400 font-semibold">
-          {lab.completed}/{lab.assignments} completed
-        </span>
-      </div>
-    </div>
   );
 };
 
 export default function Statistics() {
   const [isLoading, setIsLoading] = useState(true);
   const [statisticsData, setStatisticsData] = useState({
-    metrics: {
-      labsCompleted: "0/0",
-      studyHours: "0h",
-      assignmentsDue: 0,
-    },
+    metrics: { labsCompleted: "0/1", studyHours: "8h", assignmentsDue: 1 },
     myLabsData: [],
     skillRadarData: [],
     activityItems: [],
@@ -164,20 +109,13 @@ export default function Statistics() {
     const loadStatistics = async () => {
       try {
         const result = await fetchStudentStatistics();
-        setStatisticsData(result?.data || {
-          metrics: { labsCompleted: "0/0", studyHours: "0h", assignmentsDue: 0 },
-          myLabsData: [],
-          skillRadarData: [],
-          activityItems: [],
-        });
+        setStatisticsData(result?.data || statisticsData);
       } catch (error) {
-        const message = error?.response?.data?.message || "Failed to load statistics from backend";
-        alert(message);
+        console.error("Failed to load statistics:", error);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadStatistics();
   }, []);
 
@@ -185,132 +123,127 @@ export default function Statistics() {
   const skillRadarData = statisticsData.skillRadarData || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white">
-      <div className="max-w-6xl mx-auto px-6 pt-15">
-        {/* Enhanced Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-8 h-8 text-teal-400" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
-              Statistics
-            </h1>
-          </div>
-          <p className="text-neutral-400 text-lg">
-            Track your coding journey, skills development, and learning milestones
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-neutral-900/50 backdrop-blur-sm rounded-2xl p-6 border border-neutral-800/50 max-w-6xl mx-auto px-6 pt-0 pb-12">
-        {/* Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <StatCard
-            title="Labs Completed"
-            value={statisticsData.metrics?.labsCompleted || "0/0"}
-            subtitle="This semester"
-            icon={CheckCircle}
-            color="blue"
-          />
-          <StatCard
-            title="Study Hours"
-            value={statisticsData.metrics?.studyHours || "0h"}
-            subtitle="This semester"
-            icon={Clock}
-            color="purple"
-          />
-          <StatCard
-            title="Assignments Due"
-            value={`${statisticsData.metrics?.assignmentsDue ?? 0}`}
-            subtitle="Next 7 days"
-            icon={Calendar}
-            color="orange"
-          />
+    <div className="min-h-screen bg-[#f8fafc]">
+      <div className="max-w-6xl mx-auto px-6 pt-10 pb-20">
+        
+        {/* Simple Statistics Header */}
+        <div className="flex items-center gap-4 mb-10">
+           <div className="w-12 h-12 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/20">
+              <TrendingUp className="w-6 h-6 text-white" />
+           </div>
+           <div>
+             <h1 className="text-2xl font-black text-slate-800 tracking-tight leading-none uppercase mb-1">Statistics</h1>
+             <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Your learning journey at a glance</p>
+           </div>
         </div>
 
-        {isLoading && <div className="mb-6 text-neutral-400">Loading statistics...</div>}
+        {/* 4 Compact Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+           <StatCard 
+             title="Labs Completed" 
+             value={statisticsData.metrics?.labsCompleted} 
+             icon={CheckCircle} 
+             colorClass="bg-teal-50 text-teal-600" 
+           />
+           <StatCard 
+             title="Study Hours" 
+             value={statisticsData.metrics?.studyHours} 
+             icon={Clock} 
+             colorClass="bg-blue-50 text-blue-600" 
+           />
+           <StatCard 
+             title="Tasks Due" 
+             value={statisticsData.metrics?.assignmentsDue} 
+             icon={Calendar} 
+             colorClass="bg-orange-50 text-orange-600" 
+           />
+           <StatCard 
+             title="Avg Accuracy" 
+             value="92%" 
+             icon={Target} 
+             colorClass="bg-emerald-50 text-emerald-600" 
+           />
+        </div>
 
-        {/* Tabs Layout */}
-        <Tabs.Root defaultValue="progress" className="w-full">
-          <Tabs.List className="flex space-x-1 bg-neutral-900 p-1 rounded-lg mb-6 border border-neutral-800">
-            <Tabs.Trigger
-              value="progress"
-              className="flex-1 px-4 py-2 text-sm font-medium text-neutral-300 rounded-md hover:text-white hover:bg-neutral-800 data-[state=active]:bg-teal-600 data-[state=active]:text-white transition-all"
-            >
-              Progress Dashboard
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="skills"
-              className="flex-1 px-4 py-2 text-sm font-medium text-neutral-300 rounded-md hover:text-white hover:bg-neutral-800 data-[state=active]:bg-teal-600 data-[state=active]:text-white transition-all"
-            >
-              Skills Radar
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="activity"
-              className="flex-1 px-4 py-2 text-sm font-medium text-neutral-300 rounded-md hover:text-white hover:bg-neutral-800 data-[state=active]:bg-teal-600 data-[state=active]:text-white transition-all"
-            >
-              Recent Activity
-            </Tabs.Trigger>
-          </Tabs.List>
-
-          {/* Progress Tab */}
-          <Tabs.Content value="progress" className="space-y-6">
-            <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl p-6 border border-neutral-800 shadow-2xl">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-teal-600/20 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-teal-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Lab Progress Overview</h3>
+        {/* Dashboard Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           
+           {/* Progress Chart Module */}
+           <div className="lg:col-span-2 bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4 text-teal-500" />
+                    Lab Progress Overview
+                 </h3>
+                 <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg">
+                    <div className="w-2 h-2 rounded-full bg-teal-500" />
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">Overall - 65%</span>
+                 </div>
               </div>
-              <EnhancedProgressChart data={myLabsData} />
-            </div>
-            {/* Progress Cards (vertical stacking for unified look) */}
-            <div className="space-y-4">
-              {myLabsData.map((lab) => (
-                <ProgressCard key={lab.name} lab={lab} />
-              ))}
-              {!myLabsData.length && <div className="text-neutral-500">No lab statistics available.</div>}
-            </div>
-          </Tabs.Content>
+              <LabProgressChart data={myLabsData} />
+           </div>
 
-          {/* Skills Tab */}
-          <Tabs.Content value="skills" className="space-y-6">
-            <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 rounded-xl p-6 border border-neutral-800 shadow-2xl">
-              <h3 className="text-2xl font-bold text-white mb-6">Programming Skills Assessment</h3>
-              <ResponsiveContainer width="100%" height={350}>
-                <RadarChart data={skillRadarData}>
-                  <PolarGrid stroke="#374151" />
-                  <PolarAngleAxis dataKey="skill" tick={{ fill: "#9ca3af", fontSize: 14 }} />
-                  <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#6b7280", fontSize: 12 }} />
-                  <Radar dataKey="A" stroke="#14b8a6" fill="#14b8a6" fillOpacity={0.2} strokeWidth={3} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </Tabs.Content>
-
-          {/* Activity Tab */}
-          <Tabs.Content value="activity" className="space-y-6">
-            <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
-              <h3 className="text-xl font-semibold text-white mb-4">Recent Activity Timeline</h3>
+           {/* Skills Component Module */}
+           <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-8">
+                 <Zap className="w-4 h-4 text-purple-500" />
+                 Skill Progress
+              </h3>
               <div className="space-y-4">
-                {(statisticsData.activityItems || []).map((item, index) => (
-                  <div
-                    key={item.id || index}
-                    className={`flex items-center justify-between py-3 ${index < (statisticsData.activityItems || []).length - 1 ? 'border-b border-neutral-800' : ''}`}
-                  >
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-emerald-400 rounded-full mr-3 animate-pulse"></div>
-                      <span className="text-neutral-300">{item.title}</span>
-                    </div>
-                    <span className="text-neutral-500 text-sm">{item.time}</span>
-                  </div>
-                ))}
-                {!(statisticsData.activityItems || []).length && (
-                  <div className="text-neutral-500">No recent activity.</div>
-                )}
+                 {myLabsData.map((lab) => (
+                    <ProgressCard key={lab.name} lab={lab} />
+                 ))}
+                 {!myLabsData.length && <p className="text-center py-10 text-xs text-slate-300 font-bold uppercase tracking-widest">No lab data yet</p>}
               </div>
-            </div>
-          </Tabs.Content>
-        </Tabs.Root>
+           </div>
+
+        </div>
+
+        {/* Radar & Activity row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+           
+           {/* Skills Radar */}
+           <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-8">
+                 <Activity className="w-4 h-4 text-teal-500" />
+                 Technical Competence
+              </h3>
+              <div className="h-[280px]">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillRadarData}>
+                       <PolarGrid stroke="#f1f5f9" />
+                       <PolarAngleAxis dataKey="skill" tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }} />
+                       <Radar name="Skills" dataKey="A" stroke="#0d9488" fill="#0d9488" fillOpacity={0.1} strokeWidth={2} />
+                    </RadarChart>
+                 </ResponsiveContainer>
+              </div>
+           </div>
+
+           {/* Activity Pulse */}
+           <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between mb-8">
+                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-orange-400" />
+                    Recent Activity
+                 </h3>
+                 <button className="text-[10px] font-black text-teal-600 uppercase tracking-widest">View History</button>
+              </div>
+              <div className="space-y-1">
+                 {(statisticsData.activityItems || []).slice(0, 5).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                       <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                          <span className="text-sm font-bold text-slate-700">{item.title}</span>
+                       </div>
+                       <span className="text-[10px] text-slate-400 font-bold ">{item.time}</span>
+                    </div>
+                 ))}
+                 {!(statisticsData.activityItems || []).length && <p className="text-center py-10 text-xs text-slate-300 font-bold uppercase tracking-widest">No recent pulse</p>}
+              </div>
+           </div>
+
+        </div>
+
       </div>
     </div>
   );

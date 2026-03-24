@@ -1,33 +1,42 @@
-import React from 'react';
-import { Calendar } from 'lucide-react';
+import React from "react";
+import { Calendar } from "lucide-react";
 
-const AssignmentCard = ({ title, date, type, icon: Icon }) => (
-  <div className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-lg cursor-pointer group ${
-    type === 'assigned' 
-      ? 'bg-gradient-to-r from-teal-900/20 to-teal-800/20 border-teal-700/30 hover:border-teal-500/50 hover:shadow-teal-500/10' 
-      : 'bg-gradient-to-r from-red-900/20 to-red-800/20 border-red-700/30 hover:border-red-500/50 hover:shadow-red-500/10'
-  }`}>
-    <div className="flex items-start justify-between gap-4">
-      <div className="flex items-start gap-3 flex-1">
-        <div className={`p-2 rounded-lg ${
-          type === 'assigned' ? 'bg-teal-600/20' : 'bg-red-600/20'
-        }`}>
-          <Icon className={`w-4 h-4 ${
-            type === 'assigned' ? 'text-teal-400' : 'text-red-400'
-          }`} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-neutral-200 font-medium text-sm leading-tight group-hover:text-white transition-colors">
-            {title}
-          </p>
-        </div>
+const AssignmentCard = ({ title, date, type, icon: Icon }) => {
+  const isAssigned = type === "assigned";
+  return (
+    <div
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all group ${
+        isAssigned
+          ? "bg-teal-50 border-teal-100 hover:border-teal-300"
+          : "bg-red-50 border-red-100 hover:border-red-300"
+      }`}
+    >
+      <div
+        className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+          isAssigned ? "bg-teal-100" : "bg-red-100"
+        }`}
+      >
+        <Icon
+          className={`w-3.5 h-3.5 ${isAssigned ? "text-teal-600" : "text-red-500"}`}
+        />
       </div>
-      <div className="flex items-center gap-1 text-neutral-400 text-xs whitespace-nowrap">
-        <Calendar className="w-3 h-3" />
+      <p
+        className={`flex-1 text-xs font-semibold min-w-0 truncate ${
+          isAssigned ? "text-teal-900" : "text-red-900"
+        }`}
+      >
+        {title}
+      </p>
+      <div
+        className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${
+          isAssigned ? "bg-teal-100 text-teal-700" : "bg-red-100 text-red-600"
+        }`}
+      >
+        <Calendar className="w-2.5 h-2.5" />
         {date}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default AssignmentCard;
