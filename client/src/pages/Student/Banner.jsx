@@ -1,20 +1,17 @@
 import React from "react";
 
-const Banner = () => (
+const Banner = ({ user }) => (
   <div className="relative bg-teal-600 rounded-2xl overflow-hidden px-7 py-6 flex items-center justify-between min-h-[110px]">
     {/* Text */}
     <div className="relative z-10">
       <h2 className="text-xl font-extrabold text-white leading-snug mb-1.5">
-        The Right Choice
+        Welcome Back, {user?.name || user?.username || "Student"}!
         <br />
-        For Your Lab Journey
+        Master Your Lab Journey
       </h2>
       <p className="text-teal-100 text-xs mb-4 max-w-xs leading-relaxed">
-        Complete 250,000+ lab exercises with new assignments added every month.
+        Track your progress and complete your assigned laboratory experiments.
       </p>
-      <button className="bg-white text-teal-700 font-extrabold text-xs px-5 py-2 rounded-lg hover:bg-teal-50 transition-colors">
-        View Labs
-      </button>
     </div>
 
     {/* Hexagon decoration */}

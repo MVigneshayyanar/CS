@@ -13,15 +13,18 @@ const Dashboard = () => {
   const [stats, setStats] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         const result = await fetchStudentDashboard();
-        setProgressData(result?.data?.progressData || []);
-        setStats(result?.data?.stats || []);
-        setAssignedTasks(result?.data?.assignedTasks || []);
-        setIncompleteTasks(result?.data?.incompleteTasks || []);
+        const data = result?.data || {};
+        setProgressData(data.progressData || []);
+        setStats(data.stats || []);
+        setAssignedTasks(data.assignedTasks || []);
+        setIncompleteTasks(data.incompleteTasks || []);
+        setUser(data.user);
       } catch (error) {
         const message =
           error?.response?.data?.message ||
@@ -72,11 +75,11 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
             {/* Left Sidebar */}
-            <ProfilePanel stats={stats} />
+            <ProfilePanel stats={stats} user={user} upcomingTasks={incompleteTasks} />
 
             {/* Main Content */}
             <div className="flex flex-col gap-5">
-              <Banner />
+              <Banner user={user} />
               <StatsSection stats={stats} />
               <ProgressSection progressData={progressData} />
               <AssignmentsSection

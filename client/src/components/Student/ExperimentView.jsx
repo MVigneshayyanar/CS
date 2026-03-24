@@ -7,7 +7,7 @@ import JudgePage from '../../pages/JudgePage.jsx';
 // Custom debounce hook for auto-save functionality
 const useDebounce = (callback, delay) => {
   const timeoutRef = useRef(null);
-  
+
   const debouncedCallback = (...args) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -59,7 +59,7 @@ const ExperimentView = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const experimentId = searchParams.get('id'); // format: "<labId>-<index>"
-  
+
   // Experiment data from backend
   const [experiment, setExperiment] = useState(null);
   const [labLanguage, setLabLanguage] = useState('python');
@@ -75,7 +75,7 @@ const ExperimentView = () => {
   const [showCheatWarning, setShowCheatWarning] = useState(false);
   const [examMode, setExamMode] = useState(false);
   const [warningMessage, setWarningMessage] = useState('');
-  
+
   // Auto-save state
   const [code, setCode] = useState('');
   const [lastSaved, setLastSaved] = useState(new Date());
@@ -109,6 +109,7 @@ const ExperimentView = () => {
                 language: lab.language || lab.name || 'Python',
                 question: experiments[i].description || experiments[i].question || 'Complete the experiment as described.',
                 testCases: Array.isArray(experiments[i].testCases) ? experiments[i].testCases : [],
+                deadline: experiments[i].deadline || lab.created_at || new Date().toISOString(),
               };
               foundLanguage = lab.language || lab.name || 'python';
               break;
@@ -183,7 +184,7 @@ const ExperimentView = () => {
   const logCheatAttempt = (type, details = '') => {
     const newAttempts = cheatAttempts + 1;
     setCheatAttempts(newAttempts);
-    
+
     const cheatLog = {
       type,
       details,
@@ -191,18 +192,18 @@ const ExperimentView = () => {
       attemptNumber: newAttempts,
       experimentId
     };
-    
+
     console.warn('🚨 CHEAT ATTEMPT DETECTED:', cheatLog);
-    
+
     const existingLogs = JSON.parse(localStorage.getItem('cheat_attempts') || '[]');
     existingLogs.push(cheatLog);
     localStorage.setItem('cheat_attempts', JSON.stringify(existingLogs));
-    
+
     setWarningMessage(`Violation detected: ${type}. Attempt #${newAttempts}`);
     setShowCheatWarning(true);
-    
+
     setTimeout(() => setShowCheatWarning(false), 4000);
-    
+
     if (newAttempts >= 3) {
       handleSevereViolation(type);
     }
@@ -257,14 +258,14 @@ const ExperimentView = () => {
     const handleFocus = () => {
       setHasFocus(true);
     };
-    
+
     const handleBlur = () => {
       setHasFocus(false);
       if (examMode) {
         logCheatAttempt('window_focus_lost', 'User switched to another application');
       }
     };
-    
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         setIsVisible(true);
@@ -354,11 +355,11 @@ const ExperimentView = () => {
   useEffect(() => {
     const handleFullscreenChange = () => {
       const currentFullscreenStatus = checkFullscreenStatus();
-      
+
       if (!currentFullscreenStatus && examMode) {
         logCheatAttempt('fullscreen_exit', 'Exited fullscreen mode during exam');
         setShowExitWarning(true);
-        
+
         setTimeout(() => {
           if (examMode) {
             enterFullscreen();
@@ -383,7 +384,7 @@ const ExperimentView = () => {
   // Auto-detect screen size and prompt for fullscreen
   useEffect(() => {
     const currentFullscreenStatus = checkFullscreenStatus();
-    
+
     if (!currentFullscreenStatus && !examMode) {
       setShowExitWarning(true);
     } else {
@@ -418,7 +419,7 @@ const ExperimentView = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white overflow-hidden">
-      
+
       {/* Cheat Warning System */}
       {showCheatWarning && (
         <div className="fixed top-4 right-4 z-[10001] max-w-sm">
@@ -504,7 +505,7 @@ const ExperimentView = () => {
       )}
 
       <div className="h-full flex flex-col">
-        
+
         {/* Enhanced Header Section */}
         <div className="flex-shrink-0 px-6 py-4 border-b border-neutral-800">
           <div className="flex items-center justify-between">
@@ -545,7 +546,7 @@ const ExperimentView = () => {
 
         {/* Split Screen Layout */}
         <div className="flex-1 flex overflow-hidden">
-          
+
           {/* Left Panel - Problem Statement */}
           <div className="w-1/2 border-r border-neutral-800 flex flex-col overflow-hidden">
             <div className="flex-shrink-0 p-4 border-b border-neutral-800">
@@ -556,13 +557,12 @@ const ExperimentView = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-white">Problem Statement</h3>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  experiment.difficulty === 'Beginner' 
-                    ? 'bg-green-600/20 text-green-400 border border-green-500/30' 
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${experiment.difficulty === 'Beginner'
+                    ? 'bg-green-600/20 text-green-400 border border-green-500/30'
                     : experiment.difficulty === 'Intermediate'
-                    ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30'
-                    : 'bg-red-600/20 text-red-400 border border-red-500/30'
-                }`}>
+                      ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30'
+                      : 'bg-red-600/20 text-red-400 border border-red-500/30'
+                  }`}>
                   {experiment.difficulty}
                 </span>
               </div>
@@ -581,9 +581,15 @@ const ExperimentView = () => {
                   <div className="text-sm font-semibold text-amber-400">{experiment.domain}</div>
                   <div className="text-xs text-neutral-400">Domain</div>
                 </div>
+                <div className="bg-neutral-800/40 p-2 rounded-lg text-center">
+                  <div className="text-sm font-semibold text-rose-400">
+                    {experiment.deadline ? new Date(experiment.deadline).toLocaleDateString('en-GB') : 'N/A'}
+                  </div>
+                  <div className="text-xs text-neutral-400">Deadline</div>
+                </div>
               </div>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {/* Problem Description */}
               <div className="bg-neutral-800/30 rounded-xl p-4">
@@ -650,8 +656,8 @@ const ExperimentView = () => {
 
             {/* Judge Page Integration - pass the correct language */}
             <div className="flex-1 bg-neutral-800/30 m-4 rounded-xl overflow-y-auto">
-              <JudgePage 
-                initialLanguage={mapLanguageKey(labLanguage)} 
+              <JudgePage
+                initialLanguage={mapLanguageKey(labLanguage)}
                 initialCode={code}
                 onCodeChange={handleCodeChange}
                 testCases={experiment.testCases}

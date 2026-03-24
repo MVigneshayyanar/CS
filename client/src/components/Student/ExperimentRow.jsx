@@ -55,7 +55,16 @@ const ExperimentRow = ({ experiment }) => {
       <td className="p-4">
         <div className="flex items-center gap-1.5 text-slate-400 text-xs">
           <Calendar className="w-3.5 h-3.5" />
-          <span>{new Date(experiment.dateDue).toLocaleDateString()}</span>
+          <span>{(() => {
+            const d = experiment.dateDue || experiment.deadline || experiment.date;
+            if (!d) return 'N/A';
+            try {
+              const dateObj = new Date(d);
+              return isNaN(dateObj.getTime()) ? d : dateObj.toLocaleDateString('en-GB');
+            } catch (e) {
+              return d;
+            }
+          })()}</span>
         </div>
       </td>
     </tr>

@@ -6,11 +6,11 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
 
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
-    
+
     // Add event listener to detect and prevent cheating attempts
     editor.onKeyDown((event) => {
       const { keyCode, ctrlKey, metaKey, shiftKey } = event;
-      
+
       // Block copy (Ctrl/Cmd + C)
       if ((keyCode === monaco.KeyCode.KeyC) && (ctrlKey || metaKey)) {
         event.preventDefault();
@@ -18,7 +18,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("copy");
         return;
       }
-      
+
       // Block paste (Ctrl/Cmd + V) 
       if ((keyCode === monaco.KeyCode.KeyV) && (ctrlKey || metaKey)) {
         event.preventDefault();
@@ -26,7 +26,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("paste");
         return;
       }
-      
+
       // Block cut (Ctrl/Cmd + X)
       if ((keyCode === monaco.KeyCode.KeyX) && (ctrlKey || metaKey)) {
         event.preventDefault();
@@ -34,7 +34,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("cut");
         return;
       }
-      
+
       // Block select all (Ctrl/Cmd + A)
       if ((keyCode === monaco.KeyCode.KeyA) && (ctrlKey || metaKey)) {
         event.preventDefault();
@@ -42,7 +42,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("select_all");
         return;
       }
-      
+
       // Block undo (Ctrl/Cmd + Z)
       if ((keyCode === monaco.KeyCode.KeyZ) && (ctrlKey || metaKey) && !shiftKey) {
         event.preventDefault();
@@ -50,16 +50,16 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("undo");
         return;
       }
-      
+
       // Block redo (Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z)
-      if (((keyCode === monaco.KeyCode.KeyY) && (ctrlKey || metaKey)) || 
-          ((keyCode === monaco.KeyCode.KeyZ) && (ctrlKey || metaKey) && shiftKey)) {
+      if (((keyCode === monaco.KeyCode.KeyY) && (ctrlKey || metaKey)) ||
+        ((keyCode === monaco.KeyCode.KeyZ) && (ctrlKey || metaKey) && shiftKey)) {
         event.preventDefault();
         event.stopPropagation();
         onCheatAttempt?.("redo");
         return;
       }
-      
+
       // Block F12 (Developer Tools)
       if (keyCode === monaco.KeyCode.F12) {
         event.preventDefault();
@@ -67,7 +67,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("dev_tools");
         return;
       }
-      
+
       // Block Ctrl+Shift+I (Developer Tools)
       if ((keyCode === monaco.KeyCode.KeyI) && (ctrlKey || metaKey) && shiftKey) {
         event.preventDefault();
@@ -75,7 +75,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("dev_tools");
         return;
       }
-      
+
       // Block Ctrl+Shift+J (Console)
       if ((keyCode === monaco.KeyCode.KeyJ) && (ctrlKey || metaKey) && shiftKey) {
         event.preventDefault();
@@ -83,7 +83,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
         onCheatAttempt?.("dev_tools");
         return;
       }
-      
+
       // Block Ctrl+U (View Source)
       if ((keyCode === monaco.KeyCode.KeyU) && (ctrlKey || metaKey)) {
         event.preventDefault();
