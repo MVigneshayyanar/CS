@@ -91,6 +91,7 @@ const LoginCard = ({ onLogin }) => {
           <label className="text-sm block mb-1">Username :</label>
           <input
             type="text"
+            autoComplete="username"
             className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -103,6 +104,7 @@ const LoginCard = ({ onLogin }) => {
           <label className="text-sm block mb-1">Password :</label>
           <input
             type="password"
+            autoComplete="current-password"
             className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
