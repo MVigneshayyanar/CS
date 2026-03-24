@@ -12,15 +12,18 @@ const Dashboard = () => {
   const [stats, setStats] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         const result = await fetchStudentDashboard();
-        setProgressData(result?.data?.progressData || []);
-        setStats(result?.data?.stats || []);
-        setAssignedTasks(result?.data?.assignedTasks || []);
-        setIncompleteTasks(result?.data?.incompleteTasks || []);
+        const data = result?.data || {};
+        setProgressData(data.progressData || []);
+        setStats(data.stats || []);
+        setAssignedTasks(data.assignedTasks || []);
+        setIncompleteTasks(data.incompleteTasks || []);
+        setUser(data.user);
       } catch (error) {
         const message =
           error?.response?.data?.message ||
@@ -61,21 +64,28 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
-          {/* Left Sidebar */}
-          <ProfilePanel stats={stats} />
-
-          {/* Main Content */}
-          <div className="flex flex-col gap-5">
-            <Banner />
-            <StatsSection stats={stats} />
-            <ProgressSection progressData={progressData} />
-            <AssignmentsSection
-              assignedTasks={assignedTasks}
-              incompleteTasks={incompleteTasks}
-            />
+        {isLoading ? (
+          <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
+            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            Loading dashboard...
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
+            {/* Left Sidebar */}
+            <ProfilePanel stats={stats} />
+
+            {/* Main Content */}
+            <div className="flex flex-col gap-5">
+              <Banner />
+              <StatsSection stats={stats} />
+              <ProgressSection progressData={progressData} />
+              <AssignmentsSection
+                assignedTasks={assignedTasks}
+                incompleteTasks={incompleteTasks}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

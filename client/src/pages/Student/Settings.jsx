@@ -4,16 +4,12 @@ import {
   User,
   Lock,
   Palette,
-  BookOpen,
   Mail,
-  Save,
   Eye,
   EyeOff,
   ChevronRight,
   Settings as SettingsIcon,
   GraduationCap,
-  Code,
-  Monitor,
   Shield,
   Hash,
   Sun,
@@ -21,6 +17,7 @@ import {
   Bell,
 } from "lucide-react";
 import { changePassword } from "@/services/authService";
+import { fetchStudentDashboard } from "@/services/studentService";
 
 /* ─── tiny reusable pieces ─── */
 
@@ -120,18 +117,20 @@ const Settings = () => {
   });
   const [message, setMessage] = useState({ type: "", text: "" });
 
-  const [academicData] = useState({
-    studentId: "CS2021001",
-    name: "John Doe",
-    email: "john.doe@university.edu",
-    phone: "+91 9876543210",
-    department: "Computer Science",
-    semester: "6th Semester",
-    batch: "2021-2025",
-    section: "A",
-    rollNumber: "21CSE001",
-    yearOfStudy: "3rd Year",
-    program: "Bachelor of Technology",
+  const [academicData, setAcademicData] = useState({
+    studentId: "—",
+    name: "Student",
+    email: "—",
+    phone: "—",
+    department: "Academic Portal",
+    semester: "—",
+    batch: "—",
+    section: "—",
+    rollNumber: "—",
+    yearOfStudy: "—",
+    program: "Degree Program",
+    labCount: 0,
+    taskCount: 0,
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -140,37 +139,40 @@ const Settings = () => {
     confirmPassword: "",
   });
 
-  const [preferences, setPreferences] = useState({
-    theme: "dark",
-    learning: {
-      preferredLanguages: {
-        C: false,
-        "C++": false,
-        Java: false,
-        Python: false,
-        SQL: false,
-      },
-      codeEditorSettings: {
-        autoSave: true,
-        syntaxHighlighting: true,
-        lineNumbers: true,
-        darkTheme: true,
-      },
-    },
-  });
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const result = await fetchStudentDashboard();
+        if (result?.data?.user) {
+          const u = result.data.user;
+          const stats = result.data.stats || [];
+          const labs = stats.find(s => s.label.toLowerCase().includes("total"))?.value || 0;
+          const tasks = stats.find(s => s.label.toLowerCase().includes("pending"))?.value || 0;
+
+          setAcademicData({
+            studentId: u.username || "—",
+            name: u.name || "Student",
+            email: u.email || "—",
+            phone: "+91 —",
+            department: "Computer Science",
+            semester: "Current",
+            batch: "2024-2025",
+            section: "A",
+            rollNumber: u.username || "—",
+            yearOfStudy: "3rd Year",
+            program: "Bachelor of Technology",
+            labCount: labs,
+            taskCount: tasks,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load settings data", err);
+      }
+    };
+    loadData();
+  }, []);
 
   const userId = sessionStorage.getItem("userId");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(
-        `student_preferences_${userId || "default"}`,
-      );
-      if (saved) setPreferences((p) => ({ ...p, ...JSON.parse(saved) }));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [userId]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -206,44 +208,11 @@ const Settings = () => {
     }
   };
 
-  const handleSavePrefs = async () => {
-    setLoading(true);
-    try {
-      localStorage.setItem(
-        `student_preferences_${userId || "default"}`,
-        JSON.stringify(preferences),
-      );
-      setMessage({ type: "success", text: "Preferences saved successfully!" });
-    } catch {
-      setMessage({ type: "error", text: "Failed to save preferences." });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleLang = (lang, val) =>
-    setPreferences((p) => ({
-      ...p,
-      learning: {
-        ...p.learning,
-        preferredLanguages: { ...p.learning.preferredLanguages, [lang]: val },
-      },
-    }));
-
-  const toggleEditor = (key, val) =>
-    setPreferences((p) => ({
-      ...p,
-      learning: {
-        ...p.learning,
-        codeEditorSettings: { ...p.learning.codeEditorSettings, [key]: val },
-      },
-    }));
 
   const navItems = [
     { id: "profile", label: "Academic Profile", icon: User },
     { id: "password", label: "Change Password", icon: Lock },
     { id: "appearance", label: "Display Settings", icon: Palette },
-    { id: "learning", label: "Learning Preferences", icon: BookOpen },
   ];
 
   /* strength meter */
@@ -292,11 +261,10 @@ const Settings = () => {
         {/* ── Alert ── */}
         {message.text && (
           <div
-            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${
-              message.type === "success"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                : "bg-red-50 text-red-600 border-red-200"
-            }`}
+            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${message.type === "success"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+              : "bg-red-50 text-red-600 border-red-200"
+              }`}
           >
             {message.text}
             <button
@@ -347,18 +315,18 @@ const Settings = () => {
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   <div className="bg-slate-50 rounded-xl py-2.5 text-center">
                     <div className="text-lg font-extrabold text-teal-600">
-                      38
+                      {academicData.labCount}
                     </div>
                     <div className="text-[10px] text-slate-400 font-semibold">
-                      Courses
+                      Labs
                     </div>
                   </div>
                   <div className="bg-slate-50 rounded-xl py-2.5 text-center">
                     <div className="text-lg font-extrabold text-amber-500">
-                      12
+                      {academicData.taskCount}
                     </div>
                     <div className="text-[10px] text-slate-400 font-semibold">
-                      Certs
+                      Tasks
                     </div>
                   </div>
                 </div>
@@ -377,9 +345,8 @@ const Settings = () => {
                           setActiveSection(id);
                           setMessage({ type: "", text: "" });
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
-                          active ? "bg-teal-50" : "hover:bg-slate-50"
-                        }`}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${active ? "bg-teal-50" : "hover:bg-slate-50"
+                          }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
@@ -424,8 +391,6 @@ const Settings = () => {
                     "Keep your account secure by updating your password regularly."}
                   {activeSection === "appearance" &&
                     "Customize how the platform looks and feels for your workflow."}
-                  {activeSection === "learning" &&
-                    "Set your programming language and code editor preferences."}
                 </p>
               </div>
               {/* Hex deco */}
@@ -654,7 +619,6 @@ const Settings = () => {
                           value={val}
                           checked={sel}
                           onChange={() => {
-                            setPreferences((p) => ({ ...p, theme: val }));
                             setGlobalTheme(val);
                           }}
                           className="sr-only"
@@ -686,70 +650,6 @@ const Settings = () => {
               </SectionCard>
             )}
 
-            {/* ── LEARNING SECTION ── */}
-            {activeSection === "learning" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Languages */}
-                  <SectionCard icon={Code} title="Programming Languages">
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {Object.entries(
-                        preferences.learning.preferredLanguages,
-                      ).map(([lang, on]) => (
-                        <button
-                          key={lang}
-                          type="button"
-                          onClick={() => toggleLang(lang, !on)}
-                          className={`px-3 py-1.5 rounded-full text-xs font-extrabold border-2 transition-all ${
-                            on
-                              ? "bg-teal-50 border-teal-400 text-teal-700"
-                              : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
-                          }`}
-                        >
-                          {lang}
-                        </button>
-                      ))}
-                    </div>
-                  </SectionCard>
-
-                  {/* Editor */}
-                  <SectionCard icon={Monitor} title="Code Editor Settings">
-                    <div className="space-y-2 mt-1">
-                      {Object.entries(
-                        preferences.learning.codeEditorSettings,
-                      ).map(([key, val]) => (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between px-3 py-2 bg-slate-50 rounded-xl border border-slate-100"
-                        >
-                          <span className="text-xs font-semibold text-slate-600 capitalize">
-                            {key.replace(/([A-Z])/g, " $1").trim()}
-                          </span>
-                          <Toggle
-                            checked={val}
-                            onChange={(v) => toggleEditor(key, v)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </SectionCard>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={handleSavePrefs}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white text-xs font-extrabold rounded-xl hover:bg-teal-700 disabled:opacity-50 transition-all shadow-sm shadow-teal-200"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    {loading ? "Saving..." : "Save My Preferences"}
-                  </button>
-                  <p className="text-xs text-slate-400 font-medium">
-                    Changes are saved to your browser storage
-                  </p>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
