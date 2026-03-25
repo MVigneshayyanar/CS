@@ -210,7 +210,7 @@ const ExperimentView = () => {
   };
 
   const handleSevereViolation = (_type) => {
-    setWarningMessage(`Multiple violations detected. Exam may be terminated.`);
+    setWarningMessage(`Multiple violations detected. Session may be terminated.`);
     setShowViolationWarning(true);
   };
 
@@ -357,7 +357,7 @@ const ExperimentView = () => {
       const currentFullscreenStatus = checkFullscreenStatus();
 
       if (!currentFullscreenStatus && examMode) {
-        logCheatAttempt('fullscreen_exit', 'Exited fullscreen mode during exam');
+        logCheatAttempt('fullscreen_exit', 'Exited fullscreen mode');
         setShowExitWarning(true);
 
         setTimeout(() => {
@@ -442,10 +442,10 @@ const ExperimentView = () => {
             <AlertTriangle className="w-20 h-20 text-red-300 mx-auto mb-6 animate-pulse" />
             <h3 className="text-3xl font-bold text-white mb-4">⚠️ MULTIPLE VIOLATIONS DETECTED</h3>
             <p className="text-red-100 text-lg mb-4">
-              You have attempted to violate exam integrity rules multiple times.
+              You have attempted to violate integrity rules multiple times.
             </p>
             <p className="text-red-200 mb-6">
-              All activities are being logged. Continue following exam guidelines.
+              All activities are being logged. Continue following guidelines.
             </p>
             <div className="bg-red-700/50 rounded-lg p-4 mb-4">
               <p className="text-red-100 text-sm">📋 Total violations: {cheatAttempts}</p>
@@ -455,7 +455,7 @@ const ExperimentView = () => {
               onClick={() => setShowViolationWarning(false)}
               className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg text-white font-bold transition-colors"
             >
-              I UNDERSTAND - CONTINUE EXAM
+              I UNDERSTAND - CONTINUE
             </button>
           </div>
         </div>
@@ -466,12 +466,12 @@ const ExperimentView = () => {
         <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[10000]">
           <div className="bg-gradient-to-br from-teal-900/90 to-cyan-900/90 border border-teal-500/50 rounded-xl p-8 max-w-md text-center shadow-2xl">
             <div className="text-teal-400 text-4xl mb-4">🔒</div>
-            <h3 className="text-xl font-bold text-white mb-4">Secure Exam Mode Required</h3>
+            <h3 className="text-xl font-bold text-white mb-4">Fullscreen Mode Required</h3>
             <p className="text-teal-100 mb-6">
-              For exam integrity, you must enter and remain in fullscreen mode throughout the experiment.
+              You must enter and remain in fullscreen mode throughout the experiment.
             </p>
             <div className="bg-teal-800/30 rounded-lg p-4 mb-6">
-              <p className="text-teal-200 text-sm mb-2">📋 **Strict Exam Rules:**</p>
+              <p className="text-teal-200 text-sm mb-2">📋 **Strict Rules:**</p>
               <ul className="text-teal-200 text-sm text-left space-y-1">
                 <li>• Must stay in fullscreen mode</li>
                 <li>• ESC key is disabled</li>
@@ -490,7 +490,7 @@ const ExperimentView = () => {
                 className="px-6 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-white font-medium transition-colors flex items-center gap-2"
               >
                 <Beaker className="w-4 h-4" />
-                Enter Secure Exam Mode
+                Enter Fullscreen Mode
               </button>
               <button
                 onClick={handleExitExperiment}
@@ -521,15 +521,10 @@ const ExperimentView = () => {
               {examMode && (
                 <div className="flex items-center gap-2 text-green-400 text-xs">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  Secure Exam Mode Active
+                  Fullscreen Mode Active
                 </div>
               )}
-              {cheatAttempts > 0 && (
-                <div className="flex items-center gap-2 text-red-400 text-xs">
-                  <Shield className="w-3 h-3" />
-                  Violations: {cheatAttempts}
-                </div>
-              )}
+
               <div className="text-xs text-neutral-500">
                 Last saved: {lastSaved.toLocaleTimeString()}
               </div>
@@ -538,7 +533,7 @@ const ExperimentView = () => {
                 className="flex items-center gap-2 px-4 py-2 bg-red-600/20 border border-red-500/30 hover:bg-red-600/40 text-red-300 hover:text-white rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Exit Exam
+                Exit
               </button>
             </div>
           </div>
@@ -557,37 +552,9 @@ const ExperimentView = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-white">Problem Statement</h3>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${experiment.difficulty === 'Beginner'
-                    ? 'bg-green-600/20 text-green-400 border border-green-500/30'
-                    : experiment.difficulty === 'Intermediate'
-                      ? 'bg-yellow-600/20 text-yellow-400 border border-yellow-500/30'
-                      : 'bg-red-600/20 text-red-400 border border-red-500/30'
-                  }`}>
-                  {experiment.difficulty}
-                </span>
               </div>
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                <div className="bg-neutral-800/40 p-2 rounded-lg text-center">
-                  <div className="text-sm font-semibold text-teal-400">{experiment.difficulty}</div>
-                  <div className="text-xs text-neutral-400">Difficulty</div>
-                </div>
-                <div className="bg-neutral-800/40 p-2 rounded-lg text-center">
-                  <div className="text-sm font-semibold text-emerald-400">{experiment.estimatedTime}</div>
-                  <div className="text-xs text-neutral-400">Est. Time</div>
-                </div>
-                <div className="bg-neutral-800/40 p-2 rounded-lg text-center">
-                  <div className="text-sm font-semibold text-amber-400">{experiment.domain}</div>
-                  <div className="text-xs text-neutral-400">Domain</div>
-                </div>
-                <div className="bg-neutral-800/40 p-2 rounded-lg text-center">
-                  <div className="text-sm font-semibold text-rose-400">
-                    {experiment.deadline ? new Date(experiment.deadline).toLocaleDateString('en-GB') : 'N/A'}
-                  </div>
-                  <div className="text-xs text-neutral-400">Deadline</div>
-                </div>
-              </div>
+
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -625,6 +592,23 @@ const ExperimentView = () => {
                   </div>
                 </div>
               )}
+
+            </div>
+
+            {/* Fixed Bottom Stats */}
+            <div className="flex-shrink-0 p-4 border-t border-neutral-800 bg-[#16162A]/30">
+              <div className="grid grid-cols-2 gap-2 mt-0">
+                <div className="bg-neutral-800/40 p-3 rounded-xl border border-neutral-800/50 flex flex-col items-center justify-center text-center">
+                  <div className="text-sm font-bold text-amber-400 mb-0.5">{experiment.domain}</div>
+                  <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Faculty</div>
+                </div>
+                <div className="bg-neutral-800/40 p-3 rounded-xl border border-neutral-800/50 flex flex-col items-center justify-center text-center">
+                  <div className="text-sm font-bold text-rose-400 mb-0.5">
+                    {experiment.deadline ? new Date(experiment.deadline).toLocaleDateString('en-GB') : 'N/A'}
+                  </div>
+                  <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Deadline</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -638,14 +622,7 @@ const ExperimentView = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-white">Code Editor</h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
-                      {(labLanguage || 'Python').charAt(0).toUpperCase() + (labLanguage || 'Python').slice(1)} Environment
-                    </span>
-                    {examMode && (
-                      <span className="text-xs text-red-400 bg-red-400/10 px-2 py-1 rounded border border-red-500/20">
-                        🔒 Protected Mode
-                      </span>
-                    )}
+
                     <span className="text-xs text-neutral-500 bg-neutral-800/50 px-2 py-1 rounded">
                       Auto-saves every 2s
                     </span>
@@ -655,7 +632,7 @@ const ExperimentView = () => {
             </div>
 
             {/* Judge Page Integration - pass the correct language */}
-            <div className="flex-1 bg-neutral-800/30 m-4 rounded-xl overflow-y-auto">
+            <div className="flex-1 flex flex-col min-h-0 m-2 rounded-xl overflow-hidden">
               <JudgePage
                 initialLanguage={mapLanguageKey(labLanguage)}
                 initialCode={code}

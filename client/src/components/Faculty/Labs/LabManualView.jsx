@@ -72,7 +72,7 @@ Hello World!
                 Code Editor
               </span>
             </div>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 flex flex-col min-h-0">
               <JudgePage experimentCode={experimentCode} />
             </div>
           </div>
