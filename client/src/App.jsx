@@ -134,7 +134,6 @@ function App() {
               : ''
           }`}
         >
-        <div className={`flex-1 transition-all duration-500 ${hasSidebar() ? (isCollapsed ? 'md:ml-24' : 'md:ml-72') : ''}`}>
           <main className="p-6 m-0">
             <Routes>
               {userType === "Student" ? (

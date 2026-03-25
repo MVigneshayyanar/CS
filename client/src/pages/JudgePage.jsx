@@ -42,13 +42,6 @@ const LANGUAGES = [
   { value: "javascript", label: "JavaScript", icon: "🟨" },
 ];
 
-const JudgePage = ({
-  initialLanguage,
-  initialCode,
-  experimentCode,
-  onCodeChange,
-  testCases,
-}) => {
 const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete }) => {
   const defaultLang = initialLanguage || "java";
   const startCode =
@@ -192,6 +185,14 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
             error: data.error || null,
           },
         ]);
+        if (labId && experimentIndex !== undefined) {
+          try {
+            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+            if (onComplete) onComplete();
+          } catch (e) {
+            console.error(e);
+          }
+        }
       } else {
         const results = [];
         for (let i = 0; i < testCases.length; i++) {
@@ -208,44 +209,6 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
               actual: data.error,
               error: data.error,
             });
-        setResult("✅ Submission Successful:\n" + (data.output || data.error || "No output"));
-        if (labId && experimentIndex !== undefined) {
-          try {
-            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
-            if (onComplete) onComplete();
-          } catch (e) {
-            console.error(e);
-          }
-        }
-        setTimeout(() => {
-          outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-        return;
-      }
-
-      setResult("Running test cases...");
-      setTimeout(() => { outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
-      
-      let allPassed = true;
-      let resultText = "Running Test Cases...\n\n";
-
-      for (let i = 0; i < testCases.length; i++) {
-        const tc = testCases[i];
-        const stdin = tc.input || "";
-        const expected = (tc.expected || tc.expectedOutput || "").trim();
-
-        resultText += `Test Case ${i + 1}:\nInput: ${stdin}\nExpected: ${expected}\n`;
-        setResult(resultText + "Status: Running...\n");
-
-        const data = await submitCode(code, language, stdin);
-        
-        if (data.error) {
-          resultText += `Status: ❌ Error\nOutput: ${data.error}\n\n`;
-          allPassed = false;
-        } else {
-          const actualOutput = (data.output || "").trim();
-          if (actualOutput === expected) {
-            resultText += `Status: ✅ Passed\n\n`;
           } else {
             const actualOutput = (data.output || "").trim();
             results.push({
@@ -257,40 +220,29 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
             });
           }
         }
+
         setTestResults(results);
         setActiveTestIdx(0);
 
         const allPassed = results.every((r) => r.passed === true);
         if (allPassed) {
           setResult("🎉 SUCCESS! All test cases passed!");
+          if (labId && experimentIndex !== undefined) {
+            try {
+              await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+              if (onComplete) onComplete();
+            } catch (dbError) {
+              console.error(dbError);
+            }
+          }
         } else {
           setResult("⚠️ Some test cases failed. Keep trying!");
         }
       }
-        setResult(resultText);
-      }
 
-      if (allPassed) {
-        resultText += "\n🎉 SUCCESS! All test cases passed! 🎉";
-        if (labId && experimentIndex !== undefined) {
-          try {
-            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
-            resultText += "\n✅ Progress updated in backend successfully!";
-            if (onComplete) onComplete();
-          } catch (dbError) {
-            resultText += `\n⚠️ Backend update error: ${dbError.message}`;
-          }
-        }
-      } else {
-        resultText += "\n⚠️ Some test cases failed. Keep trying!";
-      }
-      
-      setResult(resultText);
-      
       setTimeout(() => {
-        outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        outputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 100);
-      
     } catch (error) {
       setResult("Server Error: " + error.message);
       setTestResults([
