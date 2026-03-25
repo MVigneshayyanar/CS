@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Calendar, X, Search } from 'lucide-react';
+
 import { updateExperimentDeadline } from '@/services/facultyService';
 
 const StudentCompletionView = ({ experiment, students, onClose }) => {
@@ -21,7 +23,6 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
 
     // Derive completion status from real data
     const completedStudents = useMemo(() => {
-        // Since currently only one student can be tracked as "completedBy" in the shared experiment array
         if (experiment?.completedBy) {
             return studentList.filter(s => s.id === experiment.completedBy);
         }
@@ -33,33 +34,18 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
         return studentList.filter(s => !completedIds.includes(s.id));
     }, [studentList, completedStudents]);
 
-    const filteredCompletedStudents = useMemo(() => {
-        if (!searchQuery.trim()) return completedStudents || [];
-        const query = searchQuery.toLowerCase();
-        
-        const filtered = (completedStudents || []).filter(student => {
-            if (!student) return false;
-            const nameMatch = student.name && student.name.toLowerCase().startsWith(query);
-            const idMatch = student.id && student.id.toLowerCase().startsWith(query);
-            return nameMatch || idMatch;
-        });
-        
-        return filtered;
-    }, [completedStudents, searchQuery]);
+    const filter = (list) => {
+        if (!searchQuery.trim()) return list;
+        const q = searchQuery.toLowerCase();
+        return list.filter(
+            (s) =>
+                s.name?.toLowerCase().includes(q) ||
+                s.id?.toLowerCase().includes(q)
+        );
+    };
 
-    const filteredNotCompletedStudents = useMemo(() => {
-        if (!searchQuery.trim()) return notCompletedStudents || [];
-        const query = searchQuery.toLowerCase();
-        
-        const filtered = (notCompletedStudents || []).filter(student => {
-            if (!student) return false;
-            const nameMatch = student.name && student.name.toLowerCase().startsWith(query);
-            const idMatch = student.id && student.id.toLowerCase().startsWith(query);
-            return nameMatch || idMatch;
-        });
-        
-        return filtered;
-    }, [notCompletedStudents, searchQuery]);
+    const filteredCompletedStudents = useMemo(() => filter(completedStudents), [completedStudents, searchQuery]);
+    const filteredNotCompletedStudents = useMemo(() => filter(notCompletedStudents), [notCompletedStudents, searchQuery]);
 
     const chartData = [
         { name: 'Completed', value: completedStudents.length, color: '#10b981' },
@@ -80,11 +66,13 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
     }));
 
     const CustomTooltip = ({ active, payload }) => {
-        if (active && payload && payload.length) {
+        if (active && payload?.length) {
             return (
-                <div className="bg-white text-black rounded-lg shadow p-2">
-                    <p className="font-bold">{payload[0].payload.fullName}</p>
-                    <p>Score: {payload[0].value}</p>
+                <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
+                    <p className="font-bold text-slate-800">
+                        {payload[0].payload.fullName}
+                    </p>
+                    <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
                 </div>
             );
         }
@@ -93,17 +81,14 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
 
     const handleSetDueDate = async () => {
         if (!experiment?.id) return;
-        
         try {
             setIsUpdatingDeadline(true);
             const [labId, expIdxStr] = experiment.id.split('-');
             const experimentIndex = parseInt(expIdxStr);
-            
             await updateExperimentDeadline(labId, experimentIndex, dueDate);
             alert('Due date updated successfully!');
             setShowDueDateModal(false);
         } catch (error) {
-            console.error('Failed to set due date:', error);
             alert('Failed to update due date: ' + (error.response?.data?.message || error.message));
         } finally {
             setIsUpdatingDeadline(false);
@@ -119,152 +104,102 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
         }
     };
 
-    return (
-        <>
-            <style>
-                {`
-                    .scrollbar-overlay {
-                        scrollbar-width: thin;
-                        scrollbar-color: transparent transparent;
-                    }
-                    
-                    .scrollbar-overlay:hover {
-                        scrollbar-color: rgba(20, 184, 166, 0.3) transparent;
-                    }
-                    
-                    .scrollbar-overlay::-webkit-scrollbar {
-                        width: 8px;
-                        background: transparent;
-                    }
-                    
-                    .scrollbar-overlay::-webkit-scrollbar-track {
-                        background: transparent;
-                        border-radius: 4px;
-                    }
-                    
-                    .scrollbar-overlay::-webkit-scrollbar-thumb {
-                        background: transparent;
-                        border-radius: 4px;
-                        transition: background 0.2s ease-in-out;
-                    }
-                    
-                    .scrollbar-overlay:hover::-webkit-scrollbar-thumb {
-                        background: rgba(20, 184, 166, 0.3);
-                    }
-                    
-                    .scrollbar-overlay::-webkit-scrollbar-thumb:hover {
-                        background: rgba(20, 184, 166, 0.5);
-                    }
-                    
-                    .scrollbar-overlay::-webkit-scrollbar-corner {
-                        background: transparent;
-                    }
-                `}
-            </style>
-            
-            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-                <div className="bg-neutral-900/95 backdrop-blur-sm border border-neutral-700/50 rounded-2xl w-5/6 h-5/6 flex flex-col shadow-2xl">
-                    <div className="flex justify-between items-center p-6 border-b border-neutral-700/50">
-                        <div>
-                            <h2 className="text-2xl font-semibold text-white">
-                                Experiment {experiment?.number || 'N/A'}: {experiment?.name || 'Unnamed Experiment'} - Student Status
-                            </h2>
-                            {dueDate && (
-                                <p className="text-sm text-neutral-400 mt-1">
-                                    Due Date: {formatDate(dueDate)}
-                                </p>
-                            )}
-                        </div>
-                        <button
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gradient-to-r from-neutral-600 to-neutral-700 text-white rounded-lg hover:from-neutral-700 hover:to-neutral-800 transition-all duration-200 shadow-lg"
-                        >
-                            Close
-                        </button>
-                    </div>
-                    
-                    {/* Search Section with Due Date Button */}
-                    <div className="px-6 py-4 border-b border-neutral-700/50">
-                        <div className="flex gap-3">
-                            <div className="relative flex-1">
-                                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <input
-                                    type="text"
-                                    placeholder="Search students by name or ID"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-neutral-800/50 border border-neutral-700/30 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500/50 transition-all duration-200"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white transition-colors duration-200"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
-                            
-                            <button
-                                onClick={() => setShowDueDateModal(true)}
-                                className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg flex items-center gap-2 whitespace-nowrap"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Set Due Date
-                            </button>
-                        </div>
-                        
-                        {searchQuery && (
-                            <p className="mt-2 text-sm text-neutral-400">
-                                Showing results starting with "{searchQuery}" - {filteredCompletedStudents.length + filteredNotCompletedStudents.length} students found
-                            </p>
-                        )}
-                    </div>
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-[90vw] max-w-4xl max-h-[88vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-sm font-extrabold text-slate-900">
+              Exp {experiment?.number}: {experiment?.name} — Student Status
+            </h2>
+            {dueDate && (
+              <p className="text-xs text-slate-400 mt-0.5">
+                Due: {formatDate(dueDate)}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDueDateModal(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              Set Due Date
+            </button>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors"
+            >
+              <X className="w-4 h-4 text-slate-500" />
+            </button>
+          </div>
+        </div>
 
-                    <div className="flex-1 overflow-auto p-6 scrollbar-overlay">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            {/* Completion Pie Chart */}
-                            <div className="bg-neutral-800/50 backdrop-blur-sm border border-neutral-700/30 p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-4 text-white">Completion Status</h3>
-                                <ResponsiveContainer width="100%" height={250}>
-                                    <PieChart>
-                                        <Pie
-                                            data={chartData}
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={80}
-                                            dataKey="value"
-                                            label={({ name, value }) => `${name}: ${value}`}
-                                        >
-                                            {chartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
+        {/* Search */}
+        <div className="px-6 py-3 border-b border-slate-50">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search students by name or ID..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                <X className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+            )}
+          </div>
+        </div>
 
-                            {/* Scores Bar Chart */}
-                            <div className="bg-neutral-800/50 backdrop-blur-sm border border-neutral-700/30 p-6 rounded-xl">
-                                <h3 className="text-lg font-semibold mb-4 text-white">Leader Board</h3>
-                                <ResponsiveContainer width="100%" height={250}>
-                                    <BarChart data={scoreData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="name" />
-                                        <YAxis domain={[0, 100]} />
-                                        <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="score" fill="#3b82f6" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-auto p-6">
+          {/* Charts */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+              <h3 className="text-xs font-extrabold text-slate-700 mb-3">
+                Completion Status
+              </h3>
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={65}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                    labelLine={false}
+                  >
+                    {chartData.map((e, i) => (
+                      <Cell key={i} fill={e.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+              <h3 className="text-xs font-extrabold text-slate-700 mb-3">
+                Leaderboard
+              </h3>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={scoreData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="score" fill="#0d9488" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Completed Students */}
@@ -282,8 +217,8 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
                                                         <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 100}%</div>
-                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || experiment?.completedAt || 'Recently'}</div>
+                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 0}%</div>
+                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || 'Unknown'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -311,8 +246,8 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
                                                         <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-lg font-semibold text-red-400 uppercase text-xs">
-                                                            Pending Submission
+                                                        <div className="text-lg font-semibold text-red-400">
+                                                            {student?.daysOverdue || 0} days overdue
                                                         </div>
                                                         <div className="text-xs text-neutral-500">Status: Pending</div>
                                                     </div>
@@ -332,7 +267,7 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
 
                 {/* Due Date Modal */}
                 {showDueDateModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60]">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
                         <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
                             <h3 className="text-xl font-semibold text-white mb-4">Set Due Date</h3>
                             <div className="mb-4">
@@ -364,8 +299,7 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
                         </div>
                     </div>
                 )}
-            </div>
-        </>
+        </div>
     );
 };
 

@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import { X, Download } from "lucide-react";
 
 const TabularDataSheet = ({ classData, onClose }) => {
     const experimentCount = classData.length > 0 ? classData[0].experiments.length : 0;

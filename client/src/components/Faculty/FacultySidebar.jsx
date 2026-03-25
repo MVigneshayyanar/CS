@@ -212,7 +212,7 @@ export default function FacultySidebar({ onLogout }) {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-white/5">
+        <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{paddingBottom: !collapsed ? '56px' : undefined}}>
           <button
             onClick={handleLogout}
             className="group relative w-full flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10"
@@ -236,6 +236,24 @@ export default function FacultySidebar({ onLogout }) {
               </span>
             )}
           </button>
+          {/* Shrink button absolutely at bottom center when expanded, below logout */}
+          <div className={`w-full ${collapsed ? 'flex justify-center' : ''}`} style={{ position: !collapsed ? 'absolute' : 'static', left: 0, right: 0, bottom: 16, display: !collapsed ? 'flex' : undefined, justifyContent: !collapsed ? 'center' : undefined, pointerEvents: 'auto' }}>
+            <button
+              onClick={toggleCollapsed}
+              className={`grid h-8 w-8 place-content-center rounded-full hover:bg-white/20 transition-all duration-300 bg-white/5 ${collapsed ? 'shadow-lg border border-white/10 self-center' : ''}`}
+              style={!collapsed ? { zIndex: 10 } : {}}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className={`h-4 w-4 text-white transition-transform duration-500 ${collapsed ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
 

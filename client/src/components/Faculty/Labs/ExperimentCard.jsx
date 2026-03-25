@@ -1,52 +1,85 @@
-import React from 'react';
-import { Card, CardContent, CardTitle } from './Card';
+import React from "react";
+import { CheckCircle2, Star, ChevronRight } from "lucide-react";
 
-const ExperimentCard = ({ experimentName, experimentNumber, completedBy, totalStudents, avgScore, onClick }) => (
-    <Card
-        className="bg-gradient-to-r from-emerald-900/30 to-emerald-800/30 hover:from-emerald-800/40 hover:to-emerald-700/40 border-emerald-700/30 hover:border-emerald-500/50 cursor-pointer group"
-        onClick={onClick}
+const ExperimentCard = ({
+  experimentName,
+  experimentNumber,
+  completedBy,
+  totalStudents,
+  avgScore,
+  onClick,
+}) => {
+  const pct =
+    totalStudents > 0 ? Math.round((completedBy / totalStudents) * 100) : 0;
+  const isLow = pct < 50;
+
+  return (
+    <div
+      onClick={onClick}
+      className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer group p-4 mb-3 flex items-center gap-4 ${
+        isLow
+          ? "border-red-100 hover:border-red-300"
+          : "border-slate-100 hover:border-teal-300"
+      }`}
     >
-        <CardContent className="flex items-center justify-between">
-            <div className="flex-1">
-                <div className="flex items-center gap-4 mb-4">
-                    <CardTitle className="text-white text-xl tracking-wide font-bold group-hover:text-emerald-100 transition-colors">
-                        Exp {experimentNumber}: {experimentName}
-                    </CardTitle>
-                </div>
-                <div className="flex items-center gap-6 text-neutral-300 text-sm mb-4">
-                    <div className="flex items-center gap-2 bg-emerald-600/20 px-3 py-1 rounded-lg">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {completedBy}/{totalStudents} completed
-                    </div>
-                    <div className="flex items-center gap-2 bg-emerald-600/20 px-3 py-1 rounded-lg">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                        Avg: {avgScore}%
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <div className="flex justify-between text-sm text-neutral-200">
-                        <span>Completion Rate</span>
-                        <span className="font-semibold text-emerald-300">{Math.round((completedBy / totalStudents) * 100)}%</span>
-                    </div>
-                    <div className="w-full h-2 bg-neutral-700/50 rounded-full">
-                        <div
-                            className="h-2 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-300"
-                            style={{ width: `${(completedBy / totalStudents) * 100}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-            <div className="ml-6">
-                <svg className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-            </div>
-        </CardContent>
-    </Card>
-);
+      {/* Number badge */}
+      <div
+        className={`w-11 h-11 rounded-xl flex items-center justify-center text-sm font-extrabold flex-shrink-0 ${
+          isLow ? "bg-red-50 text-red-500" : "bg-teal-50 text-teal-700"
+        }`}
+      >
+        {String(experimentNumber).padStart(2, "0")}
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-sm font-extrabold text-slate-900 mb-2 truncate group-hover:text-teal-700 transition-colors">
+          Exp {experimentNumber}: {experimentName}
+        </h3>
+        <div className="flex flex-wrap gap-2 mb-2.5">
+          <span
+            className={`flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full ${
+              isLow ? "bg-red-50 text-red-600" : "bg-teal-50 text-teal-700"
+            }`}
+          >
+            <CheckCircle2 className="w-3 h-3" />
+            {completedBy}/{totalStudents} completed
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700">
+            <Star className="w-3 h-3" />
+            Avg: {avgScore}%
+          </span>
+        </div>
+        {/* Progress */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className={`h-1.5 rounded-full transition-all duration-700 ${isLow ? "bg-red-400" : "bg-teal-500"}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <span
+            className={`text-[11px] font-extrabold flex-shrink-0 ${isLow ? "text-red-500" : "text-teal-600"}`}
+          >
+            {pct}%
+          </span>
+        </div>
+      </div>
+
+      {/* Arrow */}
+      <div
+        className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+          isLow
+            ? "bg-red-50 group-hover:bg-red-100"
+            : "bg-teal-50 group-hover:bg-teal-100"
+        }`}
+      >
+        <ChevronRight
+          className={`w-3.5 h-3.5 ${isLow ? "text-red-400" : "text-teal-600"}`}
+        />
+      </div>
+    </div>
+  );
+};
 
 export default ExperimentCard;
