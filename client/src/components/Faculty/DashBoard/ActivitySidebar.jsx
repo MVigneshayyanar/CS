@@ -52,6 +52,7 @@ const normalizePendingActions = (pendingActionsProp = []) =>
 const ActivitySidebar = ({
   recentActivitiesProp = [],
   pendingActionsProp = [],
+  showPendingActions = true,
 }) => {
   const recentActivities = normalizeRecentActivities(recentActivitiesProp);
   const pendingActions = normalizePendingActions(pendingActionsProp);
@@ -101,43 +102,45 @@ const ActivitySidebar = ({
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center">
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
+      {showPendingActions && (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center">
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <span className="text-xs font-extrabold text-slate-800">
+              Pending Actions
+            </span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800">
-            Pending Actions
-          </span>
-        </div>
 
-        <div className="space-y-2">
-          {pendingActions.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-3">
-              All caught up!
-            </p>
-          ) : (
-            pendingActions.map((action, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100"
-              >
-                <div className="w-7 h-7 bg-white rounded-lg border border-slate-200 flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-3 h-3 text-slate-400" />
-                </div>
-                <p className="flex-1 text-[11px] font-semibold text-slate-600 leading-tight">
-                  {action.description}
-                </p>
-                <span
-                  className={`text-[9.5px] font-extrabold px-2 py-1 rounded-full flex-shrink-0 ${badgeMap[action.priority] || badgeMap.low}`}
+          <div className="space-y-2">
+            {pendingActions.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-3">
+                All caught up!
+              </p>
+            ) : (
+              pendingActions.map((action, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100"
                 >
-                  {action.priority || "low"}
-                </span>
-              </div>
-            ))
-          )}
+                  <div className="w-7 h-7 bg-white rounded-lg border border-slate-200 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-3 h-3 text-slate-400" />
+                  </div>
+                  <p className="flex-1 text-[11px] font-semibold text-slate-600 leading-tight">
+                    {action.description}
+                  </p>
+                  <span
+                    className={`text-[9.5px] font-extrabold px-2 py-1 rounded-full flex-shrink-0 ${badgeMap[action.priority] || badgeMap.low}`}
+                  >
+                    {action.priority || "low"}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

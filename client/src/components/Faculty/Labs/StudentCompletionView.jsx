@@ -1,98 +1,108 @@
-import React, { useState, useMemo } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import { Search, X, Calendar, CheckCircle2, XCircle } from "lucide-react";
+import React, { useState, useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Calendar, X, Search } from 'lucide-react';
 
-const StudentCompletionView = ({ experiment, onClose }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showDueDateModal, setShowDueDateModal] = useState(false);
-  const [dueDate, setDueDate] = useState(experiment?.dueDate || "");
+import { updateExperimentDeadline } from '@/services/facultyService';
 
-  const completedStudents = [
-    { name: "ABCDEFGH", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-    { name: "CEFGHI", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-    {
-      name: "DEF AQRGH",
-      id: "CSE001",
-      score: 95,
-      submissionDate: "2024-01-15",
-    },
-    { name: "GHI", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-    { name: "JKL", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-    { name: "MNO", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-    { name: "PQR", id: "CSE002", score: 88, submissionDate: "2024-01-14" },
-    { name: "STU", id: "CSE003", score: 92, submissionDate: "2024-01-16" },
-  ];
-  const notCompletedStudents = [
-    { name: "VW", id: "CSE004", daysOverdue: 7 },
-    { name: "YZ", id: "CSE005", daysOverdue: 3 },
-  ];
+const StudentCompletionView = ({ experiment, students, onClose }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showDueDateModal, setShowDueDateModal] = useState(false);
+    const [dueDate, setDueDate] = useState(experiment?.deadline || experiment?.dueDate || '');
+    const [isUpdatingDeadline, setIsUpdatingDeadline] = useState(false);
 
-  const filter = (list) => {
-    if (!searchQuery.trim()) return list;
-    const q = searchQuery.toLowerCase();
-    return list.filter(
-      (s) =>
-        s.name?.toLowerCase().startsWith(q) ||
-        s.id?.toLowerCase().startsWith(q),
-    );
-  };
+    // Normalize student list
+    const studentList = useMemo(() => {
+        return (students || []).map((s, idx) => {
+            if (typeof s === 'string') return { name: s, id: s };
+            return {
+                name: s.name || s.username || `Student ${idx + 1}`,
+                id: s.id || s.username || `ID-${idx + 1}`
+            };
+        });
+    }, [students]);
 
-  const filteredCompleted = useMemo(
-    () => filter(completedStudents),
-    [searchQuery],
-  );
-  const filteredNotCompleted = useMemo(
-    () => filter(notCompletedStudents),
-    [searchQuery],
-  );
+    // Derive completion status from real data
+    const completedStudents = useMemo(() => {
+        if (experiment?.completedBy) {
+            return studentList.filter(s => s.id === experiment.completedBy);
+        }
+        return [];
+    }, [studentList, experiment]);
 
-  const chartData = [
-    { name: "Completed", value: completedStudents.length, color: "#10b981" },
-    {
-      name: "Not Completed",
-      value: notCompletedStudents.length,
-      color: "#ef4444",
-    },
-  ];
-  const scoreData = completedStudents.slice(0, 5).map((s) => ({
-    name: s.name.split(" ")[0].slice(0, 8),
-    fullName: s.name,
-    score: s.score,
-  }));
+    const notCompletedStudents = useMemo(() => {
+        const completedIds = completedStudents.map(s => s.id);
+        return studentList.filter(s => !completedIds.includes(s.id));
+    }, [studentList, completedStudents]);
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload?.length) {
-      return (
-        <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
-          <p className="font-bold text-slate-800">
-            {payload[0].payload.fullName}
-          </p>
-          <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
-        </div>
-      );
+    const filter = (list) => {
+        if (!searchQuery.trim()) return list;
+        const q = searchQuery.toLowerCase();
+        return list.filter(
+            (s) =>
+                s.name?.toLowerCase().includes(q) ||
+                s.id?.toLowerCase().includes(q)
+        );
+    };
+
+    const filteredCompletedStudents = useMemo(() => filter(completedStudents), [completedStudents, searchQuery]);
+    const filteredNotCompletedStudents = useMemo(() => filter(notCompletedStudents), [notCompletedStudents, searchQuery]);
+
+    const chartData = [
+        { name: 'Completed', value: completedStudents.length, color: '#10b981' },
+        { name: 'Not Completed', value: notCompletedStudents.length, color: '#ef4444' },
+    ];
+
+    function truncateString(str, maxLength) {
+        if (str.length > maxLength) {
+            return str.slice(0, maxLength - 5) + '...';
+        }
+        return str;
     }
-    return null;
-  };
 
-  const getInitials = (name) =>
-    name
-      ?.split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "??";
-  const formatDate = (d) => (d ? new Date(d).toLocaleDateString() : "");
+    const scoreData = completedStudents.slice(0, 5).map(student => ({
+        name: truncateString(student.name.split(' ')[0], 10),
+        fullName: student.name,
+        score: student.score || 100
+    }));
+
+    const CustomTooltip = ({ active, payload }) => {
+        if (active && payload?.length) {
+            return (
+                <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
+                    <p className="font-bold text-slate-800">
+                        {payload[0].payload.fullName}
+                    </p>
+                    <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const handleSetDueDate = async () => {
+        if (!experiment?.id) return;
+        try {
+            setIsUpdatingDeadline(true);
+            const [labId, expIdxStr] = experiment.id.split('-');
+            const experimentIndex = parseInt(expIdxStr);
+            await updateExperimentDeadline(labId, experimentIndex, dueDate);
+            alert('Due date updated successfully!');
+            setShowDueDateModal(false);
+        } catch (error) {
+            alert('Failed to update due date: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setIsUpdatingDeadline(false);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch (e) {
+            return dateString;
+        }
+    };
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -191,128 +201,106 @@ const StudentCompletionView = ({ experiment, onClose }) => {
             </div>
           </div>
 
-          {/* Student lists */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Completed */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="text-xs font-extrabold text-emerald-700">
-                  Completed Students ({filteredCompleted.length})
-                </span>
-              </div>
-              <div className="space-y-2">
-                {filteredCompleted.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-4">
-                    No results found
-                  </p>
-                ) : (
-                  filteredCompleted.map((s, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-3 py-2.5 bg-emerald-50 border border-emerald-100 rounded-xl"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-[11px] font-extrabold text-emerald-700 flex-shrink-0">
-                        {getInitials(s.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate">
-                          {s.name}
-                        </p>
-                        <p className="text-[10px] text-slate-400">{s.id}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-extrabold text-emerald-600">
-                          {s.score}%
-                        </p>
-                        <p className="text-[10px] text-slate-400">
-                          {s.submissionDate}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Completed Students */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4 text-emerald-400">
+                                    Completed Students ({filteredCompletedStudents.length})
+                                </h3>
+                                <div className="space-y-3">
+                                    {filteredCompletedStudents && filteredCompletedStudents.length > 0 ? (
+                                        filteredCompletedStudents.map((student, index) => (
+                                            <div key={student?.id || index} className="bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4 backdrop-blur-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <h4 className="font-semibold text-white">{student?.name || 'Unknown'}</h4>
+                                                        <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 0}%</div>
+                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || 'Unknown'}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center text-neutral-400 py-8">
+                                            {searchQuery ? `No completed students found starting with "${searchQuery}"` : "No completed students"}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-            {/* Not completed */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <XCircle className="w-4 h-4 text-red-400" />
-                <span className="text-xs font-extrabold text-red-600">
-                  Not Completed ({filteredNotCompleted.length})
-                </span>
-              </div>
-              <div className="space-y-2">
-                {filteredNotCompleted.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-4">
-                    No results found
-                  </p>
-                ) : (
-                  filteredNotCompleted.map((s, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-[11px] font-extrabold text-red-600 flex-shrink-0">
-                        {getInitials(s.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-800 truncate">
-                          {s.name}
-                        </p>
-                        <p className="text-[10px] text-slate-400">{s.id}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-extrabold text-red-500">
-                          {s.daysOverdue}d overdue
-                        </p>
-                        <p className="text-[10px] text-slate-400">Pending</p>
-                      </div>
+                            {/* Not Completed Students */}
+                            <div>
+                                <h3 className="text-lg font-semibold mb-4 text-red-400">
+                                    Not Completed Students ({filteredNotCompletedStudents.length})
+                                </h3>
+                                <div className="space-y-3">
+                                    {filteredNotCompletedStudents && filteredNotCompletedStudents.length > 0 ? (
+                                        filteredNotCompletedStudents.map((student, index) => (
+                                            <div key={student?.id || index} className="bg-red-900/20 border border-red-700/30 rounded-xl p-4 backdrop-blur-sm">
+                                                <div className="flex justify-between items-center">
+                                                    <div>
+                                                        <h4 className="font-semibold text-white">{student?.name || 'Unknown'}</h4>
+                                                        <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-lg font-semibold text-red-400">
+                                                            {student?.daysOverdue || 0} days overdue
+                                                        </div>
+                                                        <div className="text-xs text-neutral-500">Status: Pending</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center text-neutral-400 py-8">
+                                            {searchQuery ? `No incomplete students found starting with "${searchQuery}"` : "No incomplete students"}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                </div>
 
-      {/* Due Date Modal */}
-      {showDueDateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl p-6 w-80">
-            <h3 className="text-sm font-extrabold text-slate-900 mb-4">
-              Set Due Date
-            </h3>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-              Due Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all mb-4"
-            />
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowDueDateModal(false)}
-                className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-slate-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => setShowDueDateModal(false)}
-                className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all"
-              >
-                Set Due Date
-              </button>
-            </div>
-          </div>
+                {/* Due Date Modal */}
+                {showDueDateModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
+                        <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
+                            <h3 className="text-xl font-semibold text-white mb-4">Set Due Date</h3>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                                    Due Date
+                                </label>
+                                <input
+                                    type="datetime-local"
+                                    value={dueDate}
+                                    onChange={(e) => setDueDate(e.target.value)}
+                                    className="w-full px-3 py-2 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+                                />
+                            </div>
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    onClick={() => setShowDueDateModal(false)}
+                                    className="px-4 py-2 bg-neutral-600/50 text-white rounded-lg hover:bg-neutral-600 transition-colors duration-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSetDueDate}
+                                    disabled={isUpdatingDeadline}
+                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50"
+                                >
+                                    {isUpdatingDeadline ? 'Saving...' : 'Set Due Date'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default StudentCompletionView;

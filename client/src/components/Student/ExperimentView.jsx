@@ -64,6 +64,8 @@ const ExperimentView = () => {
   const [experiment, setExperiment] = useState(null);
   const [labLanguage, setLabLanguage] = useState('python');
   const [isLoadingExp, setIsLoadingExp] = useState(true);
+  const [labId, setLabId] = useState(null);
+  const [experimentIndex, setExperimentIndex] = useState(null);
 
   // Enhanced anti-cheat state management
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -88,7 +90,6 @@ const ExperimentView = () => {
         const result = await fetchStudentLabs();
         const labs = result?.data?.labs || [];
 
-        // experimentId format is "<labId>-<experimentIndex>"
         let foundExperiment = null;
         let foundLanguage = 'python';
 
@@ -112,6 +113,8 @@ const ExperimentView = () => {
                 deadline: experiments[i].deadline || lab.created_at || new Date().toISOString(),
               };
               foundLanguage = lab.language || lab.name || 'python';
+              setLabId(lab.id);
+              setExperimentIndex(i);
               break;
             }
           }
@@ -122,7 +125,6 @@ const ExperimentView = () => {
           setExperiment(foundExperiment);
           setLabLanguage(foundLanguage);
 
-          // Load saved code or set default for the language
           const savedCode = localStorage.getItem(`experiment_${experimentId}_code`);
           if (savedCode) {
             setCode(savedCode);
@@ -130,7 +132,6 @@ const ExperimentView = () => {
             setCode(getDefaultCode(foundLanguage));
           }
         } else {
-          // Fallback: experiment not found
           setExperiment({
             id: experimentId,
             sno: 1,
@@ -638,6 +639,39 @@ const ExperimentView = () => {
                 initialCode={code}
                 onCodeChange={handleCodeChange}
                 testCases={experiment.testCases}
+                labId={labId}
+                experimentIndex={experimentIndex}
+                onComplete={() => {
+                  // Reload experiment data from server to reflect the new status
+                  // Using experimentId from closures
+                  const reload = async () => {
+                    const result = await fetchStudentLabs();
+                    const labs = result?.data?.labs || [];
+                    for (const lab of labs) {
+                      const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
+                      for (let i = 0; i < experiments.length; i++) {
+                        if (`${lab.id}-${i}` === experimentId) {
+                          setExperiment({
+                            ...experiments[i],
+                            id: `${lab.id}-${i}`,
+                            sno: i + 1,
+                            title: experiments[i].title || `Experiment ${i + 1}`,
+                            domain: experiments[i].domain || lab.originalName || lab.fullName || lab.name || 'General',
+                            description: experiments[i].description || 'No description available',
+                            difficulty: experiments[i].difficulty || 'Intermediate',
+                            estimatedTime: experiments[i].estimatedTime || '3 hours',
+                            language: lab.language || lab.name || 'Python',
+                            question: experiments[i].description || experiments[i].question || 'Complete the experiment as described.',
+                            testCases: Array.isArray(experiments[i].testCases) ? experiments[i].testCases : [],
+                            deadline: experiments[i].deadline || lab.created_at || new Date().toISOString(),
+                          });
+                          break;
+                        }
+                      }
+                    }
+                  }
+                  reload();
+                }}
               />
             </div>
           </div>

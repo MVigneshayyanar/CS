@@ -34,7 +34,7 @@ const ClassCard = ({
     <div className="flex flex-wrap gap-2 mb-4">
       <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-700">
         <Users className="w-3 h-3" />
-        {students} students
+        {Array.isArray(students) ? students.length : students} students
       </span>
       <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full bg-teal-50 text-teal-700">
         <FlaskConical className="w-3 h-3" />

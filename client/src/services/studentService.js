@@ -40,3 +40,13 @@ export const fetchStudentReports = async () => {
   return response.data;
 };
 
+export const updateExperimentStatus = async (labId, experimentIndex, status, progress) => {
+  const headers = await getAuthHeaders();
+  const response = await studentApi.put(
+    "/student/experiment-status",
+    { labId, experimentIndex, status, progress },
+    { headers }
+  );
+  return response.data;
+};
+
