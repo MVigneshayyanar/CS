@@ -73,11 +73,18 @@ const FacultyLabManagement = () => {
     }, [labsPayload.classes]);
 
     const experiments = useMemo(() => {
-        if (!selectedClass) return [];
-        return (labsPayload.experiments || []).filter(
-            (e) => e.className === selectedClass.name,
-        );
-    }, [labsPayload.experiments, selectedClass]);
+    if (!selectedClass) return [];
+    return (labsPayload.experiments || []).filter(
+      (e) => e.className === selectedClass.name,
+    );
+  }, [labsPayload.experiments, selectedClass]);
+
+  const allSubjectExperiments = useMemo(() => {
+    if (!selectedSubject) return [];
+    return (labsPayload.experiments || []).filter(
+      (e) => e.subject === selectedSubject.name
+    );
+  }, [labsPayload.experiments, selectedSubject]);
 
     const classData = Array.isArray(selectedClass?.students) && selectedClass.students.length > 0
         ? selectedClass.students.map((student, index) => {
@@ -414,7 +421,7 @@ const FacultyLabManagement = () => {
                 {/* Modal Components */}
                 {showExperimentsList && (
                     <ExperimentsList
-                        experiments={experiments}
+                        experiments={allSubjectExperiments.length > 0 ? allSubjectExperiments : experiments}
                         selectedSubject={selectedSubject}
                         onClose={() => setShowExperimentsList(false)}
                         onViewLabManual={handleViewLabManual}
