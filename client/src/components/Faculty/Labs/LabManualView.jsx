@@ -1,22 +1,18 @@
-import React from 'react';
-import JudgePage from '../../../pages/JudgePage';
+import React from "react";
+import { X } from "lucide-react";
+import JudgePage from "../../../pages/JudgePage";
 
 const LabManualView = ({ experiment, onClose }) => {
-    const experimentCode = `#include <stdio.h>
+  const experimentCode = `#include <stdio.h>\n\nint main() {\n    printf("Hello World!\\n");\n    return 0;\n}`;
 
-int main() {
-    printf("Hello World!\\n");
-    return 0;
-}`;
-
-    const labManual = `
-# Experiment ${experiment.number}: ${experiment.name}
+  const labManual = `# Experiment ${experiment.number}: ${experiment.name}
 
 ## Objective
 To write a simple C program that prints "Hello World!" to the console.
 
 ## Theory
-The printf() function is used to display output in C programming. It is defined in the stdio.h header file.
+The printf() function is used to display output in C programming.
+It is defined in the stdio.h header file.
 
 ## Algorithm
 1. Include necessary header files
@@ -30,88 +26,60 @@ Hello World!
 ## Procedure
 1. Write the code in the editor
 2. Compile and run the program
-3. Verify the output matches expected result
-  `;
+3. Verify the output matches expected result`;
 
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-neutral-900/95 backdrop-blur-sm border border-neutral-700/50 rounded-2xl w-5/6 h-5/6 flex flex-col shadow-2xl">
-                <div className="flex justify-between items-center p-6 border-b border-neutral-700/50">
-                    <h2 className="text-2xl font-semibold text-white">
-                        Experiment {experiment.number}: {experiment.name}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-gradient-to-r from-neutral-600 to-neutral-700 text-white rounded-lg hover:from-neutral-700 hover:to-neutral-800 transition-all duration-200 shadow-lg"
-                    >
-                        Back
-                    </button>
-                </div>
-                <div className="flex-1 flex min-h-0">
-                    {/* Lab Manual */}
-                    <div className="w-1/2 p-6 border-r border-neutral-700/50 relative">
-                        <div className="h-full overflow-y-auto pr-2 -mr-2 scrollbar-overlay">
-                            <h3 className="text-lg font-semibold mb-4 text-white sticky top-0 bg-neutral-900/95 backdrop-blur-sm py-2 -mx-2 px-2 z-10">
-                                Lab Manual
-                            </h3>
-                            <div className="prose prose-sm max-w-none">
-                                <pre className="whitespace-pre-wrap text-sm text-neutral-300 bg-neutral-800/30 p-4 rounded-lg border border-neutral-700/30 leading-relaxed">
-                                    {labManual}
-                                </pre>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Compiler */}
-                    <div className="w-1/2 relative">
-                        <div className="h-full overflow-y-auto pr-2 -mr-2 scrollbar-overlay">
-                            <JudgePage experimentCode={experimentCode} />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Custom Scrollbar Styles */}
-            <style jsx>{`
-                .scrollbar-overlay {
-                    scrollbar-width: thin;
-                    scrollbar-color: transparent transparent;
-                }
-                
-                .scrollbar-overlay:hover {
-                    scrollbar-color: rgba(20, 184, 166, 0.4) transparent;
-                }
-                
-                .scrollbar-overlay::-webkit-scrollbar {
-                    width: 8px;
-                    background: transparent;
-                }
-                
-                .scrollbar-overlay::-webkit-scrollbar-track {
-                    background: transparent;
-                    border-radius: 4px;
-                }
-                
-                .scrollbar-overlay::-webkit-scrollbar-thumb {
-                    background: transparent;
-                    border-radius: 4px;
-                    transition: background 0.2s ease-in-out;
-                }
-                
-                .scrollbar-overlay:hover::-webkit-scrollbar-thumb {
-                    background: rgba(20, 184, 166, 0.4);
-                }
-                
-                .scrollbar-overlay::-webkit-scrollbar-thumb:hover {
-                    background: rgba(20, 184, 166, 0.6);
-                }
-                
-                .scrollbar-overlay::-webkit-scrollbar-corner {
-                    background: transparent;
-                }
-            `}</style>
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-[92vw] max-w-5xl h-[85vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 flex-shrink-0">
+          <div>
+            <h2 className="text-sm font-extrabold text-slate-900">
+              Experiment {experiment.number}: {experiment.name}
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Lab Manual &amp; Code Editor
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors"
+          >
+            <X className="w-4 h-4 text-slate-500" />
+          </button>
         </div>
-    );
+
+        {/* Split panel */}
+        <div className="flex flex-1 min-h-0">
+          {/* Lab Manual */}
+          <div className="w-1/2 border-r border-slate-100 flex flex-col">
+            <div className="px-5 py-3 border-b border-slate-50 bg-slate-50/50">
+              <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">
+                Lab Manual
+              </span>
+            </div>
+            <div className="flex-1 overflow-auto p-5">
+              <pre className="whitespace-pre-wrap text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-xl p-4 leading-relaxed font-mono">
+                {labManual}
+              </pre>
+            </div>
+          </div>
+
+          {/* Code editor */}
+          <div className="w-1/2 flex flex-col">
+            <div className="px-5 py-3 border-b border-slate-50 bg-slate-50/50">
+              <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">
+                Code Editor
+              </span>
+            </div>
+            <div className="flex-1 overflow-auto">
+              <JudgePage experimentCode={experimentCode} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LabManualView;
