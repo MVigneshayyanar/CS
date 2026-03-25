@@ -543,7 +543,7 @@ const ExperimentView = () => {
         <div className="flex-1 flex overflow-hidden">
 
           {/* Left Panel - Problem Statement */}
-          <div className="w-1/2 border-r border-neutral-800 flex flex-col overflow-hidden">
+          <div className="w-1/2 h-full border-r border-neutral-800 flex flex-col overflow-hidden">
             <div className="flex-shrink-0 p-4 border-b border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -596,8 +596,8 @@ const ExperimentView = () => {
             </div>
 
             {/* Fixed Bottom Stats */}
-            <div className="flex-shrink-0 p-4 border-t border-neutral-800 bg-[#16162A]/30">
-              <div className="grid grid-cols-2 gap-2 mt-0">
+            <div className="mt-auto flex-shrink-0 px-4 py-3 border-t border-neutral-800 bg-[#16162A]/30">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="bg-neutral-800/40 p-3 rounded-xl border border-neutral-800/50 flex flex-col items-center justify-center text-center">
                   <div className="text-sm font-bold text-amber-400 mb-0.5">{experiment.domain}</div>
                   <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Faculty</div>
@@ -613,7 +613,7 @@ const ExperimentView = () => {
           </div>
 
           {/* Right Panel - Code Editor */}
-          <div className="w-1/2 flex flex-col overflow-hidden">
+          <div className="w-1/2 h-full flex flex-col overflow-hidden">
             <div className="flex-shrink-0 p-4 border-b border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
