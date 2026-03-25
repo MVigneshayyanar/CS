@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import SettingsSidebar from '../../components/Faculty/Settings/SettingsSidebar';
 import FacultyProfileSection from '../../components/Faculty/Settings/FacultyProfileSection';
 import PasswordSection from '../../components/Faculty/Settings/PasswordSection';
-import TeachingSection from '../../components/Faculty/Settings/TeachingSection';
-import NotificationsSection from '../../components/Faculty/Settings/NotificationsSection';
 import AppearanceSection from '../../components/Faculty/Settings/AppearanceSection';
-import PrivacySection from '../../components/Faculty/Settings/PrivacySection';
 import MessageAlert from '../../components/Faculty/Settings/MessageAlert';
-import { SettingsIcon } from '../../components/Faculty/Settings/SettingsIcons';
 
 const FacultySettings = () => {
   const [activeSection, setActiveSection] = useState('profile');
@@ -21,37 +17,7 @@ const FacultySettings = () => {
   });
 
   const [preferences, setPreferences] = useState({
-    theme: 'dark',
-    notifications: {
-      emailNotifications: true,
-      pushNotifications: true,
-      assignmentReminders: true,
-      gradeNotifications: true,
-      classReminders: true,
-      systemUpdates: false
-    },
-    teaching: {
-      preferredLanguages: {
-        'C': true,
-        'C++': true,
-        'Java': true,
-        'Python': true,
-        'SQL': true,
-        'JavaScript': false,
-        'R': false
-      },
-      gradingSystem: 'percentage',
-      autoGrading: true,
-      deadlineReminders: true,
-      allowLateSubmissions: true,
-      showSolutions: true
-    },
-    privacy: {
-      showEmail: false,
-      showPhone: false,
-      showOfficeHours: true,
-      profileVisibility: 'students'
-    }
+    theme: 'dark'
   });
 
   React.useEffect(() => {
@@ -95,10 +61,7 @@ const FacultySettings = () => {
     switch(activeSection) {
       case 'profile': return <FacultyProfileSection {...commonProps} />;
       case 'password': return <PasswordSection passwordData={passwordData} setPasswordData={setPasswordData} {...commonProps} />;
-      case 'teaching': return <TeachingSection {...commonProps} />;
-      case 'notifications': return <NotificationsSection {...commonProps} />;
       case 'appearance': return <AppearanceSection {...commonProps} />;
-      case 'privacy': return <PrivacySection {...commonProps} />;
       default: return <FacultyProfileSection {...commonProps} />;
     }
   };

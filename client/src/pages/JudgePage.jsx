@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import CodeEditor from "../components/CodeEditor.jsx";
 import { submitCode } from "../services/judgeService";
+import { updateExperimentStatus } from "../services/studentService";
 
 // Default starter code per language
 const getStarterCode = (lang) => {
@@ -20,7 +21,7 @@ const getStarterCode = (lang) => {
   }
 };
 
-const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases }) => {
+const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete }) => {
   const defaultLang = initialLanguage || "java";
   const startCode = initialCode || experimentCode || getStarterCode(defaultLang);
   
@@ -117,6 +118,14 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
       if (!testCases || testCases.length === 0) {
         const data = await submitCode(code, language);
         setResult("✅ Submission Successful:\n" + (data.output || data.error || "No output"));
+        if (labId && experimentIndex !== undefined) {
+          try {
+            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+            if (onComplete) onComplete();
+          } catch (e) {
+            console.error(e);
+          }
+        }
         setTimeout(() => {
           outputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
@@ -156,6 +165,15 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
 
       if (allPassed) {
         resultText += "\n🎉 SUCCESS! All test cases passed! 🎉";
+        if (labId && experimentIndex !== undefined) {
+          try {
+            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+            resultText += "\n✅ Progress updated in backend successfully!";
+            if (onComplete) onComplete();
+          } catch (dbError) {
+            resultText += `\n⚠️ Backend update error: ${dbError.message}`;
+          }
+        }
       } else {
         resultText += "\n⚠️ Some test cases failed. Keep trying!";
       }

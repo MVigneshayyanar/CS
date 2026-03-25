@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ClassCard from '../../components/Faculty/Labs/ClassCard';
-import  SubjectCard from '../../components/Faculty/Labs/SubjectCard.jsx';
+import SubjectCard from '../../components/Faculty/Labs/SubjectCard.jsx';
 import ExperimentCard from '../../components/Faculty/Labs/ExperimentCard.jsx';
 import TabularDataSheet from '../../components/Faculty/Labs/TabularDataSheet.jsx';
 import StudentCompletionView from '../../components/Faculty/Labs/StudentCompletionView.jsx';
@@ -56,12 +56,24 @@ const FacultyLabManagement = () => {
         return (labsPayload.experiments || []).filter((exp) => exp.className === selectedClass.name);
     }, [labsPayload.experiments, selectedClass]);
 
-    const classData = (selectedClass?.students || 0) > 0
-        ? Array.from({ length: selectedClass.students }).slice(0, 10).map((_, index) => ({
-            id: `${selectedClass.name}-${index + 1}`,
-            name: `Student ${index + 1}`,
-            experiments: Array.from({ length: Math.max(10, experiments.length || 10) }, (_, expIndex) => expIndex < Math.round((selectedClass.completionRate || 0) / 10)),
-        }))
+    const subjectExperiments = useMemo(() => {
+        if (!selectedSubject) return [];
+        // Filtering experiments for all labs associated with this subject
+        return (labsPayload.experiments || []).filter((exp) => exp.subject === selectedSubject.name);
+    }, [labsPayload.experiments, selectedSubject]);
+
+    const classData = Array.isArray(selectedClass?.students) && selectedClass.students.length > 0
+        ? selectedClass.students.map((student, index) => {
+            const studentId = typeof student === 'string' ? student : student?.id || `${selectedClass.name}-${index + 1}`;
+            return {
+                id: studentId,
+                name: typeof student === 'string' ? student : student?.name || `Student ${index + 1}`,
+                experiments: Array.from({ length: experiments.length }, (_, expIndex) => {
+                    const exp = experiments[expIndex];
+                    return exp && (exp.completedBy === studentId || exp.status === 'completed' && exp.completedBy === studentId);
+                }),
+            };
+        })
         : [];
 
     // Event handlers
@@ -205,7 +217,7 @@ const FacultyLabManagement = () => {
                                     key={experiment.id}
                                     experimentName={experiment.name}
                                     experimentNumber={experiment.number}
-                                    completedBy={experiment.completedBy}
+                                    completedBy={experiment.completedCount}
                                     totalStudents={experiment.totalStudents}
                                     avgScore={experiment.avgScore}
                                     onClick={() => handleExperimentClick(experiment)}
@@ -218,7 +230,7 @@ const FacultyLabManagement = () => {
                 {/* Modal Components */}
                 {showExperimentsList && (
                     <ExperimentsList
-                        experiments={experiments}
+                        experiments={subjectExperiments}
                         selectedSubject={selectedSubject}
                         onClose={() => setShowExperimentsList(false)}
                         onViewLabManual={handleViewLabManual}
@@ -242,6 +254,7 @@ const FacultyLabManagement = () => {
                 {showStudentCompletion && selectedExperiment && (
                     <StudentCompletionView
                         experiment={selectedExperiment}
+                        students={selectedClass?.students || []}
                         onClose={() => setShowStudentCompletion(false)}
                     />
                 )}

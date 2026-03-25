@@ -1,29 +1,37 @@
 import React, { useState, useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { updateExperimentDeadline } from '@/services/facultyService';
 
-const StudentCompletionView = ({ experiment, onClose }) => {
+const StudentCompletionView = ({ experiment, students, onClose }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showDueDateModal, setShowDueDateModal] = useState(false);
-    const [dueDate, setDueDate] = useState(experiment?.dueDate || '');
+    const [dueDate, setDueDate] = useState(experiment?.deadline || experiment?.dueDate || '');
+    const [isUpdatingDeadline, setIsUpdatingDeadline] = useState(false);
 
-    // Sample data
-    const completedStudents = [
-        { name: "ABCDEFGH", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "CEFGHI", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "DEF AQRGH", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "GHI", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "JKL", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "MNO", id: "CSE001", score: 95, submissionDate: "2024-01-15" },
-        { name: "PQR", id: "CSE002", score: 88, submissionDate: "2024-01-14" },
-        { name: "STU", id: "CSE003", score: 92, submissionDate: "2024-01-16" },
-        { name: "STU", id: "CSE003", score: 92, submissionDate: "2024-01-16" },
-        { name: "STU", id: "CSE003", score: 92, submissionDate: "2024-01-16" },
-    ];
+    // Normalize student list
+    const studentList = useMemo(() => {
+        return (students || []).map((s, idx) => {
+            if (typeof s === 'string') return { name: s, id: s };
+            return {
+                name: s.name || s.username || `Student ${idx + 1}`,
+                id: s.id || s.username || `ID-${idx + 1}`
+            };
+        });
+    }, [students]);
 
-    const notCompletedStudents = [
-        { name: "VW", id: "CSE004", daysOverdue: 7 },
-        { name: "YZ", id: "CSE005", daysOverdue: 3 },
-    ];
+    // Derive completion status from real data
+    const completedStudents = useMemo(() => {
+        // Since currently only one student can be tracked as "completedBy" in the shared experiment array
+        if (experiment?.completedBy) {
+            return studentList.filter(s => s.id === experiment.completedBy);
+        }
+        return [];
+    }, [studentList, experiment]);
+
+    const notCompletedStudents = useMemo(() => {
+        const completedIds = completedStudents.map(s => s.id);
+        return studentList.filter(s => !completedIds.includes(s.id));
+    }, [studentList, completedStudents]);
 
     const filteredCompletedStudents = useMemo(() => {
         if (!searchQuery.trim()) return completedStudents || [];
@@ -68,7 +76,7 @@ const StudentCompletionView = ({ experiment, onClose }) => {
     const scoreData = completedStudents.slice(0, 5).map(student => ({
         name: truncateString(student.name.split(' ')[0], 10),
         fullName: student.name,
-        score: student.score
+        score: student.score || 100
     }));
 
     const CustomTooltip = ({ active, payload }) => {
@@ -83,16 +91,32 @@ const StudentCompletionView = ({ experiment, onClose }) => {
         return null;
     };
 
-    const handleSetDueDate = () => {
-        // Here you would typically save the due date to your backend
-        console.log('Setting due date to:', dueDate);
-        setShowDueDateModal(false);
-        // You could also call a prop function like onDueDateChange(dueDate)
+    const handleSetDueDate = async () => {
+        if (!experiment?.id) return;
+        
+        try {
+            setIsUpdatingDeadline(true);
+            const [labId, expIdxStr] = experiment.id.split('-');
+            const experimentIndex = parseInt(expIdxStr);
+            
+            await updateExperimentDeadline(labId, experimentIndex, dueDate);
+            alert('Due date updated successfully!');
+            setShowDueDateModal(false);
+        } catch (error) {
+            console.error('Failed to set due date:', error);
+            alert('Failed to update due date: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setIsUpdatingDeadline(false);
+        }
     };
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
-        return new Date(dateString).toLocaleDateString();
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch (e) {
+            return dateString;
+        }
     };
 
     return (
@@ -258,8 +282,8 @@ const StudentCompletionView = ({ experiment, onClose }) => {
                                                         <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 0}%</div>
-                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || 'Unknown'}</div>
+                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 100}%</div>
+                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || experiment?.completedAt || 'Recently'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -287,8 +311,8 @@ const StudentCompletionView = ({ experiment, onClose }) => {
                                                         <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="text-lg font-semibold text-red-400">
-                                                            {student?.daysOverdue || 0} days overdue
+                                                        <div className="text-lg font-semibold text-red-400 uppercase text-xs">
+                                                            Pending Submission
                                                         </div>
                                                         <div className="text-xs text-neutral-500">Status: Pending</div>
                                                     </div>
@@ -308,7 +332,7 @@ const StudentCompletionView = ({ experiment, onClose }) => {
 
                 {/* Due Date Modal */}
                 {showDueDateModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60]">
                         <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
                             <h3 className="text-xl font-semibold text-white mb-4">Set Due Date</h3>
                             <div className="mb-4">
@@ -331,9 +355,10 @@ const StudentCompletionView = ({ experiment, onClose }) => {
                                 </button>
                                 <button
                                     onClick={handleSetDueDate}
-                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg"
+                                    disabled={isUpdatingDeadline}
+                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50"
                                 >
-                                    Set Due Date
+                                    {isUpdatingDeadline ? 'Saving...' : 'Set Due Date'}
                                 </button>
                             </div>
                         </div>

@@ -1,14 +1,11 @@
 import React from 'react';
-import { User, Lock, BookOpen, Bell, Palette, Shield, ChevronRight } from './SettingsIcons';
+import { User, Lock, Palette, ChevronRight } from './SettingsIcons';
 
 const SettingsSidebar = ({ activeSection, setActiveSection }) => {
   const settingsNavigation = [
     { id: 'profile', label: 'Faculty Profile', icon: User },
     { id: 'password', label: 'Change Password', icon: Lock },
-    { id: 'teaching', label: 'Teaching Settings', icon: BookOpen },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'appearance', label: 'Display Settings', icon: Palette },
-    { id: 'privacy', label: 'Privacy & Security', icon: Shield }
+    { id: 'appearance', label: 'Display Settings', icon: Palette }
   ];
 
   return (

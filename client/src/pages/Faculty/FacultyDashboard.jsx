@@ -15,8 +15,6 @@ import {
 import QuickStatsCards from "../../components/Faculty/DashBoard/QuickStatsCards";
 import PerformanceCharts from "../../components/Faculty/DashBoard/PerformanceCharts";
 import ActivitySidebar from "../../components/Faculty/DashBoard/ActivitySidebar";
-import ClassManagementGrid from "../../components/Faculty/DashBoard/ClassManagementGrid";
-import ExperimentQueue from "../../components/Faculty/DashBoard/ExperimentQueue";
 import { fetchFacultyDashboard } from "@/services/facultyService";
 
 /* ─── tiny reusable pieces ─── */
@@ -64,6 +62,7 @@ const SectionCard = ({
 /* ─── main component ─── */
 
 const FacultyDashboard = () => {
+  const username = sessionStorage.getItem("username") || "Professor";
   const [selectedClass, setSelectedClass] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
   const [isLoading, setIsLoading] = useState(true);
@@ -99,11 +98,8 @@ const FacultyDashboard = () => {
       icon: <BookOpen className="w-5 h-5 text-blue-500" />,
       iconBg: "bg-blue-50",
       numColor: "text-blue-600",
-      trend: "+2 new",
-      trendBg: "bg-blue-50",
-      trendColor: "text-blue-700",
       barColor: "bg-blue-400",
-      barWidth: "30%",
+      barWidth: "100%",
     },
     {
       title: "Total Students",
@@ -111,21 +107,15 @@ const FacultyDashboard = () => {
       icon: <Users className="w-5 h-5 text-emerald-500" />,
       iconBg: "bg-emerald-50",
       numColor: "text-emerald-600",
-      trend: "Active",
-      trendBg: "bg-emerald-50",
-      trendColor: "text-emerald-700",
       barColor: "bg-emerald-400",
-      barWidth: "20%",
+      barWidth: "100%",
     },
     {
-      title: "Pending Submissions",
+      title: "Pending Reviews",
       value: `${dashboardData?.quickStats?.pendingSubmissions ?? 0}`,
       icon: <Clock className="w-5 h-5 text-amber-500" />,
       iconBg: "bg-amber-50",
       numColor: "text-amber-600",
-      trend: "Review",
-      trendBg: "bg-amber-50",
-      trendColor: "text-amber-800",
       barColor: "bg-amber-400",
       barWidth: `${Math.min(100, (dashboardData?.quickStats?.pendingSubmissions ?? 0) * 10)}%`,
     },
@@ -135,9 +125,6 @@ const FacultyDashboard = () => {
       icon: <BarChart2 className="w-5 h-5 text-violet-500" />,
       iconBg: "bg-violet-50",
       numColor: "text-violet-600",
-      trend: `${dashboardData?.quickStats?.overallCompletion ?? 0}%`,
-      trendBg: "bg-violet-50",
-      trendColor: "text-violet-700",
       barColor: "bg-violet-400",
       barWidth: `${dashboardData?.quickStats?.overallCompletion ?? 0}%`,
     },
@@ -185,32 +172,11 @@ const FacultyDashboard = () => {
         <div className="flex flex-col gap-4">
           <ActivitySidebar
             recentActivitiesProp={dashboardData?.recentActivities}
-            pendingActionsProp={dashboardData?.pendingActions}
+            showPendingActions={false}
           />
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {/* Class management */}
-        <SectionCard icon={BookOpen} title="Class Management" action="View All">
-          <ClassManagementGrid
-            onClassSelect={handleClassSelect}
-            classesData={dashboardData?.classes}
-          />
-        </SectionCard>
-
-        {/* Experiment queue */}
-        <SectionCard
-          icon={CheckSquare}
-          title="Experiment Queue"
-          badge={`${dashboardData?.experimentQueue?.length ?? 0} Pending`}
-        >
-          <ExperimentQueue
-            experimentQueueData={dashboardData?.experimentQueue}
-          />
-        </SectionCard>
-      </div>
     </div>
   );
 
@@ -309,7 +275,7 @@ const FacultyDashboard = () => {
               <div className="relative bg-teal-600 rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-lg font-extrabold text-white mb-1">
-                    Good Morning, Professor!
+                    Good Morning, {username}!
                   </h2>
                   <p className="text-teal-100 text-xs max-w-sm leading-relaxed mb-3">
                     You have{" "}
@@ -317,84 +283,11 @@ const FacultyDashboard = () => {
                     submissions and experiments waiting for review today.
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      {
-                        label: `${dashboardData?.quickStats?.totalClasses ?? 0} Classes Active`,
-                        icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5",
-                      },
-                      {
-                        label: `${dashboardData?.quickStats?.pendingSubmissions ?? 0} Pending Reviews`,
-                        icon: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-                      },
-                      {
-                        label: `${dashboardData?.quickStats?.overallCompletion ?? 0}% Overall Completion`,
-                        icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2z",
-                      },
-                    ].map((c, i) => (
-                      <span
-                        key={i}
-                        className="flex items-center gap-1.5 bg-white/20 text-white text-[10px] font-bold px-3 py-1.5 rounded-full"
-                      >
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d={c.icon}
-                          />
-                        </svg>
-                        {c.label}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                {/* Hex deco */}
-                <div className="flex gap-2 opacity-90 pointer-events-none select-none flex-shrink-0">
-                  <div className="flex flex-col gap-2">
-                    <div
-                      style={{
-                        width: 44,
-                        height: 52,
-                        background: "rgba(255,255,255,.15)",
-                        clipPath:
-                          "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 28,
-                        height: 34,
-                        background: "rgba(255,215,0,.3)",
-                        clipPath:
-                          "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                        alignSelf: "flex-end",
-                      }}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 mt-3">
-                    <div
-                      style={{
-                        width: 28,
-                        height: 34,
-                        background: "rgba(255,215,0,.3)",
-                        clipPath:
-                          "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 44,
-                        height: 52,
-                        background: "rgba(255,255,255,.15)",
-                        clipPath:
-                          "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                      }}
-                    />
+                    <span
+                      className="flex items-center gap-1.5 bg-white/20 text-white text-[10px] font-bold px-3 py-1.5 rounded-full"
+                    >
+                      Real-time Academic Overview
+                    </span>
                   </div>
                 </div>
               </div>
