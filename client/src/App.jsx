@@ -8,6 +8,7 @@ import TopBar from "./components/TopBar";
 import TopLogout from "./pages/God/TopLogout";
 import FacultySidebar from "./components/Faculty/FacultySidebar";
 import LoginPage from "./pages/Auth/LoginPage";
+import { logoutUser } from "./services/authService";
 
 // Student pages
 import Dashboard from "./pages/Student/Dashboard";
@@ -15,10 +16,11 @@ import Labs from "./pages/Student/Labs";
 import Experiments from "./pages/Student/Experiments";
 import ExperimentView from "./components/Student/ExperimentView";
 import Statistics from "./pages/Student/Statistics";
+import Reports from "./pages/Student/Reports";
 import Settings from "./pages/Student/Settings";
 
 // Faculty pages
-import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultyLabManagement from "./pages/faculty/FacultyLabManagement";
 import FacultySettings from "./pages/Faculty/FacultySettings";
 
@@ -52,8 +54,6 @@ function App() {
   }, []);
 
   const handleLogin = (type) => {
-    sessionStorage.setItem("isAuthenticated", "true");
-    sessionStorage.setItem("userType", type);
     setUserType(type);
     
     // Explicitly reset theme on login to avoid theme leakage from previous user
@@ -61,10 +61,15 @@ function App() {
     setTheme("dark");
   };
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    setUserType(null);
-    setTheme("dark"); // Also reset to dark on logout
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUserType(null);
+      setTheme("dark"); // Also reset to dark on logout
+    } catch (error) {
+      const message = error?.response?.data?.message || "Logout failed on server. Please try again.";
+      alert(message);
+    }
   };
 
   const getTopbar = () => {
@@ -95,9 +100,9 @@ function App() {
   const getSidebar = () => {
     switch (userType) {
       case "Student":
-        return <Sidebar />;
+        return <Sidebar onLogout={handleLogout} />;
       case "Faculty":
-        return <FacultySidebar />;
+        return <FacultySidebar onLogout={handleLogout} />;
       case "Admin":
         return <AdminSidebar onLogout={handleLogout} />;
       case "God":
@@ -127,6 +132,7 @@ function App() {
                   <Route path="/labs/experiments" element={<Experiments />} />
                   <Route path="/labs/experiments/view" element={<ExperimentView />} />
                   <Route path="/statistics" element={<Statistics />} />
+                  <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>

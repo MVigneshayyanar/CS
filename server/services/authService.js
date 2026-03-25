@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { supabase } = require("../config/supabaseClient");
 
 const PORTAL_ROLE_MAP = {
@@ -29,6 +30,13 @@ const normalizeUserRecord = (record) => ({
 });
 
 const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
+const refreshTokenStore = new Map();
+const activeRefreshByFamily = new Map();
+
+const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET || "dev-jwt-secret-change-me";
+const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "dev-jwt-refresh-secret-change-me";
+const accessTokenTtl = process.env.ACCESS_TOKEN_EXPIRES_IN || process.env.JWT_EXPIRES_IN || "15m";
+const refreshTokenTtl = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 
 const loadUserByIdentifier = async (identifier) => {
   if (!supabase) {
@@ -75,20 +83,157 @@ const loadUserById = async (userId) => {
   return data ? normalizeUserRecord(data) : null;
 };
 
-const signToken = (user) => {
-  const secret = process.env.JWT_SECRET || "dev-jwt-secret-change-me";
-
-  return jwt.sign(
+const signAccessToken = (user) =>
+  jwt.sign(
     {
       sub: user.id,
       username: user.username,
       role: user.role,
+      tokenType: "access",
     },
-    secret,
+    accessTokenSecret,
     {
-      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      expiresIn: accessTokenTtl,
     }
   );
+
+const decodeTokenWithoutVerify = (token) => {
+  try {
+    return jwt.decode(token) || null;
+  } catch (_error) {
+    return null;
+  }
+};
+
+const signRefreshToken = ({ user, familyId, tokenId }) =>
+  jwt.sign(
+    {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+      tokenType: "refresh",
+      familyId,
+      tokenId,
+    },
+    refreshTokenSecret,
+    {
+      expiresIn: refreshTokenTtl,
+    }
+  );
+
+const issueTokenPair = (user, existingFamilyId) => {
+  const familyId = existingFamilyId || crypto.randomUUID();
+  const tokenId = crypto.randomUUID();
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken({ user, familyId, tokenId });
+  const decodedRefresh = decodeTokenWithoutVerify(refreshToken);
+
+  refreshTokenStore.set(tokenId, {
+    tokenId,
+    familyId,
+    userId: user.id,
+    revoked: false,
+    expiresAt: decodedRefresh?.exp ? decodedRefresh.exp * 1000 : null,
+  });
+  activeRefreshByFamily.set(familyId, tokenId);
+
+  return {
+    accessToken,
+    refreshToken,
+    tokenType: "Bearer",
+    accessTokenExpiresIn: accessTokenTtl,
+    refreshTokenExpiresIn: refreshTokenTtl,
+  };
+};
+
+const verifyAccessToken = (token) => {
+  const payload = jwt.verify(token, accessTokenSecret);
+  if (payload.tokenType && payload.tokenType !== "access") {
+    const error = new Error("Invalid access token type");
+    error.statusCode = 401;
+    throw error;
+  }
+  return payload;
+};
+
+const verifyRefreshToken = (refreshToken) => {
+  const payload = jwt.verify(refreshToken, refreshTokenSecret);
+  if (payload.tokenType !== "refresh") {
+    const error = new Error("Invalid refresh token type");
+    error.statusCode = 401;
+    throw error;
+  }
+  return payload;
+};
+
+const revokeRefreshFamily = (familyId) => {
+  for (const record of refreshTokenStore.values()) {
+    if (record.familyId === familyId) {
+      record.revoked = true;
+    }
+  }
+  activeRefreshByFamily.delete(familyId);
+};
+
+const rotateRefreshToken = async (refreshToken) => {
+  if (!refreshToken) {
+    const error = new Error("Refresh token is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const payload = verifyRefreshToken(refreshToken);
+  const storedRecord = refreshTokenStore.get(payload.tokenId);
+
+  if (!storedRecord || storedRecord.revoked || storedRecord.userId !== payload.sub) {
+    const error = new Error("Refresh token is invalid");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const activeTokenId = activeRefreshByFamily.get(payload.familyId);
+  if (activeTokenId !== payload.tokenId) {
+    revokeRefreshFamily(payload.familyId);
+    const error = new Error("Refresh token reuse detected. Please login again.");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const user = await loadUserById(payload.sub);
+  if (!user || !user.isActive) {
+    revokeRefreshFamily(payload.familyId);
+    const error = new Error("User account is not active");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  storedRecord.revoked = true;
+  const tokenPair = issueTokenPair(user, payload.familyId);
+
+  return {
+    ...tokenPair,
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+    },
+  };
+};
+
+const logoutWithRefreshToken = (refreshToken) => {
+  if (!refreshToken) {
+    const error = new Error("Refresh token is required for logout");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const payload = verifyRefreshToken(refreshToken);
+  revokeRefreshFamily(payload.familyId);
+
+  return {
+    revoked: true,
+  };
 };
 
 const ensureRoleIsAllowed = (role, allowedRoles) => {
@@ -130,10 +275,15 @@ const loginWithRoles = async ({ identifier, password, allowedRoles }) => {
     throw error;
   }
 
-  const token = signToken(user);
+  const tokenPair = issueTokenPair(user);
 
   return {
-    token,
+    token: tokenPair.accessToken,
+    accessToken: tokenPair.accessToken,
+    refreshToken: tokenPair.refreshToken,
+    tokenType: tokenPair.tokenType,
+    accessTokenExpiresIn: tokenPair.accessTokenExpiresIn,
+    refreshTokenExpiresIn: tokenPair.refreshTokenExpiresIn,
     user: {
       id: user.id,
       username: user.username,
@@ -210,4 +360,7 @@ module.exports = {
   getAllowedRolesByLoginType,
   loginWithRoles,
   changePasswordForUser,
+  rotateRefreshToken,
+  logoutWithRefreshToken,
+  verifyAccessToken,
 };

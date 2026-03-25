@@ -25,6 +25,11 @@ const formatDate = (value) => {
   return date.toLocaleDateString("en-GB");
 };
 
+const isCompletedProgram = (program) => {
+  const status = (program?.status || "").toString().toLowerCase();
+  return status === "completed" || Number(program?.progress || 0) >= 100;
+};
+
 const getAssignedLabsForStudent = async (username) => {
   ensureSupabase();
 
@@ -52,40 +57,64 @@ const getAssignedLabsForStudent = async (username) => {
   );
 };
 
+const getUserByUsername = async (username) => {
+  ensureSupabase();
+  const { data, error } = await supabase
+    .from(process.env.SUPABASE_USERS_TABLE || "app_users")
+    .select("id, username, email, role, created_at")
+    .eq("username", username)
+    .single();
+
+  if (error) return null;
+  return data;
+};
+
 const getStudentDashboardData = async (username) => {
   const assignedLabs = await getAssignedLabsForStudent(username);
+  const user = await getUserByUsername(username);
 
   const progressData = assignedLabs.map((lab, index) => {
     const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
-    const completedEst = Math.min(100, 25 + experiments.length * 15);
+    const completed = experiments.filter((exp) => exp.status === "completed" || exp.progress >= 100).length;
+    const percentage = experiments.length ? Math.round((completed / experiments.length) * 100) : 0;
+
     return {
-      percentage: completedEst,
+      percentage,
       label: lab.language || lab.name || `Lab ${index + 1}`,
       color: index % 2 === 0 ? "teal" : "blue",
     };
   });
 
-  const assignedTasks = assignedLabs.flatMap((lab) =>
+  const allTasks = assignedLabs.flatMap((lab) =>
     (Array.isArray(lab.experiments) ? lab.experiments : []).map((experiment, expIndex) => ({
       title: experiment.title || `${lab.name} Experiment ${expIndex + 1}`,
+      deadline: experiment.deadline || lab.created_at,
       date: formatDate(experiment.deadline || lab.created_at),
+      status: experiment.status || "pending",
+      labName: lab.name
     }))
   );
 
-  const incompleteTasks = assignedTasks.slice(0, Math.max(1, Math.floor(assignedTasks.length / 3)));
+  const incompleteTasks = allTasks.filter(task => task.status !== "completed").slice(0, 5);
   const avgProgress = progressData.length
     ? Math.round(progressData.reduce((sum, item) => sum + item.percentage, 0) / progressData.length)
     : 0;
 
   return {
+    user: {
+      name: user?.username || "Student",
+      username: user?.username,
+      email: user?.email,
+      location: "Active Student",
+    },
     progressData,
     stats: [
       { value: `${assignedLabs.length}`, label: "Total Labs", color: "teal" },
       { value: `${avgProgress}%`, label: "Avg Progress", color: "emerald" },
-      { value: `${Math.max(0, assignedTasks.length - incompleteTasks.length)}`, label: "Completed Tasks", color: "amber" },
-      { value: `${incompleteTasks.length}`, label: "Pending Tasks", color: "cyan" },
+      { value: `${allTasks.filter(t => t.status !== "completed").length}`, label: "Pending Tasks", color: "cyan" },
+      { value: `${allTasks.filter(t => t.status === "completed").length}`, label: "Completed Tasks", color: "amber" },
     ],
-    assignedTasks,
+    assignedTasks: allTasks.slice(0, 5),
     incompleteTasks,
   };
 };
@@ -109,7 +138,12 @@ const getStudentLabsData = async (username) => {
       date: formatDate(lab.created_at),
       students: Array.isArray(lab.students) ? lab.students.length : 0,
       duration: `${Math.max(1, experiments.length)} week${experiments.length === 1 ? "" : "s"}`,
-      experiments: experiments,
+      experiments: experiments.map((exp, i) => ({
+        ...exp,
+        id: `${lab.id}-${i}`,
+        sno: i + 1,
+        dateDue: exp.deadline || lab.created_at
+      })),
     };
   });
 };
@@ -136,25 +170,27 @@ const getStudentStatisticsData = async (username) => {
     : 0;
 
   const skillRadarData = [
-    { skill: "OOP", A: Math.max(40, avgProgress - 5) },
-    { skill: "Arrays", A: Math.max(45, avgProgress + 2) },
-    { skill: "Data Structures", A: Math.max(35, avgProgress - 8) },
-    { skill: "Algorithms", A: Math.max(30, avgProgress - 12) },
-    { skill: "Recursion", A: Math.max(30, avgProgress - 10) },
-    { skill: "Debugging", A: Math.max(45, avgProgress + 4) },
+    { skill: "Logic", A: Math.max(20, avgProgress) },
+    { skill: "Syntax", A: Math.max(30, avgProgress + 5) },
+    { skill: "Efficiency", A: Math.max(25, avgProgress - 5) },
+    { skill: "Debugging", A: Math.max(20, avgProgress - 10) },
+    { skill: "Design", A: Math.max(15, avgProgress - 15) },
+    { skill: "Documentation", A: Math.max(10, avgProgress - 20) },
   ];
 
   const activityItems = assignedLabs.slice(0, 5).map((lab, index) => ({
     id: index + 1,
-    title: `Worked on ${lab.name}`,
-    time: `${index + 1} day${index ? "s" : ""} ago`,
+    title: `Accessed ${lab.name} Portal`,
+    time: `Active Now`,
   }));
 
   return {
     metrics: {
       labsCompleted: `${myLabsData.filter((lab) => lab.progress >= 100).length}/${myLabsData.length}`,
-      studyHours: `${Math.max(8, totalAssignments * 3)}h`,
+      studyHours: `${Math.max(1, Math.round(completedAssignments * 1.5))}h`,
       assignmentsDue: Math.max(0, totalAssignments - completedAssignments),
+      accuracy: `${Math.max(70, avgProgress + 5)}%`,
+      overallProgress: avgProgress
     },
     myLabsData,
     skillRadarData,
@@ -163,9 +199,60 @@ const getStudentStatisticsData = async (username) => {
   };
 };
 
+const getStudentReportsData = async (username) => {
+  const assignedLabs = await getAssignedLabsForStudent(username);
+
+  const allPrograms = assignedLabs.flatMap((lab) => {
+    const sectionName = lab.language || lab.name || "General";
+    const programs = Array.isArray(lab.experiments) ? lab.experiments : [];
+
+    return programs.map((program, index) => {
+      const completed = isCompletedProgram(program);
+      return {
+        id: `${lab.id || sectionName}-${index + 1}`,
+        section: sectionName,
+        programName: program.title || `${sectionName} Program ${index + 1}`,
+        status: completed ? "completed" : "not_completed",
+        progress: Math.max(0, Math.min(100, Number(program.progress || (completed ? 100 : 0)))),
+        deadline: formatDate(program.deadline || lab.created_at),
+      };
+    });
+  });
+
+  const completedPrograms = allPrograms.filter((program) => program.status === "completed");
+  const notCompletedPrograms = allPrograms.filter((program) => program.status === "not_completed");
+
+  const sectionMap = new Map();
+  allPrograms.forEach((program) => {
+    if (!sectionMap.has(program.section)) {
+      sectionMap.set(program.section, []);
+    }
+    sectionMap.get(program.section).push(program);
+  });
+
+  const sections = Array.from(sectionMap.entries()).map(([section, programs]) => ({
+    section,
+    completed: programs.filter((program) => program.status === "completed").length,
+    notCompleted: programs.filter((program) => program.status === "not_completed").length,
+    programs,
+  }));
+
+  return {
+    summary: {
+      totalPrograms: allPrograms.length,
+      completedPrograms: completedPrograms.length,
+      notCompletedPrograms: notCompletedPrograms.length,
+    },
+    sections,
+    completedPrograms,
+    generatedAt: new Date().toISOString(),
+  };
+};
+
 module.exports = {
   getStudentDashboardData,
   getStudentLabsData,
   getStudentStatisticsData,
+  getStudentReportsData,
 };
 

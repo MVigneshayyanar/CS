@@ -25,19 +25,11 @@ const LoginCard = ({ onLogin }) => {
         portal: userType,
       });
 
-      const { token, user } = result?.data || {};
+      const { accessToken, refreshToken, user } = result?.data || {};
       const actualUserType = user?.role;
 
-      if (!actualUserType) {
-        throw new Error("Login response missing user role");
-      }
-
-      sessionStorage.setItem("isAuthenticated", "true");
-      sessionStorage.setItem("userType", actualUserType);
-      sessionStorage.setItem("userId", user?.id || `user_${actualUserType}_${username}`);
-      sessionStorage.setItem("username", user?.username || username);
-      if (token) {
-        sessionStorage.setItem("authToken", token);
+      if (!actualUserType || !accessToken || !refreshToken) {
+        throw new Error("Login failed: backend did not provide valid token pair");
       }
 
       if (onLogin) {
@@ -99,6 +91,7 @@ const LoginCard = ({ onLogin }) => {
           <label className="text-sm block mb-1">Username :</label>
           <input
             type="text"
+            autoComplete="username"
             className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -111,6 +104,7 @@ const LoginCard = ({ onLogin }) => {
           <label className="text-sm block mb-1">Password :</label>
           <input
             type="password"
+            autoComplete="current-password"
             className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

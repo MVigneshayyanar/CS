@@ -8,20 +8,23 @@ import Banner from "./Banner";
 import { fetchStudentDashboard } from "@/services/studentService";
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const [progressData, setProgressData] = useState([]);
   const [stats, setStats] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         const result = await fetchStudentDashboard();
-        setProgressData(result?.data?.progressData || []);
-        setStats(result?.data?.stats || []);
-        setAssignedTasks(result?.data?.assignedTasks || []);
-        setIncompleteTasks(result?.data?.incompleteTasks || []);
+        const data = result?.data || {};
+        setProgressData(data.progressData || []);
+        setStats(data.stats || []);
+        setAssignedTasks(data.assignedTasks || []);
+        setIncompleteTasks(data.incompleteTasks || []);
+        setUser(data.user);
       } catch (error) {
         const message =
           error?.response?.data?.message ||

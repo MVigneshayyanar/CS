@@ -20,18 +20,18 @@ const ExperimentCard = ({ experiment }) => {
   const navigate = useNavigate();
 
   return (
-    <div 
+    <div
       onClick={() => navigate(`/labs/experiments/view?id=${experiment.id}`)}
       className="group bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 cursor-pointer relative overflow-hidden"
     >
       {/* Status Overlay for Completed */}
       {experiment.status === 'completed' && (
         <div className="absolute top-0 right-0 p-4">
-           <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg">
-             <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="4">
-               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-             </svg>
-           </div>
+          <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg">
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
         </div>
       )}
 
@@ -65,28 +65,37 @@ const ExperimentCard = ({ experiment }) => {
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Due Date</span>
               <div className="flex items-center gap-1.5 mt-1 text-slate-700 font-bold text-xs">
                 <Calendar className="w-3.5 h-3.5 text-teal-500" />
-                {new Date(experiment.dateDue).toLocaleDateString()}
+                {(() => {
+                  const d = experiment.dateDue || experiment.deadline || experiment.date;
+                  if (!d) return 'N/A';
+                  try {
+                    const dateObj = new Date(d);
+                    return isNaN(dateObj.getTime()) ? d : dateObj.toLocaleDateString('en-GB');
+                  } catch (e) {
+                    return d;
+                  }
+                })()}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-end">
-               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
-               <StatusBadge status={experiment.status} />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Status</span>
+              <StatusBadge status={experiment.status} />
             </div>
           </div>
-          
+
           {/* Action button */}
           <div className="mt-6 flex items-center justify-between group-hover:bg-teal-50 rounded-2xl p-2 transition-all duration-300">
-             <div className="flex -space-x-2 overflow-hidden ml-1">
-                <div className="w-6 h-6 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-teal-600">JS</div>
-                <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-blue-600">PY</div>
-             </div>
-             <div className="flex items-center gap-2 text-xs font-black text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 transform duration-500">
-               Start Experiment
-               <div className="w-7 h-7 bg-teal-500 rounded-lg flex items-center justify-center">
-                 <ChevronRight className="w-4 h-4 text-white" />
-               </div>
-             </div>
+            <div className="flex -space-x-2 overflow-hidden ml-1">
+              <div className="w-6 h-6 rounded-full bg-teal-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-teal-600">JS</div>
+              <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center text-[8px] font-bold text-blue-600">PY</div>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-black text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0 transform duration-500">
+              Start Experiment
+              <div className="w-7 h-7 bg-teal-500 rounded-lg flex items-center justify-center">
+                <ChevronRight className="w-4 h-4 text-white" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

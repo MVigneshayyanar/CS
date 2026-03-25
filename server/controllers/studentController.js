@@ -2,6 +2,7 @@ const {
   getStudentDashboardData,
   getStudentLabsData,
   getStudentStatisticsData,
+  getStudentReportsData,
 } = require("../services/studentService");
 
 const getStudentDashboard = async (req, res, next) => {
@@ -43,9 +44,23 @@ const getStudentStatistics = async (req, res, next) => {
   }
 };
 
+const getStudentReports = async (req, res, next) => {
+  try {
+    const reports = await getStudentReportsData(req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      message: "Student reports fetched successfully",
+      data: reports,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getStudentDashboard,
   getStudentLabs,
   getStudentStatistics,
+  getStudentReports,
 };
 
