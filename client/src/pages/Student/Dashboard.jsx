@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [assignedTasks, setAssignedTasks] = useState([]);
   const [incompleteTasks, setIncompleteTasks] = useState([]);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -29,6 +30,8 @@ const Dashboard = () => {
           error?.response?.data?.message ||
           "Failed to load student dashboard from backend";
         alert(message);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadDashboard();

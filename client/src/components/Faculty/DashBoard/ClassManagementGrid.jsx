@@ -1,196 +1,164 @@
-import React, { useMemo, useState } from 'react';
-import { Card, CardContent, CardTitle } from '../Labs/Card';
+import React, { useMemo, useState } from "react";
+import { BookOpen, Users, ChevronRight } from "lucide-react";
 
-const ClassManagementGrid = ({ classesData, onClassSelect }) => {
-    const [sortBy, setSortBy] = useState('name');
-    const [filterYear, setfilterYear] = useState('all');
+const colorCycle = [
+  {
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-500",
+    bar: "bg-blue-500",
+    chip: "bg-blue-50 text-blue-700",
+  },
+  {
+    iconBg: "bg-violet-50",
+    iconColor: "text-violet-500",
+    bar: "bg-violet-500",
+    chip: "bg-violet-50 text-violet-700",
+  },
+  {
+    iconBg: "bg-teal-50",
+    iconColor: "text-teal-500",
+    bar: "bg-teal-500",
+    chip: "bg-teal-50 text-teal-700",
+  },
+  {
+    iconBg: "bg-amber-50",
+    iconColor: "text-amber-500",
+    bar: "bg-amber-500",
+    chip: "bg-amber-50 text-amber-700",
+  },
+];
 
-    const fallbackClasses = [
-        {
-            id: 1,
-            name: 'CSE-A',
-            subject: 'Computer Programming',
-            students: 32,
-            completionRate: 8,
-            year: 'I',
-        },
-        {
-            id: 2,
-            name: 'CSE-B',
-            subject: 'Computer Programming',
-            students: 30,
-            completionRate: 9,
-            year: 'I',
-        },
-        {
-            id: 3,
-            name: 'CSE-A',
-            subject: 'Data Structures',
-            students: 28,
-            completionRate: 7,
-            year: 'II',
-        },
-        {
-            id: 4,
-            name: 'CSE-B',
-            subject: 'Database Systems',
-            students: 35,
-            completionRate: 9,
-            year: 'II',
-        },
-        {
-            id: 5,
-            name: 'CSE-A',
-            subject: 'Web Development',
-            students: 26,
-            completionRate: 8,
-            year: 'III',
-        },
-        {
-            id: 6,
-            name: 'CSE-B',
-            subject: 'Computer Programming',
-            students: 31,
-            completionRate: 6,
-            year: 'III',
-        },
-        {
-            id: 7,
-            name: 'CSE-A',
-            subject: 'Web Development',
-            students: 26,
-            completionRate: 8,
-            year: 'IV',
-        },
-        {
-            id: 8,
-            name: 'CSE-B',
-            subject: 'Computer Programming',
-            students: 31,
-            completionRate: 7,
-            year: 'IV',
-        }
-    ];
+const fallbackClasses = [
+  {
+    id: 1,
+    name: "CSE-A",
+    subject: "Computer Programming",
+    students: 32,
+    completionRate: 72,
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "CSE-B",
+    subject: "Computer Programming",
+    students: 30,
+    completionRate: 66,
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "ECE-A",
+    subject: "Data Structures",
+    students: 28,
+    completionRate: 58,
+    status: "Inactive",
+  },
+  {
+    id: 4,
+    name: "IT-A",
+    subject: "Web Development",
+    students: 26,
+    completionRate: 81,
+    status: "Active",
+  },
+];
 
-    const yearDetails = [
-        { year: 'I', color: 'text-emerald-400', roundedColor: 'bg-emerald-400', totalExperiments: 12 },
-        { year: 'II', color: 'text-blue-400', roundedColor: 'bg-blue-400', totalExperiments: 10 },
-        { year: 'III', color: 'text-amber-400', roundedColor: 'bg-amber-400', totalExperiments: 8 },
-        { year: 'IV', color: 'text-purple-400', roundedColor: 'bg-purple-400', totalExperiments: 10 },
-    ];
+const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
+  const [filter, setFilter] = useState("All");
+  const filters = ["All", "Active", "Inactive"];
 
-    const classes = useMemo(() => classesData || fallbackClasses, [classesData]);
+  const classes = useMemo(() => {
+    if (Array.isArray(classesData) && classesData.length > 0) {
+      return classesData;
+    }
+    return fallbackClasses;
+  }, [classesData]);
 
-    const filteredClasses = classes.filter(classItem => {
-        if (filterYear === 'all') return true;
-        return classItem.year === filterYear;
-    });
+  const filtered =
+    filter === "All"
+      ? classes
+      : classes.filter((c) => (c.status || "Active") === filter);
 
-    return (
-        <Card className="bg-neutral-800/50 backdrop-blur-sm border-neutral-700/30">
-            <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                    <CardTitle className="text-xl font-semibold text-white flex items-center gap-2">
-                        <svg className="w-6 h-6 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        My Classes ({filteredClasses.length})
-                    </CardTitle>
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        {filters.map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold border-2 transition-all ${
+              filter === f
+                ? "bg-teal-50 border-teal-400 text-teal-700"
+                : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
 
-                    <div className="flex items-center gap-4">
-                        {/* Filter */}
-                        <select
-                            value={filterYear}
-                            onChange={(e) => setfilterYear(e.target.value)}
-                            className="bg-neutral-700/50 border border-neutral-600/50 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50"
-                        >
-                            <option value="all">All Classes</option>
-                            <option value="I">I-year</option>
-                            <option value="II">II-year</option>
-                            <option value="III">III-year</option>
-                            <option value="IV">IV-year</option>
-                        </select>
-                    </div>
+      {filtered.length === 0 ? (
+        <p className="text-sm text-slate-400 text-center py-6">
+          No classes found
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {filtered.map((cls, i) => {
+            const c = colorCycle[i % colorCycle.length];
+            const pct = Number(cls.completionRate ?? 0);
+
+            return (
+              <div
+                key={cls.id || i}
+                onClick={() => onClassSelect && onClassSelect(cls)}
+                className="bg-slate-50 border border-slate-100 rounded-2xl p-4 cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.iconBg}`}
+                  >
+                    <BookOpen className={`w-4 h-4 ${c.iconColor}`} />
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-1 rounded-full ${(cls.status || "Active") === "Active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                  >
+                    {cls.status || "Active"}
+                  </span>
                 </div>
 
+                <p className="text-sm font-extrabold text-slate-900 mb-0.5">
+                  {cls.name}
+                </p>
+                <p className="text-[11px] text-slate-500 font-medium mb-3">
+                  {cls.subject}
+                  {cls.students != null && (
+                    <span className="ml-2 inline-flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {cls.students}
+                    </span>
+                  )}
+                </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredClasses.map((classItem) => (
-                        <div
-                            key={classItem.id}
-                            onClick={() => onClassSelect && onClassSelect(classItem)}
-                            className="bg-neutral-700/30 border border-neutral-600/30 rounded-xl p-5 hover:bg-neutral-700/50 hover:border-neutral-500/50 transition-all duration-300 cursor-pointer group"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-white group-hover:text-teal-100 transition-colors">
-                                        {classItem.name}
-                                    </h3>
-                                    <p className="text-sm text-neutral-400">{classItem.subject}</p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${yearDetails.find(y => y.year === classItem.year)?.roundedColor || 'bg-white'}`}></div>
-                                    <span className={`text-xs font-medium ${yearDetails.find(y => y.year === classItem.year)?.color || 'text-white'}`}>
-                                        {classItem.year}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Key Metrics */}
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                {/* Students - full width (span 2 columns) */}
-                                <div className="bg-neutral-600/30 rounded-lg p-3 col-span-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2h5" />
-                                            <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth={2} />
-                                        </svg>
-                                        <span className="text-xs text-neutral-400">Students</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-white">{classItem.students}</p>
-                                </div>
-
-                                {/* Completion - half */}
-                                <div className="bg-neutral-600/30 rounded-lg p-3">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className="text-xs text-neutral-400">Completion</span>
-                                    </div>
-                                    <p className="text-lg font-bold">{classItem.completionRate}</p>
-                                </div>
-
-                                {/* Total - half */}
-                                <div className="bg-neutral-600/30 rounded-lg p-3">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9.75h17.25M3 14.25h11.25M3 19.5h6.75M3 4.5h17.25" />
-                                        </svg>
-                                        <span className="text-xs text-neutral-400">Total</span>
-                                    </div>
-                                    <p className="text-lg font-bold">
-                                        {yearDetails.find(y => y.year === classItem.year)?.totalExperiments || 0}
-                                    </p>
-                                </div>
-                            </div>
-
-                        </div>
-                    ))}
+                <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
+                  <div
+                    className={`h-1.5 rounded-full transition-all duration-700 ${c.bar}`}
+                    style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
+                  />
                 </div>
 
-                {filteredClasses.length === 0 && (
-                    <div className="text-center py-12">
-                        <svg className="w-16 h-16 text-neutral-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <p className="text-neutral-400 mb-2">No classes found</p>
-                        <p className="text-neutral-500 text-sm">Try adjusting your filters</p>
-                    </div>
-                )}
-            </CardContent>
-        </Card >
-    );
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    {pct}% Complete
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 transition-colors" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ClassManagementGrid;
