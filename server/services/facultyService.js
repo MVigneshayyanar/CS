@@ -1,6 +1,7 @@
 const { supabase } = require("../config/supabaseClient");
 
 const labsTable = process.env.SUPABASE_LABS_TABLE || "labs";
+const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
 
 const createHttpError = (message, statusCode = 400) => {
   const error = new Error(message);
@@ -32,13 +33,12 @@ const loadScopedLabs = async (facultyIdentifier) => {
   }
 
   const key = (facultyIdentifier || "").toLowerCase();
-  const exact = (data || []).filter((lab) => (lab.faculty || "").toLowerCase() === key);
-  if (exact.length) {
-    return exact;
-  }
-
-  const fuzzy = (data || []).filter((lab) => (lab.faculty || "").toLowerCase().includes(key));
-  return fuzzy.length ? fuzzy : (data || []);
+  const matchedLabs = (data || []).filter((lab) => {
+    const faculty = (lab.faculty || "").toLowerCase();
+    return faculty === key || faculty.includes(key);
+  });
+  
+  return matchedLabs;
 };
 
 const getFacultyDashboardData = async (facultyIdentifier) => {
@@ -46,8 +46,14 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
 
   const classes = scopedLabs.map((lab, index) => {
     const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
-    const completionRate = Math.min(100, 30 + experiments.length * 12);
     const studentsCount = Array.isArray(lab.students) ? lab.students.length : 0;
+    
+    // Calculate real completion rate for this lab
+    const completedExps = experiments.filter(e => e.status === 'completed' || e.progress >= 100).length;
+    const completionRate = experiments.length > 0 
+      ? Math.round((completedExps / experiments.length) * 100) 
+      : 0;
+
     return {
       id: lab.id,
       name: toClassName(lab, index),
@@ -60,7 +66,7 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
 
   const classPerformanceData = classes.map((classItem) => ({
     className: classItem.name,
-    avgScore: Math.max(60, Math.min(98, classItem.completionRate - 5)),
+    avgScore: classItem.completionRate, // Real score-based avg would be better if we had scores
     completion: classItem.completionRate,
   }));
 
@@ -69,61 +75,47 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
     ? Math.round(classes.reduce((sum, item) => sum + item.completionRate, 0) / classes.length)
     : 0;
 
+  // Real distribution based on completion rates
   const progressDistributionData = [
-    { range: "90-100%", students: Math.round(totalStudents * 0.35), color: "#10b981" },
-    { range: "80-89%", students: Math.round(totalStudents * 0.28), color: "#3b82f6" },
-    { range: "70-79%", students: Math.round(totalStudents * 0.2), color: "#f59e0b" },
-    { range: "60-69%", students: Math.round(totalStudents * 0.12), color: "#ef4444" },
-    { range: "<60%", students: Math.max(0, totalStudents - Math.round(totalStudents * 0.95)), color: "#6b7280" },
+    { range: "90-100%", students: classes.filter(c => c.completionRate >= 90).length, color: "#10b981" },
+    { range: "70-89%", students: classes.filter(c => c.completionRate >= 70 && c.completionRate < 90).length, color: "#3b82f6" },
+    { range: "50-69%", students: classes.filter(c => c.completionRate >= 50 && c.completionRate < 70).length, color: "#f59e0b" },
+    { range: "Below 50%", students: classes.filter(c => c.completionRate < 50).length, color: "#ef4444" },
   ];
 
-  const activeQueue = scopedLabs.map((lab, index) => {
+  const activeQueue = scopedLabs.flatMap((lab, index) => {
     const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
-    const studentsCount = Array.isArray(lab.students) ? lab.students.length : 0;
-    const submitted = Math.max(0, studentsCount - (index % 3));
-    return {
-      id: lab.id,
-      title: lab.name,
-      classes: [toClassName(lab, index)],
-      deadline: new Date(Date.now() + (index + 2) * 86400000).toISOString(),
-      submitted,
-      total: studentsCount,
-      avgScore: Math.max(65, 90 - index * 2),
-      priority: index % 3 === 0 ? "high" : index % 3 === 1 ? "medium" : "low",
-      status: submitted < studentsCount ? "active" : "grading",
-    };
+    return experiments.map((exp, expIdx) => {
+      const studentsCount = Array.isArray(lab.students) ? lab.students.length : 0;
+      const completionCount = exp.status === 'completed' ? 1 : 0; // Current schema limit
+      return {
+        id: `${lab.id}-${expIdx}`,
+        title: exp.title || `Experiment ${expIdx + 1}`,
+        classes: [toClassName(lab, index)],
+        deadline: exp.deadline || new Date(Date.now() + 86400000).toISOString(),
+        submitted: completionCount,
+        total: studentsCount,
+        avgScore: exp.progress || 0,
+        priority: exp.status === 'completed' ? "low" : "high",
+        status: exp.status || "active",
+      };
+    });
   });
 
-  const pendingQueue = scopedLabs.slice(0, 3).map((lab, index) => ({
-    id: `${lab.id}-pending`,
-    title: `${lab.name} - Next Module`,
-    classes: [toClassName(lab, index)],
-    scheduledDate: new Date(Date.now() + (index + 7) * 86400000).toISOString(),
-    estimatedTime: `${2 + index} hours`,
-    difficulty: index % 3 === 0 ? "easy" : index % 3 === 1 ? "medium" : "hard",
-    status: "pending",
-  }));
+  const recentActivities = scopedLabs.flatMap(lab => 
+    (Array.isArray(lab.experiments) ? lab.experiments : [])
+      .filter(exp => exp.status === 'completed' && exp.completedBy)
+      .map((exp, idx) => ({
+        id: `act-${lab.id}-${idx}`,
+        type: "submission",
+        student: exp.completedBy,
+        class: lab.name,
+        experiment: exp.title || "Experiment",
+        time: "Recently",
+      }))
+  ).slice(0, 5);
 
-  const completedQueue = scopedLabs.slice(0, 3).map((lab, index) => ({
-    id: `${lab.id}-completed`,
-    title: `${lab.name} - Intro`,
-    classes: [toClassName(lab, index)],
-    completedDate: new Date(Date.now() - (index + 4) * 86400000).toISOString(),
-    avgScore: Math.max(70, 95 - index * 3),
-    completion: 100,
-    feedback: 4.5,
-  }));
-
-  const recentActivities = activeQueue.slice(0, 4).map((item, index) => ({
-    id: index + 1,
-    type: index % 2 === 0 ? "submission" : "grade",
-    student: `Student ${index + 1}`,
-    class: item.classes[0],
-    experiment: item.title,
-    time: `${(index + 1) * 12} min ago`,
-  }));
-
-  const pendingSubmissions = activeQueue.reduce((sum, item) => sum + Math.max(0, item.total - item.submitted), 0);
+  const pendingSubmissions = activeQueue.filter(q => q.status !== 'completed').length;
 
   return {
     quickStats: {
@@ -135,23 +127,19 @@ const getFacultyDashboardData = async (facultyIdentifier) => {
     classPerformanceData,
     progressDistributionData,
     recentActivities,
-    pendingActions: [
+    pendingActions: pendingSubmissions > 0 ? [
       {
         id: 1,
         type: "grade",
-        title: `Grade ${pendingSubmissions} submissions`,
-        description: "New submissions waiting in queue",
-        priority: pendingSubmissions > 10 ? "high" : "medium",
+        title: `Review ${pendingSubmissions} experiments`,
+        description: "New experiments pending review",
+        priority: "high",
         count: pendingSubmissions,
-        action: "Grade Now",
+        action: "Review Now",
       },
-    ],
+    ] : [],
     classes,
-    experimentQueue: {
-      active: activeQueue,
-      pending: pendingQueue,
-      completed: completedQueue,
-    },
+    experimentQueue: activeQueue.slice(0, 5),
   };
 };
 
@@ -181,7 +169,7 @@ const getFacultyLabsData = async (facultyIdentifier) => {
     subjectId: subjects.find((subject) => subject.name === (lab.name || "Unnamed Subject"))?.id,
     name: toClassName(lab, index),
     section: `Section ${String.fromCharCode(65 + (index % 4))}`,
-    students: Array.isArray(lab.students) ? lab.students.length : 0,
+    students: Array.isArray(lab.students) ? lab.students : [],
     experiments: Array.isArray(lab.experiments) ? lab.experiments.length : 0,
     completionRate: Array.isArray(lab.experiments) && lab.experiments.length
       ? Math.round(
@@ -199,11 +187,14 @@ const getFacultyLabsData = async (facultyIdentifier) => {
       className: classData.find((item) => item.id === lab.id)?.name || "N/A",
       name: exp.title || `Experiment ${index + 1}`,
       number: index + 1,
-      completedBy: Array.isArray(lab.students) ? Math.max(0, Math.min(lab.students.length, Math.round((exp.progress || 0) / 10))) : 0,
+      completedBy: exp.completedBy || null,
+      completedCount: exp.status === "completed" ? 1 : 0,
       totalStudents: Array.isArray(lab.students) ? lab.students.length : 0,
-      avgScore: exp.avgScore || Math.max(60, (exp.progress || 0)),
+      avgScore: exp.avgScore || (exp.status === "completed" ? 100 : exp.progress || 0),
       description: exp.description || "",
       testCases: Array.isArray(exp.testCases) ? exp.testCases : [],
+      deadline: exp.deadline || null,
+      status: exp.status || "pending",
     }))
   );
 
@@ -214,8 +205,82 @@ const getFacultyLabsData = async (facultyIdentifier) => {
   };
 };
 
+const updateLabExperimentDeadline = async (labId, experimentIndex, deadline, facultyIdentifier) => {
+  ensureSupabase();
+
+  if (!labId || experimentIndex === undefined) {
+    throw createHttpError("labId and experimentIndex are required", 400);
+  }
+
+  const { data: lab, error: fetchError } = await supabase
+    .from(labsTable)
+    .select("experiments, faculty")
+    .eq("id", labId)
+    .single();
+
+  if (fetchError || !lab) {
+    throw createHttpError("Lab not found", 404);
+  }
+
+  const labFaculty = (lab.faculty || "").toLowerCase();
+  const currentFaculty = (facultyIdentifier || "").toLowerCase();
+  if (labFaculty !== currentFaculty && !labFaculty.includes(currentFaculty)) {
+    throw createHttpError("You are not authorized to update this lab's experiments", 403);
+  }
+
+  const experiments = Array.isArray(lab.experiments) ? [...lab.experiments] : [];
+  if (experimentIndex < 0 || experimentIndex >= experiments.length) {
+    throw createHttpError("Invalid experiment index", 400);
+  }
+
+  experiments[experimentIndex] = {
+    ...experiments[experimentIndex],
+    deadline: deadline,
+  };
+
+  const { data: updated, error: updateError } = await supabase
+    .from(labsTable)
+    .update({ experiments })
+    .eq("id", labId)
+    .select("experiments")
+    .single();
+
+  if (updateError) {
+    throw createHttpError(`Failed to update deadline: ${updateError.message}`, 500);
+  }
+
+  return updated;
+};
+
+const getFacultyProfile = async (facultyIdentifier) => {
+  ensureSupabase();
+
+  const { data, error } = await supabase
+    .from(usersTable)
+    .select("id, username, email, role, created_at")
+    .eq("username", facultyIdentifier)
+    .single();
+
+  if (error || !data) {
+    throw createHttpError("Faculty profile not found", 404);
+  }
+
+  return {
+    id: data.id,
+    name: data.username,
+    email: data.email || "",
+    role: data.role,
+    username: data.username,
+    joinedAt: data.created_at,
+    department: "Computer Science", // Default or could be fetched if we had a profile table
+    designation: "Faculty",
+  };
+};
+
 module.exports = {
   getFacultyDashboardData,
   getFacultyLabsData,
+  updateLabExperimentDeadline,
+  getFacultyProfile,
 };
 

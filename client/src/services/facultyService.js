@@ -24,3 +24,21 @@ export const fetchFacultyLabs = async () => {
   return response.data;
 };
 
+export const updateExperimentDeadline = async (labId, experimentIndex, deadline) => {
+  const headers = await getAuthHeaders();
+  const response = await facultyApi.put(
+    "/faculty/experiment-deadline",
+    { labId, experimentIndex, deadline },
+    { headers }
+  );
+  return response.data;
+};
+
+export const fetchFacultyProfile = async () => {
+  const headers = await getAuthHeaders();
+  const response = await facultyApi.get("/faculty/profile", {
+    headers,
+  });
+  return response.data;
+};
+

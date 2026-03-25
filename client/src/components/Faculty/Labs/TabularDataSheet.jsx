@@ -1,8 +1,12 @@
-import React from 'react';
+import React from "react";
+import { X, Download } from "lucide-react";
 
 const TabularDataSheet = ({ classData, onClose }) => {
+    const experimentCount = classData.length > 0 ? classData[0].experiments.length : 0;
+    
     const downloadCSV = () => {
-        const headers = ['S.No', 'Name', 'ID', 'Exp1', 'Exp2', 'Exp3', 'Exp4', 'Exp5', 'Exp6', 'Exp7', 'Exp8', 'Exp9', 'Exp10'];
+        const expHeaders = Array.from({ length: experimentCount }, (_, i) => `Exp${i + 1}`);
+        const headers = ['S.No', 'Name', 'ID', ...expHeaders];
         const csvContent = [
             headers.join(','),
             ...classData.map((student, index) => [
@@ -13,7 +17,7 @@ const TabularDataSheet = ({ classData, onClose }) => {
             ].join(','))
         ].join('\n');
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -52,8 +56,8 @@ const TabularDataSheet = ({ classData, onClose }) => {
                                 <th className="border border-neutral-600/50 px-4 py-3 text-neutral-200">S.No</th>
                                 <th className="border border-neutral-600/50 px-4 py-3 text-neutral-200">Name</th>
                                 <th className="border border-neutral-600/50 px-4 py-3 text-neutral-200">ID</th>
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                                    <th key={num} className="border border-neutral-600/50 px-2 py-3 text-neutral-200">Exp{num}</th>
+                                {Array.from({ length: experimentCount }, (_, i) => (
+                                    <th key={i} className="border border-neutral-600/50 px-2 py-3 text-neutral-200">Exp{i + 1}</th>
                                 ))}
                             </tr>
                         </thead>

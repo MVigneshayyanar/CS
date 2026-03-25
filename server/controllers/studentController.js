@@ -3,6 +3,7 @@ const {
   getStudentLabsData,
   getStudentStatisticsData,
   getStudentReportsData,
+  updateStudentExperimentProgress,
 } = require("../services/studentService");
 
 const getStudentDashboard = async (req, res, next) => {
@@ -57,10 +58,31 @@ const getStudentReports = async (req, res, next) => {
   }
 };
 
+const updateExperimentStatus = async (req, res, next) => {
+  try {
+    const { labId, experimentIndex, status, progress } = req.body;
+    const result = await updateStudentExperimentProgress(
+      req.auth.username,
+      labId,
+      experimentIndex,
+      status,
+      progress
+    );
+    return res.status(200).json({
+      ok: true,
+      message: "Experiment status updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getStudentDashboard,
   getStudentLabs,
   getStudentStatistics,
   getStudentReports,
+  updateExperimentStatus,
 };
 

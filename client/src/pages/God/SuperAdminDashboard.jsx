@@ -1,36 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, UserCog, Search, Save, X, Mail, User, Building2, GraduationCap, Shield, Phone } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Edit, Trash2, UserCog, Search, Save, X, Mail, User, Building2, GraduationCap, Shield, Phone, TrendingUp, Bell, ChevronDown, LogOut } from 'lucide-react';
 import {
   fetchSuperAdminCollege,
   createDepartmentHead,
   updateDepartmentHead,
   deleteDepartmentHead,
 } from '@/services/superAdminService';
+import { logoutUser } from '@/services/authService';
 
-// Move Modal component OUTSIDE to prevent recreation on every render
 const Modal = ({ title, children, onSubmit, onClose }) => (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl shadow-2xl">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-        <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors p-1">
+  <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-3xl shadow-xl">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-slate-900">{title}</h2>
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+        >
           <X className="w-6 h-6" />
         </button>
       </div>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {children}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-700">
+        <div className="flex justify-end space-x-2 pt-4 border-t border-slate-200">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 text-neutral-300 bg-neutral-800 border border-neutral-600 rounded-lg hover:bg-neutral-700 transition-colors"
+            className="px-5 py-2 text-sm text-slate-600 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200 transition-colors"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onSubmit}
-            className="px-6 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg"
+            className="px-5 py-2 text-sm bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-md"
           >
             <Save className="w-4 h-4 mr-2" />
             Save
@@ -52,6 +55,11 @@ const SuperAdminDashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isDepartmentMenuOpen, setIsDepartmentMenuOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const profileMenuRef = useRef(null);
+  const departmentMenuRef = useRef(null);
 
   const [adminForm, setAdminForm] = useState({
     name: '',
@@ -66,7 +74,7 @@ const SuperAdminDashboard = () => {
     permissions: []
   });
 
-  const availablePermissions = [
+  const AVAILABLE_PERMISSIONS = [
     'manage_students',
     'manage_faculty',
     'manage_labs',
@@ -168,6 +176,21 @@ const SuperAdminDashboard = () => {
 
   useEffect(() => {
     loadCollegeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+      if (departmentMenuRef.current && !departmentMenuRef.current.contains(event.target)) {
+        setIsDepartmentMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
   const openModal = (item = null) => {
@@ -183,7 +206,20 @@ const SuperAdminDashboard = () => {
   const closeModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setIsDepartmentMenuOpen(false);
     resetForm();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      sessionStorage.removeItem('isAuthenticated');
+      sessionStorage.removeItem('userType');
+      window.location.reload();
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Logout failed. Please try again.';
+      alert(message);
+    }
   };
 
   const validateAdminForm = () => {
@@ -272,10 +308,15 @@ const SuperAdminDashboard = () => {
     alert(`Username: ${username}\nPassword: ${password}\nEmployee ID: ${admin.empId}`);
   };
 
-  const deleteAdmin = async (id) => {
+  const deleteAdmin = async () => {
+    if (!deleteTarget?.id) {
+      return;
+    }
+
     try {
-      await deleteDepartmentHead(id);
-      setAdmins((prev) => prev.filter((item) => item.id !== id));
+      await deleteDepartmentHead(deleteTarget.id);
+      setAdmins((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (error) {
       const message = error?.response?.data?.message || 'Failed to delete department head';
       alert(message);
@@ -293,329 +334,454 @@ const SuperAdminDashboard = () => {
   });
 
   const getPermissionLabel = (permission) => {
-    return permission.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return permission.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
-      <div className="max-w-7xl mx-auto">
+    <>
+      <style>{`
+        @keyframes saFloat {
+          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.45; }
+          50% { transform: translateY(-8px) scale(1.04); opacity: 0.8; }
+        }
+        .sa-hex {
+          clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+          animation: saFloat 4.8s ease-in-out infinite;
+        }
+        .sa-hex--slow {
+          animation-duration: 6s;
+        }
+      `}</style>
+      <div className="min-h-screen bg-[#f0f4f8]">
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight">Super Admin Dashboard</h1>
+              <p className="text-xs text-slate-400">Manage college administration and department heads</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+              <Search className="w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                className="text-sm text-slate-500 outline-none bg-transparent w-56 placeholder:text-slate-400"
+                placeholder="Search by name, email, department or employee ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
+              <Bell className="w-4 h-4 text-slate-500" />
+            </div>
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="h-9 pl-2 pr-2.5 bg-white border border-slate-200 rounded-xl flex items-center gap-1.5 shadow-sm hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs font-bold flex items-center justify-center">
+                  S
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-800">Super Admin</p>
+                    <p className="text-xs text-slate-500">{college?.name || 'Account'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full px-3 py-2.5 text-sm text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {isLoading ? (
-          <div className="flex items-center justify-center min-h-screen">
-            <p className="text-neutral-400 text-lg">Loading college data...</p>
+          <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
+            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            Loading college data...
           </div>
         ) : !college ? (
-          <div className="flex items-center justify-center min-h-screen">
-            <p className="text-neutral-400 text-lg">No college data found. Please login as a Super Admin.</p>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-10 text-center text-slate-500">
+            No college data found. Please login as a Super Admin.
           </div>
         ) : (
-          <>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent flex items-center">
-                <Shield className="w-8 h-8 mr-4 text-teal-400" />
-                Super Admin Dashboard
-              </h1>
-              <p className="text-neutral-400 mt-2 text-lg">Manage college administration and department heads</p>
-              <div className="flex items-center space-x-2 mt-3">
-                <Building2 className="w-4 h-4 text-neutral-500" />
-                <span className="text-neutral-500">{college.name}</span>
+          <div className="space-y-4">
+            <div className="grid grid-cols-[280px_1fr] gap-5 items-stretch">
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center text-white text-3xl font-bold mx-auto shadow-md">
+                  S
+                </div>
+                <div className="mt-4 text-center">
+                  <div className="text-xl font-extrabold text-slate-900">{college.name}</div>
+                  <div className="text-slate-400 text-sm flex items-center justify-center mt-1">
+                    <GraduationCap className="w-4 h-4 mr-1" />
+                    {college.code}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-5">
+                  <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                    <div className="text-2xl font-bold text-teal-600">{admins.length}</div>
+                    <div className="text-xs text-slate-400">Department Heads</div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                    <div className="text-2xl font-bold text-cyan-600">{departments.length}</div>
+                    <div className="text-xs text-slate-400">Departments</div>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center space-x-6 mt-4 text-sm text-neutral-500">
-                <span className="flex items-center">
-                  <UserCog className="w-4 h-4 mr-1" />
-                  {admins.length} Department Heads
-                </span>
-                <span className="flex items-center">
-                  <GraduationCap className="w-4 h-4 mr-1" />
-                  {college.code}
-                </span>
+
+              <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-7 text-white shadow-sm flex items-center justify-between">
+                <div className="relative z-10">
+                  <h2 className="text-3xl font-extrabold leading-tight">Welcome Back, Super Admin!</h2>
+                  <p className="text-teal-50 mt-2 text-sm">Track all departments and manage department heads from one place.</p>
+                </div>
+                <button
+                  onClick={() => openModal()}
+                  className="relative z-10 bg-white text-teal-700 font-semibold px-5 py-3 rounded-xl hover:bg-teal-50 transition-all flex items-center"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Assign Department Head
+                </button>
+
+                <div className="pointer-events-none absolute right-8 top-1/2 hidden md:grid grid-cols-2 gap-3 -translate-y-1/2">
+                  <div className="sa-hex h-16 w-14 bg-teal-300/35" />
+                  <div className="sa-hex sa-hex--slow h-12 w-10 bg-lime-300/40" />
+                  <div className="sa-hex sa-hex--slow h-12 w-10 bg-lime-300/35" />
+                  <div className="sa-hex h-16 w-14 bg-cyan-300/30" />
+                </div>
               </div>
             </div>
-            <button
-              onClick={() => openModal()}
-              className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-8 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg hover:shadow-teal-500/25"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Assign Department Head
-            </button>
-          </div>
-        </div>
 
-        {/* Department Overview */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-white mb-6">Department Overview</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {departments.map((dept) => (
-              <div key={dept.id} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-white">{dept.name}</h3>
-                  <span className="bg-teal-600/20 text-teal-300 px-2 py-1 rounded text-sm font-mono">
-                    {dept.code}
-                  </span>
-                </div>
-                <div className="space-y-2 text-sm text-neutral-400">
-                  <div className="flex justify-between">
-                    <span>Staff:</span>
-                    <span className="text-blue-400 font-medium">{dept.totalStaff}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Head:</span>
-                    <span className="text-white font-medium">
-                      {admins.find(admin => (admin.department || '').toLowerCase() === (dept.name || '').toLowerCase())?.name || 'Not Assigned'}
+            <div className="grid md:grid-cols-3 gap-4">
+              {departments.map((dept) => (
+                <div key={dept.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-slate-800">{dept.name}</h3>
+                    <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-lg text-xs font-semibold border border-teal-100">
+                      {dept.code}
                     </span>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search department heads by name, email, department, or employee ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 pr-4 py-4 bg-neutral-800/50 border border-neutral-700 rounded-xl w-full text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all backdrop-blur-sm"
-          />
-        </div>
-
-        {/* Department Heads List */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-white">Department Heads</h2>
-         
-          {filteredAdmins.map((admin) => (
-            <div key={admin.id} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm hover:bg-neutral-800/70 transition-all hover:border-teal-500/50">
-              <div className="flex justify-between items-start mb-6">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4 mb-3">
-                    <h3
-                      className="text-xl font-bold text-white flex items-center cursor-pointer"
-                      onClick={() => showDepartmentHeadCredentials(admin)}
-                      title="Click to view username and password"
-                    >
-                      <UserCog className="w-5 h-5 mr-2 text-teal-400" />
-                      {admin.name}
-                    </h3>
-                    <span className="bg-teal-600/20 text-teal-300 px-3 py-1 rounded-full text-sm font-medium">
-                      {admin.role}
-                    </span>
-                  </div>
-                 
-                  <div className="grid md:grid-cols-3 gap-4 text-sm mb-4">
-                    <div className="flex items-center text-neutral-400">
-                      <Mail className="w-4 h-4 mr-2" />
-                      {admin.email}
+                  <div className="space-y-0.5 text-sm text-slate-500">
+                    <div className="flex justify-between">
+                      <span>Staff:</span>
+                      <span className="text-teal-600 font-semibold">{dept.totalStaff}</span>
                     </div>
-                    <div className="flex items-center text-neutral-400">
-                      <Phone className="w-4 h-4 mr-2" />
-                      {admin.phone}
-                    </div>
-                    <div className="flex items-center text-neutral-400">
-                      <User className="w-4 h-4 mr-2" />
-                      {admin.empId}
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-neutral-500">Department: </span>
-                      <span className="text-white font-medium">{admin.department}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-500">Experience: </span>
-                      <span className="text-white font-medium">{admin.experience}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-500">Qualification: </span>
-                      <span className="text-white font-medium">{admin.qualification}</span>
-                    </div>
-                    <div>
-                      <span className="text-neutral-500">Joining Date: </span>
-                      <span className="text-white font-medium">{new Date(admin.joiningDate).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-               
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => showDepartmentHeadCredentials(admin)}
-                    className="text-green-400 hover:text-green-300 transition-colors p-2 bg-green-600/10 rounded-lg hover:bg-green-600/20"
-                    title="View Username and Password"
-                  >
-                    <User className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => openModal(admin)}
-                    className="text-blue-400 hover:text-blue-300 transition-colors p-2 bg-blue-600/10 rounded-lg hover:bg-blue-600/20"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => deleteAdmin(admin.id)}
-                    className="text-red-400 hover:text-red-300 transition-colors p-2 bg-red-600/10 rounded-lg hover:bg-red-600/20"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-neutral-900/50 border border-neutral-700 rounded-lg p-4">
-                <div className="mb-4">
-                  <h4 className="font-semibold text-neutral-300 mb-2">Specialization</h4>
-                  <p className="text-neutral-400 text-sm">{admin.specialization}</p>
-                </div>
-               
-                <div>
-                  <h4 className="font-semibold text-neutral-300 mb-3">Permissions</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {admin.permissions?.map((permission, index) => (
-                      <span key={index} className="bg-cyan-600/20 text-cyan-300 px-3 py-1 rounded-full text-sm">
-                        {getPermissionLabel(permission)}
+                    <div className="flex justify-between">
+                      <span>Head:</span>
+                      <span className="text-slate-800 font-semibold">
+                        {admins.find((admin) => (admin.department || '').toLowerCase() === (dept.name || '').toLowerCase())?.name || 'Not Assigned'}
                       </span>
-                    ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {filteredAdmins.length === 0 && (
-          <div className="text-center py-16">
-            <UserCog className="w-16 h-16 text-neutral-600 mx-auto mb-4" />
-            <p className="text-neutral-500 text-lg">No department heads found matching your search.</p>
-          </div>
-        )}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-extrabold text-slate-900">Department Heads</h2>
 
-        {/* Modal */}
-        {showModal && (
-          <Modal 
-            title={editingItem ? 'Edit Department Head' : 'Assign Department Head'} 
-            onSubmit={handleSubmit}
-            onClose={closeModal}
-          >
-            <div className="space-y-6">
-              {isSubmitting && (
-                <div className="text-sm text-teal-300">Saving department head to database...</div>
-              )}
-              {/* Personal Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Personal Information</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Full Name (e.g., Dr. Priya Nair)"
-                    value={adminForm.name}
-                    onChange={(e) => setAdminForm({...adminForm, name: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={adminForm.email}
-                    onChange={(e) => setAdminForm({...adminForm, email: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    value={adminForm.phone}
-                    onChange={(e) => setAdminForm({...adminForm, phone: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Employee ID (e.g., MIT-CSE-001)"
-                    value={adminForm.empId}
-                    onChange={(e) => setAdminForm({...adminForm, empId: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
+              {filteredAdmins.map((admin) => (
+                <div key={admin.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:border-teal-200 transition-all">
+                  <div className="flex justify-between items-start mb-4 gap-5">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3
+                          className="text-xl font-bold text-slate-900 flex items-center cursor-pointer"
+                          onClick={() => showDepartmentHeadCredentials(admin)}
+                          title="Click to view username and password"
+                        >
+                          <UserCog className="w-5 h-5 mr-2 text-teal-600" />
+                          {admin.name}
+                        </h3>
+                        <span className="bg-teal-50 text-teal-700 px-3 py-1 rounded-full text-xs font-semibold border border-teal-100">
+                          {admin.role}
+                        </span>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-2 text-sm mb-4 text-slate-500">
+                        <div className="flex items-center">
+                          <Mail className="w-4 h-4 mr-2 text-slate-400" />
+                          {admin.email}
+                        </div>
+                        <div className="flex items-center">
+                          <Phone className="w-4 h-4 mr-2 text-slate-400" />
+                          {admin.phone}
+                        </div>
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 mr-2 text-slate-400" />
+                          {admin.empId}
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-x-8 gap-y-0.5 text-sm">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                          <span className="text-slate-500">Department</span>
+                          <span className="text-slate-800 font-semibold text-right">{admin.department}</span>
+                        </div>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                          <span className="text-slate-500">Experience</span>
+                          <span className="text-slate-800 font-semibold text-right">{admin.experience}</span>
+                        </div>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                          <span className="text-slate-500">Qualification</span>
+                          <span className="text-slate-800 font-semibold text-right">{admin.qualification}</span>
+                        </div>
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                          <span className="text-slate-500">Joining Date</span>
+                          <span className="text-slate-800 font-semibold text-right">{new Date(admin.joiningDate).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => showDepartmentHeadCredentials(admin)}
+                        className="text-teal-600 hover:text-teal-700 transition-colors p-2.5 bg-teal-50 rounded-xl hover:bg-teal-100"
+                        title="View Username and Password"
+                      >
+                        <User className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => openModal(admin)}
+                        className="text-blue-600 hover:text-blue-700 transition-colors p-2.5 bg-blue-50 rounded-xl hover:bg-blue-100"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => setDeleteTarget({ id: admin.id, name: admin.name || 'this department head' })}
+                        className="text-red-600 hover:text-red-700 transition-colors p-2.5 bg-red-50 rounded-xl hover:bg-red-100"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                    <div className="mb-4">
+                      <h4 className="font-semibold text-slate-700 mb-2">Specialization</h4>
+                      <p className="text-slate-600 text-sm">{admin.specialization}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-2">Permissions</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {admin.permissions?.map((permission, index) => (
+                          <span key={index} className="bg-cyan-50 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold border border-cyan-100">
+                            {getPermissionLabel(permission)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Professional Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Professional Information</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add new department (e.g., Biotechnology)"
-                      value={newDepartmentName}
-                      onChange={(e) => setNewDepartmentName(e.target.value)}
-                      className="flex-1 p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+            {filteredAdmins.length === 0 && (
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm text-center py-16">
+                <UserCog className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 text-lg">No department heads found matching your search.</p>
+              </div>
+            )}
+
+            {showModal && (
+              <Modal
+                title={editingItem ? 'Edit Department Head' : 'Assign Department Head'}
+                onSubmit={handleSubmit}
+                onClose={closeModal}
+              >
+                <div className="space-y-4">
+                  {isSubmitting && (
+                    <div className="text-sm text-teal-600">Saving department head to database...</div>
+                  )}
+
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 mb-3">Personal Information</h3>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Full Name (e.g., Dr. Priya Nair)"
+                        value={adminForm.name}
+                        onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                      <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={adminForm.email}
+                        onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                      <input
+                        type="tel"
+                        placeholder="Phone Number"
+                        value={adminForm.phone}
+                        onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Employee ID (e.g., MIT-CSE-001)"
+                        value={adminForm.empId}
+                        onChange={(e) => setAdminForm({ ...adminForm, empId: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 mb-3">Professional Information</h3>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="md:col-span-2 flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Add new department (e.g., Biotechnology)"
+                          value={newDepartmentName}
+                          onChange={(e) => setNewDepartmentName(e.target.value)}
+                          className="flex-1 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={addDepartmentOption}
+                          className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200"
+                        >
+                          Add Department
+                        </button>
+                      </div>
+                      <div className="relative" ref={departmentMenuRef}>
+                        <button
+                          type="button"
+                          onClick={() => setIsDepartmentMenuOpen((prev) => !prev)}
+                          className="w-full p-3 pr-10 text-sm bg-white border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/40 shadow-sm text-left"
+                        >
+                          {adminForm.department || 'Select Department'}
+                        </button>
+                        <ChevronDown className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform ${isDepartmentMenuOpen ? 'rotate-180' : ''}`} />
+
+                        {isDepartmentMenuOpen && (
+                          <div className="absolute z-20 mt-2 w-full max-h-44 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAdminForm({ ...adminForm, department: '' });
+                                setIsDepartmentMenuOpen(false);
+                              }}
+                              className="w-full px-3 py-2.5 text-sm text-left text-slate-500 hover:bg-slate-50"
+                            >
+                              Select Department
+                            </button>
+                            {departments.map((dept) => (
+                              <button
+                                key={dept.id}
+                                type="button"
+                                onClick={() => {
+                                  setAdminForm({ ...adminForm, department: dept.name });
+                                  setIsDepartmentMenuOpen(false);
+                                }}
+                                className={`w-full px-3 py-2.5 text-sm text-left hover:bg-teal-50 ${adminForm.department === dept.name ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-700'}`}
+                              >
+                                {dept.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Qualification (e.g., Ph.D in Computer Science)"
+                        value={adminForm.qualification}
+                        onChange={(e) => setAdminForm({ ...adminForm, qualification: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                      <input
+                        type="text"
+                        placeholder="Experience (e.g., 15 years)"
+                        value={adminForm.experience}
+                        onChange={(e) => setAdminForm({ ...adminForm, experience: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                      <input
+                        type="date"
+                        placeholder="Joining Date"
+                        value={adminForm.joiningDate}
+                        onChange={(e) => setAdminForm({ ...adminForm, joiningDate: e.target.value })}
+                        className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        required
+                      />
+                    </div>
+                    <textarea
+                      placeholder="Specialization (e.g., Artificial Intelligence & Machine Learning)"
+                      value={adminForm.specialization}
+                      onChange={(e) => setAdminForm({ ...adminForm, specialization: e.target.value })}
+                      className="mt-3 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 w-full h-20"
+                      required
                     />
+                  </div>
+                </div>
+              </Modal>
+            )}
+
+            {deleteTarget && (
+              <div className="fixed inset-0 bg-slate-900/45 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+                <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl p-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+                      <Trash2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">Delete Department Head</h3>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Are you sure you want to delete <span className="font-semibold text-slate-700">{deleteTarget.name}</span>? This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex justify-end gap-2">
                     <button
                       type="button"
-                      onClick={addDepartmentOption}
-                      className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg"
+                      onClick={() => setDeleteTarget(null)}
+                      className="px-4 py-2 text-sm text-slate-600 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200"
                     >
-                      Add Department
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={deleteAdmin}
+                      className="px-4 py-2 text-sm text-white bg-red-600 rounded-xl hover:bg-red-700 flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
-                  <select
-                    value={adminForm.department}
-                    onChange={(e) => setAdminForm({...adminForm, department: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  >
-                    <option value="">Select Department</option>
-                    {departments.map(dept => (
-                      <option key={dept.id} value={dept.name}>{dept.name}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Qualification (e.g., Ph.D in Computer Science)"
-                    value={adminForm.qualification}
-                    onChange={(e) => setAdminForm({...adminForm, qualification: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Experience (e.g., 15 years)"
-                    value={adminForm.experience}
-                    onChange={(e) => setAdminForm({...adminForm, experience: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
-                  <input
-                    type="date"
-                    placeholder="Joining Date"
-                    value={adminForm.joiningDate}
-                    onChange={(e) => setAdminForm({...adminForm, joiningDate: e.target.value})}
-                    className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  />
                 </div>
-                <textarea
-                  placeholder="Specialization (e.g., Artificial Intelligence & Machine Learning)"
-                  value={adminForm.specialization}
-                  onChange={(e) => setAdminForm({...adminForm, specialization: e.target.value})}
-                  className="mt-4 p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all w-full h-20"
-                  required
-                />
               </div>
-
-              {/* Permissions */}
-              
-            </div>
-          </Modal>
-        )}
-          </>
+            )}
+          </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-const { getFacultyDashboardData, getFacultyLabsData } = require("../services/facultyService");
+const { getFacultyDashboardData, getFacultyLabsData, updateLabExperimentDeadline, getFacultyProfile: getFacultyProfileData } = require("../services/facultyService");
 
 const getFacultyDashboard = async (req, res, next) => {
   try {
@@ -26,8 +26,36 @@ const getFacultyLabs = async (req, res, next) => {
   }
 };
 
+const updateExperimentDeadline = async (req, res, next) => {
+  try {
+    const { labId, experimentIndex, deadline } = req.body;
+    const result = await updateLabExperimentDeadline(labId, experimentIndex, deadline, req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      message: "Experiment deadline updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getFacultyProfile = async (req, res, next) => {
+  try {
+    const profile = await getFacultyProfileData(req.auth.username);
+    return res.status(200).json({
+      ok: true,
+      data: profile,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getFacultyDashboard,
   getFacultyLabs,
+  updateExperimentDeadline,
+  getFacultyProfile,
 };
 

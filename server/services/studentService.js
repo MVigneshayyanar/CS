@@ -249,10 +249,64 @@ const getStudentReportsData = async (username) => {
   };
 };
 
+const updateStudentExperimentProgress = async (username, labId, experimentIndex, status, progress) => {
+  ensureSupabase();
+
+  const { data: lab, error: fetchError } = await supabase
+    .from(labsTable)
+    .select("id, name, experiments, students")
+    .eq("id", labId)
+    .single();
+
+  if (fetchError || !lab) {
+    throw createHttpError("Lab not found", 404);
+  }
+
+  const usernameLower = (username || "").toLowerCase();
+  const isAssigned = (lab.students || []).some((student) => {
+    const studentVal =
+      typeof student === "object" && student !== null
+        ? student.username || student.name || student.rollNo || student.id || ""
+        : student || "";
+    return studentVal.toString().toLowerCase() === usernameLower;
+  });
+
+  if (!isAssigned) {
+    throw createHttpError("Student not assigned to this lab", 403);
+  }
+
+  const experiments = [...(lab.experiments || [])];
+  if (experimentIndex < 0 || experimentIndex >= experiments.length) {
+    throw createHttpError("Invalid experiment index", 400);
+  }
+
+  experiments[experimentIndex] = {
+    ...experiments[experimentIndex],
+    status: status || "completed",
+    progress: progress !== undefined ? progress : 100,
+    completedAt: new Date().toISOString(),
+    completedBy: username,
+  };
+
+  const { data: updatedLab, error: updateError } = await supabase
+    .from(labsTable)
+    .update({ experiments })
+    .eq("id", labId)
+    .select()
+    .single();
+
+  if (updateError) {
+    throw createHttpError(`Failed to update experiment progress: ${updateError.message}`, 500);
+  }
+
+  return updatedLab;
+};
+
 module.exports = {
   getStudentDashboardData,
   getStudentLabsData,
   getStudentStatisticsData,
   getStudentReportsData,
+  updateStudentExperimentProgress,
 };
 
