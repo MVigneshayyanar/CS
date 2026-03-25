@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import CodeEditor from "../components/CodeEditor.jsx";
 import { submitCode } from "../services/judgeService";
+import CelebrationSplash from "../components/CelebrationSplash.jsx";
 import {
   Play,
   Send,
@@ -42,7 +43,7 @@ const LANGUAGES = [
   { value: "javascript", label: "JavaScript", icon: "🟨" },
 ];
 
-const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete }) => {
+const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete, onAutoExit }) => {
   const defaultLang = initialLanguage || "java";
   const startCode =
     initialCode || experimentCode || getStarterCode(defaultLang);
@@ -60,6 +61,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
   const [testResults, setTestResults] = useState([]); // Array of {passed, input, expected, actual, error}
   const [activeTestIdx, setActiveTestIdx] = useState(0);
   const [consoleExpanded, setConsoleExpanded] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const outputRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -193,6 +195,14 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
             console.error(e);
           }
         }
+
+        if (!data.error) {
+          setShowCelebration(true);
+          setTimeout(() => {
+            setShowCelebration(false);
+            if (onAutoExit) onAutoExit();
+          }, 5000);
+        }
       } else {
         const results = [];
         for (let i = 0; i < testCases.length; i++) {
@@ -227,6 +237,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         const allPassed = results.every((r) => r.passed === true);
         if (allPassed) {
           setResult("🎉 SUCCESS! All test cases passed!");
+          setShowCelebration(true);
           if (labId && experimentIndex !== undefined) {
             try {
               await updateExperimentStatus(labId, experimentIndex, "completed", 100);
@@ -235,6 +246,11 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
               console.error(dbError);
             }
           }
+          
+          setTimeout(() => {
+            setShowCelebration(false);
+            if (onAutoExit) onAutoExit();
+          }, 5000);
         } else {
           setResult("⚠️ Some test cases failed. Keep trying!");
         }
@@ -264,6 +280,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
 
   return (
     <div className="flex flex-col h-full bg-[#1A1A2E] rounded-xl overflow-hidden border border-[#2D2D44]">
+      {showCelebration && <CelebrationSplash />}
 
       {/* ─── Top Toolbar ─── */}
       <div className="flex items-center justify-between px-3 py-2 bg-[#16162A] border-b border-[#2D2D44]">

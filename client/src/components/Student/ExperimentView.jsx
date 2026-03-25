@@ -641,6 +641,7 @@ const ExperimentView = () => {
                 testCases={experiment.testCases}
                 labId={labId}
                 experimentIndex={experimentIndex}
+                onAutoExit={handleExitExperiment}
                 onComplete={() => {
                   // Reload experiment data from server to reflect the new status
                   // Using experimentId from closures
