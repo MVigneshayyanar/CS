@@ -183,18 +183,34 @@ const rotateRefreshToken = async (refreshToken) => {
   }
 
   const payload = verifyRefreshToken(refreshToken);
-  const storedRecord = refreshTokenStore.get(payload.tokenId);
+  let storedRecord = refreshTokenStore.get(payload.tokenId);
 
-  if (!storedRecord || storedRecord.revoked || storedRecord.userId !== payload.sub) {
+  // Tokens are kept in memory; when server restarts the map is empty.
+  // If JWT is valid, rehydrate minimal state so users stay logged in.
+  if (!storedRecord) {
+    storedRecord = {
+      tokenId: payload.tokenId,
+      familyId: payload.familyId,
+      userId: payload.sub,
+      revoked: false,
+      expiresAt: payload.exp ? payload.exp * 1000 : null,
+    };
+    refreshTokenStore.set(payload.tokenId, storedRecord);
+  }
+
+  if (storedRecord.revoked || storedRecord.userId !== payload.sub) {
     const error = new Error("Refresh token is invalid");
     error.statusCode = 401;
     throw error;
   }
 
   const activeTokenId = activeRefreshByFamily.get(payload.familyId);
-  if (activeTokenId !== payload.tokenId) {
-    revokeRefreshFamily(payload.familyId);
-    const error = new Error("Refresh token reuse detected. Please login again.");
+  if (!activeTokenId) {
+    activeRefreshByFamily.set(payload.familyId, payload.tokenId);
+  } else if (activeTokenId !== payload.tokenId) {
+    // Stale refresh token reuse can happen with multi-tab or request races.
+    // Do not revoke the active family; just reject this stale token.
+    const error = new Error("Refresh token is stale. Use latest refresh token.");
     error.statusCode = 401;
     throw error;
   }

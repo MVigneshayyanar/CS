@@ -37,6 +37,7 @@ export const clearAuthSession = () => {
   sessionStorage.removeItem("userType");
   sessionStorage.removeItem("userId");
   sessionStorage.removeItem("username");
+  sessionStorage.removeItem("userEmail");
   sessionStorage.removeItem("authToken");
   sessionStorage.removeItem("refreshToken");
 };
@@ -52,6 +53,7 @@ export const applyAuthSession = ({ accessToken, refreshToken, user }) => {
   sessionStorage.setItem("userType", user.role);
   sessionStorage.setItem("userId", user.id || "");
   sessionStorage.setItem("username", user.username || "");
+  sessionStorage.setItem("userEmail", user.email || "");
 };
 
 export const refreshAccessToken = async () => {
@@ -87,6 +89,9 @@ export const refreshAccessToken = async () => {
       }
       if (user?.username) {
         sessionStorage.setItem("username", user.username);
+      }
+      if (typeof user?.email === "string") {
+        sessionStorage.setItem("userEmail", user.email);
       }
 
       return nextAccessToken;

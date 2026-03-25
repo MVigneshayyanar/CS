@@ -35,3 +35,30 @@ export const addSuperAdmin = async (payload) => {
   return response.data;
 };
 
+export const addGod = async (payload) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.post("/god/users", payload, {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const fetchGodUsers = async () => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.get("/god/users", {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const deleteGodUser = async (userId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.delete(`/god/users/${userId}`, {
+    headers,
+  });
+
+  return response.data;
+};
+
