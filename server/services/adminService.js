@@ -1,5 +1,9 @@
 const { supabase } = require("../config/supabaseClient");
 const bcrypt = require("bcryptjs");
+const {
+  syncUserToSupabaseAuth,
+  deleteUserFromSupabaseAuth,
+} = require("./supabaseAuthSyncService");
 
 const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
 const labsTable = process.env.SUPABASE_LABS_TABLE || "labs";
@@ -111,6 +115,15 @@ const createUserWithDefaultPassword = async ({ username, email, role }) => {
     );
   }
 
+  // Best-effort sync to Supabase Auth so users appear in Authentication tab.
+  await syncUserToSupabaseAuth({
+    id: data.id,
+    email: data.email,
+    password: username,
+    username: data.username,
+    role: data.role,
+  });
+
   return data;
 };
 
@@ -162,6 +175,9 @@ const updateRoleUser = async ({ id, role, username, email }) => {
 
 const deleteRoleUser = async ({ id, role }) => {
   ensureSupabase();
+
+  // Best-effort cleanup from Supabase Auth.
+  await deleteUserFromSupabaseAuth(id);
 
   const { error } = await supabase
     .from(usersTable)

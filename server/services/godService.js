@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("node:crypto");
 const { supabase } = require("../config/supabaseClient");
+const {
+  syncUserToSupabaseAuth,
+  deleteUserFromSupabaseAuth,
+} = require("./supabaseAuthSyncService");
 
 const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
 const collegesTable = process.env.SUPABASE_COLLEGES_TABLE || "colleges";
@@ -381,6 +385,14 @@ const createSuperAdmin = async (payload) => {
     );
   }
 
+  await syncUserToSupabaseAuth({
+    id: user.id,
+    email: user.email,
+    password: defaultPassword,
+    username: user.username,
+    role: user.role,
+  });
+
   const newProfile = {
     user_id: user.id,
     college_id: college.id,
@@ -401,6 +413,7 @@ const createSuperAdmin = async (payload) => {
     .single();
 
   if (profileError) {
+    await deleteUserFromSupabaseAuth(user.id);
     await supabase.from(usersTable).delete().eq("id", user.id);
 
     const isConflict = profileError.code === "23505";
@@ -465,6 +478,14 @@ const createGodAccount = async (payload) => {
       isConflict ? 409 : 500
     );
   }
+
+  await syncUserToSupabaseAuth({
+    id: data.id,
+    email: data.email,
+    password: defaultPassword,
+    username: data.username,
+    role: data.role,
+  });
 
   return {
     god: {
@@ -538,6 +559,8 @@ const deleteGodAccount = async ({ godUserId, currentUserId }) => {
   if (deleteError) {
     throw createHttpError(`Failed to delete God account: ${deleteError.message}`, 500);
   }
+
+  await deleteUserFromSupabaseAuth(godUserId);
 
   return { deleted: true };
 };
@@ -662,6 +685,14 @@ const createDepartmentHead = async ({ superAdminUserId, payload }) => {
     );
   }
 
+  await syncUserToSupabaseAuth({
+    id: user.id,
+    email: payload.email.trim().toLowerCase(),
+    password: defaultPassword,
+    username: user.username,
+    role: "Admin",
+  });
+
   const { data: profile, error: profileError } = await supabase
     .from(departmentHeadsTable)
     .insert({
@@ -681,6 +712,7 @@ const createDepartmentHead = async ({ superAdminUserId, payload }) => {
     .single();
 
   if (profileError) {
+    await deleteUserFromSupabaseAuth(user.id);
     await supabase.from(usersTable).delete().eq("id", user.id);
     const isConflict = profileError.code === "23505";
     throw createHttpError(
@@ -804,6 +836,7 @@ const deleteDepartmentHead = async ({ superAdminUserId, departmentHeadId }) => {
   }
 
   // cleanup linked login user
+  await deleteUserFromSupabaseAuth(existing.user_id);
   await supabase.from(usersTable).delete().eq("id", existing.user_id);
 };
 
