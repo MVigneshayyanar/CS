@@ -178,7 +178,7 @@ const StudentManagement = () => {
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Roll No</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Year</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Branch</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Actions</th>
@@ -228,9 +228,7 @@ const StudentManagement = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <input type="text" placeholder="Full Name" value={studentForm.name} onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
             <input type="email" placeholder="Email" value={studentForm.email} onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="Roll Number" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="Year (optional)" value={studentForm.year} onChange={(e) => setStudentForm((prev) => ({ ...prev, year: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" />
-            <input type="text" placeholder="Branch (optional)" value={studentForm.branch} onChange={(e) => setStudentForm((prev) => ({ ...prev, branch: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" />
+            <input type="text" placeholder="ID" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
           </div>
         </Modal>
       )}

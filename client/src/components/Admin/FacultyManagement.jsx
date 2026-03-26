@@ -178,7 +178,7 @@ const FacultyManagement = () => {
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Employee ID</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Department</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Specialization</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Actions</th>
@@ -228,9 +228,7 @@ const FacultyManagement = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <input type="text" placeholder="Full Name" value={facultyForm.name} onChange={(e) => setFacultyForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
             <input type="email" placeholder="Email" value={facultyForm.email} onChange={(e) => setFacultyForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="Employee ID" value={facultyForm.empId} onChange={(e) => setFacultyForm((prev) => ({ ...prev, empId: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="Department (optional)" value={facultyForm.department} onChange={(e) => setFacultyForm((prev) => ({ ...prev, department: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" />
-            <input type="text" placeholder="Specialization (optional)" value={facultyForm.specialization} onChange={(e) => setFacultyForm((prev) => ({ ...prev, specialization: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" />
+            <input type="text" placeholder="ID" value={facultyForm.empId} onChange={(e) => setFacultyForm((prev) => ({ ...prev, empId: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
           </div>
         </Modal>
       )}

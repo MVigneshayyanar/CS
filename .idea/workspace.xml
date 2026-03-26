@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dcd3a325-cad4-4b63-9c83-4aa21f0b0313" name="Changes" comment="Students and faculty" />
+    <list default="true" id="dcd3a325-cad4-4b63-9c83-4aa21f0b0313" name="Changes" comment="Students and faculty">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Admin/FacultyManagement.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Admin/FacultyManagement.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/Admin/StudentManagement.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Admin/StudentManagement.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/controllers/adminController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/controllers/adminController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/services/adminService.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/services/adminService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/services/authService.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/services/authService.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

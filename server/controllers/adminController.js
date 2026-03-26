@@ -13,9 +13,14 @@ const {
   deleteLab,
 } = require("../services/adminService");
 
-const getAdminOverview = async (_req, res, next) => {
+const getAdminOverview = async (req, res, next) => {
   try {
-    const [students, faculty, labs] = await Promise.all([getStudents(), getFaculty(), getLabs()]);
+    const { collegeId, departmentName } = req.auth;
+    const [students, faculty, labs] = await Promise.all([
+      getStudents({ collegeId, departmentName }),
+      getFaculty({ collegeId, departmentName }),
+      getLabs({ collegeId, departmentName })
+    ]);
 
     return res.status(200).json({
       ok: true,
@@ -33,9 +38,10 @@ const getAdminOverview = async (_req, res, next) => {
   }
 };
 
-const getAdminStudents = async (_req, res, next) => {
+const getAdminStudents = async (req, res, next) => {
   try {
-    const students = await getStudents();
+    const { collegeId, departmentName } = req.auth;
+    const students = await getStudents({ collegeId, departmentName });
 
     return res.status(200).json({
       ok: true,
@@ -47,9 +53,10 @@ const getAdminStudents = async (_req, res, next) => {
   }
 };
 
-const getAdminFaculty = async (_req, res, next) => {
+const getAdminFaculty = async (req, res, next) => {
   try {
-    const faculty = await getFaculty();
+    const { collegeId, departmentName } = req.auth;
+    const faculty = await getFaculty({ collegeId, departmentName });
 
     return res.status(200).json({
       ok: true,
@@ -61,9 +68,10 @@ const getAdminFaculty = async (_req, res, next) => {
   }
 };
 
-const getAdminLabs = async (_req, res, next) => {
+const getAdminLabs = async (req, res, next) => {
   try {
-    const labs = await getLabs();
+    const { collegeId, departmentName } = req.auth;
+    const labs = await getLabs({ collegeId, departmentName });
 
     return res.status(200).json({
       ok: true,
@@ -77,7 +85,8 @@ const getAdminLabs = async (_req, res, next) => {
 
 const createAdminStudent = async (req, res, next) => {
   try {
-    const student = await createStudent(req.body);
+    const { collegeId, departmentName } = req.auth;
+    const student = await createStudent({ collegeId, departmentName }, req.body);
     return res.status(201).json({
       ok: true,
       message: "Student created successfully",
@@ -90,7 +99,8 @@ const createAdminStudent = async (req, res, next) => {
 
 const updateAdminStudent = async (req, res, next) => {
   try {
-    const student = await updateStudent(req.params.id, req.body);
+    const { collegeId, departmentName } = req.auth;
+    const student = await updateStudent({ collegeId, departmentName }, req.params.id, req.body);
     return res.status(200).json({
       ok: true,
       message: "Student updated successfully",
@@ -115,7 +125,8 @@ const deleteAdminStudent = async (req, res, next) => {
 
 const createAdminFaculty = async (req, res, next) => {
   try {
-    const faculty = await createFaculty(req.body);
+    const { collegeId, departmentName } = req.auth;
+    const faculty = await createFaculty({ collegeId, departmentName }, req.body);
     return res.status(201).json({
       ok: true,
       message: "Faculty created successfully",
@@ -128,7 +139,8 @@ const createAdminFaculty = async (req, res, next) => {
 
 const updateAdminFaculty = async (req, res, next) => {
   try {
-    const faculty = await updateFaculty(req.params.id, req.body);
+    const { collegeId, departmentName } = req.auth;
+    const faculty = await updateFaculty({ collegeId, departmentName }, req.params.id, req.body);
     return res.status(200).json({
       ok: true,
       message: "Faculty updated successfully",
@@ -153,7 +165,8 @@ const deleteAdminFaculty = async (req, res, next) => {
 
 const createAdminLab = async (req, res, next) => {
   try {
-    const lab = await createLab(req.body);
+    const { collegeId, departmentName } = req.auth;
+    const lab = await createLab({ collegeId, departmentName }, req.body);
     return res.status(201).json({
       ok: true,
       message: "Lab created successfully",
@@ -166,7 +179,8 @@ const createAdminLab = async (req, res, next) => {
 
 const updateAdminLab = async (req, res, next) => {
   try {
-    const lab = await updateLab(req.params.id, req.body);
+    const { collegeId, departmentName } = req.auth;
+    const lab = await updateLab({ collegeId, departmentName }, req.params.id, req.body);
     return res.status(200).json({
       ok: true,
       message: "Lab updated successfully",

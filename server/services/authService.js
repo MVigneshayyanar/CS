@@ -27,6 +27,8 @@ const normalizeUserRecord = (record) => ({
   role: record.role,
   passwordHash: record.password_hash,
   isActive: record.is_active !== false,
+  collegeId: record.collegeId || null,
+  departmentName: record.departmentName || null,
 });
 
 const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
@@ -38,49 +40,55 @@ const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_R
 const accessTokenTtl = process.env.ACCESS_TOKEN_EXPIRES_IN || process.env.JWT_EXPIRES_IN || "15m";
 const refreshTokenTtl = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 
-const loadUserByIdentifier = async (identifier) => {
+const loadUserWithProfile = async (query) => {
   if (!supabase) {
     const configError = new Error("Missing SUPABASE_URL or SUPABASE_KEY in environment variables");
     configError.statusCode = 500;
     throw configError;
   }
 
-  const { data, error } = await supabase
+  // Fetch basic user
+  const { data: user, error: userError } = await supabase
     .from(usersTable)
     .select("id, username, email, role, password_hash, is_active")
-    .or(`username.eq.${identifier},email.eq.${identifier}`)
+    .or(query)
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    const serviceError = new Error(`Supabase query failed: ${error.message}`);
-    serviceError.statusCode = 500;
-    throw serviceError;
+  if (userError) throw new Error(`Supabase user query failed: ${userError.message}`);
+  if (!user) return null;
+
+  let collegeId = null;
+  let departmentName = null;
+
+  // Attempt to resolve profile based on role
+  if (user.role === "SuperAdmin") {
+    const { data: profile } = await supabase.from("super_admin_profiles").select("college_id").eq("user_id", user.id).maybeSingle();
+    if (profile) collegeId = profile.college_id;
+  } else if (user.role === "Admin") {
+    // Check Department Heads or Department Admins
+    const { data: deptHead } = await supabase.from("department_heads").select("college_id, department_name").eq("user_id", user.id).maybeSingle();
+    if (deptHead) {
+      collegeId = deptHead.college_id;
+      departmentName = deptHead.department_name;
+    } else {
+      const { data: deptAdmin } = await supabase.from("department_admins").select("college_id, department_name").eq("user_id", user.id).maybeSingle();
+      if (deptAdmin) {
+        collegeId = deptAdmin.college_id;
+        departmentName = deptAdmin.department_name;
+      }
+    }
   }
 
-  return data ? normalizeUserRecord(data) : null;
+  return normalizeUserRecord({ ...user, collegeId, departmentName });
+};
+
+const loadUserByIdentifier = async (identifier) => {
+  return loadUserWithProfile(`username.eq.${identifier},email.eq.${identifier}`);
 };
 
 const loadUserById = async (userId) => {
-  if (!supabase) {
-    const configError = new Error("Missing SUPABASE_URL or SUPABASE_KEY in environment variables");
-    configError.statusCode = 500;
-    throw configError;
-  }
-
-  const { data, error } = await supabase
-    .from(usersTable)
-    .select("id, username, email, role, password_hash, is_active")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    const serviceError = new Error(`Supabase query failed: ${error.message}`);
-    serviceError.statusCode = 500;
-    throw serviceError;
-  }
-
-  return data ? normalizeUserRecord(data) : null;
+  return loadUserWithProfile(`id.eq.${userId}`);
 };
 
 const signAccessToken = (user) =>
@@ -89,6 +97,8 @@ const signAccessToken = (user) =>
       sub: user.id,
       username: user.username,
       role: user.role,
+      collegeId: user.collegeId,
+      departmentName: user.departmentName,
       tokenType: "access",
     },
     accessTokenSecret,
@@ -111,6 +121,8 @@ const signRefreshToken = ({ user, familyId, tokenId }) =>
       sub: user.id,
       username: user.username,
       role: user.role,
+      collegeId: user.collegeId,
+      departmentName: user.departmentName,
       tokenType: "refresh",
       familyId,
       tokenId,

@@ -20,15 +20,24 @@ const createHttpError = (message, statusCode = 400) => {
 
 const safeTrim = (value) => (typeof value === "string" ? value.trim() : "");
 
-const listUsersByRole = async (role) => {
+const listUsersByRole = async (role, { collegeId, departmentName } = {}) => {
   ensureSupabase();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(usersTable)
-    .select("id, username, email, role, created_at")
+    .select("*, full_name")
     .eq("role", role)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+    .eq("is_active", true);
+
+  if (collegeId) {
+    query = query.eq("college_id", collegeId);
+  }
+  
+  if (departmentName) {
+    query = query.eq("department_name", departmentName);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
     throw createHttpError(`Failed to load ${role} users: ${error.message}`, 500);
@@ -37,39 +46,49 @@ const listUsersByRole = async (role) => {
   return data || [];
 };
 
-const getStudents = async () => {
-  const users = await listUsersByRole("Student");
+const getStudents = async (scope) => {
+  const users = await listUsersByRole("Student", scope);
 
   return users.map((user) => ({
     id: user.id,
-    name: user.username,
+    name: user.full_name || user.username,
     email: user.email || "",
     rollNo: user.username,
-    year: "N/A",
-    branch: "N/A",
+    year: user.year || "N/A",
+    branch: user.branch || "N/A",
+    department: user.department_name || "N/A",
   }));
 };
 
-const getFaculty = async () => {
-  const users = await listUsersByRole("Faculty");
+const getFaculty = async (scope) => {
+  const users = await listUsersByRole("Faculty", scope);
 
   return users.map((user) => ({
     id: user.id,
-    name: user.username,
+    name: user.full_name || user.username,
     email: user.email || "",
     empId: user.username,
-    department: "N/A",
-    specialization: "N/A",
+    department: user.department_name || "N/A",
+    specialization: user.specialization || "N/A",
   }));
 };
 
-const getLabs = async () => {
+const getLabs = async ({ collegeId, departmentName } = {}) => {
   ensureSupabase();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(labsTable)
-    .select("id, name, language, faculty, students, experiments, created_at")
-    .order("created_at", { ascending: false });
+    .select("*");
+
+  if (collegeId) {
+    query = query.eq("college_id", collegeId);
+  }
+  
+  if (departmentName) {
+    query = query.eq("department_name", departmentName);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false });
 
   if (error) {
     if (error.code === "PGRST205") {
@@ -88,19 +107,22 @@ const getLabs = async () => {
   }));
 };
 
-const createUserWithDefaultPassword = async ({ username, email, role }) => {
+const createUserWithDefaultPassword = async ({ username, full_name, email, role, collegeId, departmentName }) => {
   const passwordHash = await bcrypt.hash(username, 10);
 
   const { data, error } = await supabase
     .from(usersTable)
     .insert({
       username,
+      full_name: full_name || null,
       email: email || null,
       password_hash: passwordHash,
       role,
       is_active: true,
+      college_id: collegeId || null,
+      department_name: departmentName || null,
     })
-    .select("id, username, email, role")
+    .select("id, username, email, role, college_id, department_name")
     .single();
 
   if (error) {
@@ -114,12 +136,12 @@ const createUserWithDefaultPassword = async ({ username, email, role }) => {
   return data;
 };
 
-const updateRoleUser = async ({ id, role, username, email }) => {
+const updateRoleUser = async ({ id, role, username, email, collegeId, departmentName }) => {
   ensureSupabase();
 
   const { data: existing, error: findError } = await supabase
     .from(usersTable)
-    .select("id, role")
+    .select("id, role, college_id, department_name")
     .eq("id", id)
     .eq("role", role)
     .maybeSingle();
@@ -137,16 +159,22 @@ const updateRoleUser = async ({ id, role, username, email }) => {
     updatePayload.username = username;
     updatePayload.password_hash = await bcrypt.hash(username, 10);
   }
+  if (arguments[0].full_name !== undefined) {
+    updatePayload.full_name = arguments[0].full_name || null;
+  }
   if (typeof email === "string") {
     updatePayload.email = email || null;
   }
+  
+  if (collegeId) updatePayload.college_id = collegeId;
+  if (departmentName) updatePayload.department_name = departmentName;
 
   const { data, error } = await supabase
     .from(usersTable)
     .update(updatePayload)
     .eq("id", id)
     .eq("role", role)
-    .select("id, username, email, role")
+    .select("id, username, email, role, college_id, department_name")
     .single();
 
   if (error) {
@@ -174,7 +202,7 @@ const deleteRoleUser = async ({ id, role }) => {
   }
 };
 
-const createStudent = async (payload) => {
+const createStudent = async (scope, payload) => {
   ensureSupabase();
 
   const rollNo = safeTrim(payload?.rollNo);
@@ -183,19 +211,25 @@ const createStudent = async (payload) => {
     throw createHttpError("rollNo is required", 400);
   }
 
+  // Auto-map branch from department scoping if not provided
+  const branch = safeTrim(payload?.branch) || scope.departmentName || "N/A";
+  const year = safeTrim(payload?.year) || "I";
+
   const user = await createUserWithDefaultPassword({
     username: rollNo,
+    full_name: safeTrim(payload?.name),
     email,
     role: "Student",
+    ...scope
   });
 
   return {
     id: user.id,
-    name: safeTrim(payload?.name) || user.username,
+    name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     rollNo: user.username,
-    year: safeTrim(payload?.year) || "N/A",
-    branch: safeTrim(payload?.branch) || "N/A",
+    year: year,
+    branch: branch,
     credentials: {
       username: user.username,
       password: user.username,
@@ -203,7 +237,7 @@ const createStudent = async (payload) => {
   };
 };
 
-const updateStudent = async (id, payload) => {
+const updateStudent = async (scope, id, payload) => {
   const rollNo = safeTrim(payload?.rollNo);
   const email = safeTrim(payload?.email).toLowerCase();
   if (!rollNo) {
@@ -214,12 +248,14 @@ const updateStudent = async (id, payload) => {
     id,
     role: "Student",
     username: rollNo,
+    full_name: safeTrim(payload?.name),
     email,
+    ...scope
   });
 
   return {
     id: user.id,
-    name: safeTrim(payload?.name) || user.username,
+    name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     rollNo: user.username,
     year: safeTrim(payload?.year) || "N/A",
@@ -235,7 +271,7 @@ const deleteStudent = async (id) => {
   await deleteRoleUser({ id, role: "Student" });
 };
 
-const createFaculty = async (payload) => {
+const createFaculty = async (scope, payload) => {
   ensureSupabase();
 
   const empId = safeTrim(payload?.empId);
@@ -244,18 +280,23 @@ const createFaculty = async (payload) => {
     throw createHttpError("empId is required", 400);
   }
 
+  // Auto-map department from scoping if not provided
+  const department = safeTrim(payload?.department) || scope.departmentName || "N/A";
+
   const user = await createUserWithDefaultPassword({
     username: empId,
+    full_name: safeTrim(payload?.name),
     email,
     role: "Faculty",
+    ...scope
   });
 
   return {
     id: user.id,
-    name: safeTrim(payload?.name) || user.username,
+    name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     empId: user.username,
-    department: safeTrim(payload?.department) || "N/A",
+    department: department,
     specialization: safeTrim(payload?.specialization) || "N/A",
     credentials: {
       username: user.username,
@@ -264,7 +305,7 @@ const createFaculty = async (payload) => {
   };
 };
 
-const updateFaculty = async (id, payload) => {
+const updateFaculty = async (scope, id, payload) => {
   const empId = safeTrim(payload?.empId);
   const email = safeTrim(payload?.email).toLowerCase();
   if (!empId) {
@@ -275,12 +316,14 @@ const updateFaculty = async (id, payload) => {
     id,
     role: "Faculty",
     username: empId,
+    full_name: safeTrim(payload?.name),
     email,
+    ...scope
   });
 
   return {
     id: user.id,
-    name: safeTrim(payload?.name) || user.username,
+    name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     empId: user.username,
     department: safeTrim(payload?.department) || "N/A",
@@ -296,7 +339,7 @@ const deleteFaculty = async (id) => {
   await deleteRoleUser({ id, role: "Faculty" });
 };
 
-const createLab = async (payload) => {
+const createLab = async ({ collegeId, departmentName }, payload) => {
   ensureSupabase();
 
   const name = safeTrim(payload?.name);
@@ -312,8 +355,10 @@ const createLab = async (payload) => {
       faculty: safeTrim(payload?.faculty) || null,
       students: Array.isArray(payload?.students) ? payload.students : [],
       experiments: Array.isArray(payload?.experiments) ? payload.experiments : [],
+      college_id: collegeId,
+      department_name: departmentName,
     })
-    .select("id, name, language, faculty, students, experiments")
+    .select("id, name, language, faculty, students, experiments, college_id, department_name")
     .single();
 
   if (error) {
@@ -333,7 +378,7 @@ const createLab = async (payload) => {
   };
 };
 
-const updateLab = async (labId, payload) => {
+const updateLab = async ({ collegeId, departmentName }, labId, payload) => {
   ensureSupabase();
 
   const { data, error } = await supabase
@@ -344,9 +389,11 @@ const updateLab = async (labId, payload) => {
       faculty: safeTrim(payload?.faculty) || null,
       students: Array.isArray(payload?.students) ? payload.students : [],
       experiments: Array.isArray(payload?.experiments) ? payload.experiments : [],
+      college_id: collegeId,
+      department_name: departmentName,
     })
     .eq("id", labId)
-    .select("id, name, language, faculty, students, experiments")
+    .select("id, name, language, faculty, students, experiments, college_id, department_name")
     .single();
 
   if (error) {
