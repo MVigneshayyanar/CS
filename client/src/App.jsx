@@ -21,7 +21,7 @@ import Settings from "./pages/Student/Settings";
 
 // Faculty pages
 import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
-import FacultyLabManagement from "./pages/faculty/FacultyLabManagement";
+import FacultyLabManagement from "./pages/Faculty/FacultyLabManagement";
 import FacultySettings from "./pages/Faculty/FacultySettings";
 
 // Admin pages
