@@ -50,91 +50,116 @@ const AdminSidebar = ({ onLogout }) => {
   ];
 
   return (
-    <div className={`bg-gradient-to-b from-neutral-900 to-neutral-950 border-r border-neutral-800 transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    } min-h-screen relative`}>
-      
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 bg-neutral-800 border border-neutral-700 rounded-full p-1 hover:bg-neutral-700 transition-colors"
-      >
-        <ChevronLeft className={`w-4 h-4 text-neutral-400 transition-transform ${isCollapsed ? 'rotate-180' : ''} dark:invert-0 light:invert`} />
-      </button>
-
+    <aside
+      className={[
+        "fixed top-4 bottom-4 left-4 z-40 flex flex-col",
+        "bg-[#18181b] text-white",
+        "rounded-[2.5rem] transition-[width,transform] duration-500 ease-in-out",
+        "shadow-2xl overflow-hidden",
+        isCollapsed ? "md:w-20" : "md:w-64",
+      ].join(" ")}
+      aria-label="Admin Navigation"
+      aria-expanded={!isCollapsed}
+    >
       {/* Header */}
-      <div className="p-4 border-b border-neutral-800">
+      <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg">
-            <Building2 className="w-6 h-6 text-white" />
+          <div className="rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10">
+            <div className="h-full w-full rounded-full bg-[#18181b] flex items-center justify-center overflow-hidden">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
           </div>
           {!isCollapsed && (
-            <div>
-              <h2 className="text-white font-bold text-lg">Admin Panel</h2>
-              <p className="text-neutral-400 text-xs">System Management</p>
-            </div>
+            <span className="text-xl font-bold tracking-tight text-white animate-in fade-in slide-in-from-left-2 duration-500">
+              Admin Panel
+            </span>
           )}
         </div>
       </div>
 
-      {/* Menu Items */}
-      <nav className="mt-6 px-3">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === '/students' || item.path === '/faculty' || item.path === '/labs'}
-            className={({ isActive }) => `flex items-center gap-3 px-3 py-3 rounded-lg mb-1 transition-all group relative ${
-              isActive
-                ? 'bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/30 text-red-400'
-                : 'text-neutral-400 hover:text-white hover:bg-neutral-800/50'
-            }`}
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
-                {!isCollapsed && (
-                  <span className="font-medium">{item.title}</span>
-                )}
-                
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && (
-                  <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
-                                 whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
-                                 text-white text-xs border border-neutral-700 shadow-xl 
-                                 opacity-0 group-hover:opacity-100 transition-opacity 
-                                 pointer-events-none z-50">
-                    {item.title}
-                  </span>
-                )}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
+      {/* Nav */}
+      <div className="flex-1 px-4 py-2 overflow-y-auto no-scrollbar">
+        <nav className="space-y-4">
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/students' || item.path === '/faculty' || item.path === '/labs'}
+              className={({ isActive }) => [
+                "group relative flex items-center gap-4 rounded-3xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                isActive
+                  ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
+                  : "text-white/60 hover:text-white hover:bg-white/5",
+              ].join(" ")}
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
+                  {!isCollapsed && (
+                    <span className="whitespace-nowrap transition-all duration-500">
+                      {item.title}
+                    </span>
+                  )}
+                  {isCollapsed && (
+                    <span
+                      className="absolute left-full top-1/2 -translate-y-1/2 ml-4
+                                 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2 text-xs text-white
+                                 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none
+                                 shadow-xl z-[60]"
+                    >
+                      {item.title}
+                    </span>
+                  )}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
 
-      {/* Logout */}
-      <div className="absolute bottom-4 left-4 right-4">
+      {/* Logout and Shrink Button at Bottom */}
+      <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{paddingBottom: !isCollapsed ? '56px' : undefined}}>
         <button
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all group relative text-neutral-400 hover:text-red-300 hover:bg-red-500/10"
+          className="group relative w-full flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10"
         >
           <LogOut className="w-5 h-5 text-neutral-500 group-hover:text-red-300" />
-          {!isCollapsed && <span className="font-medium">Logout</span>}
+          {!isCollapsed && (
+            <span className="whitespace-nowrap transition-all duration-500">
+              Logout
+            </span>
+          )}
           {isCollapsed && (
-            <span className="absolute left-full top-1/2 -translate-y-1/2 ml-4 
-                           whitespace-nowrap px-3 py-1.5 rounded-md bg-neutral-900 
-                           text-white text-xs border border-neutral-700 shadow-xl 
-                           opacity-0 group-hover:opacity-100 transition-opacity 
-                           pointer-events-none z-50">
+            <span
+              className="absolute left-full top-1/2 -translate-y-1/2 ml-4
+                         whitespace-nowrap rounded-xl bg-red-900 px-4 py-2 text-xs text-white
+                         opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none
+                         shadow-xl z-[60]"
+            >
               Logout
             </span>
           )}
         </button>
+        {/* Shrink button absolutely at bottom center when expanded, below logout */}
+        <div className={`w-full ${isCollapsed ? 'flex justify-center' : ''}`} style={{ position: !isCollapsed ? 'absolute' : 'static', left: 0, right: 0, bottom: 16, display: !isCollapsed ? 'flex' : undefined, justifyContent: !isCollapsed ? 'center' : undefined, pointerEvents: 'auto' }}>
+          <button
+            onClick={setIsCollapsed}
+            className={`grid h-8 w-8 place-content-center rounded-full hover:bg-white/20 transition-all duration-300 bg-white/5 ${isCollapsed ? 'shadow-lg border border-white/10 self-center' : ''}`}
+            style={!isCollapsed ? { zIndex: 10 } : {}}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-4 w-4 text-white transition-transform duration-500 ${isCollapsed ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
       </div>
-
-
-    </div>
+    </aside>
   );
 };
 

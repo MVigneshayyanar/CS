@@ -1,11 +1,16 @@
 const bcrypt = require("bcryptjs");
 const crypto = require("node:crypto");
 const { supabase } = require("../config/supabaseClient");
+const {
+  syncUserToSupabaseAuth,
+  deleteUserFromSupabaseAuth,
+} = require("./supabaseAuthSyncService");
 
 const usersTable = process.env.SUPABASE_USERS_TABLE || "app_users";
 const collegesTable = process.env.SUPABASE_COLLEGES_TABLE || "colleges";
 const superAdminsTable = process.env.SUPABASE_SUPER_ADMINS_TABLE || "super_admin_profiles";
 const departmentHeadsTable = process.env.SUPABASE_DEPARTMENT_HEADS_TABLE || "department_heads";
+const departmentAdminsTable = process.env.SUPABASE_DEPARTMENT_ADMINS_TABLE || "department_admins";
 
 const assertSupabaseConfigured = () => {
   if (!supabase) {
@@ -65,6 +70,10 @@ const normalizeCollege = (record) => ({
   phone: record.phone || "",
   email: record.email || "",
   website: record.website || "",
+  departmentCount: Number(record.department_count) || 0,
+  adminCount: Number(record.admin_count) || 0,
+  facultyCount: Number(record.faculty_count) || 0,
+  studentCount: Number(record.student_count) || 0,
   superAdmins: Array.isArray(record.super_admin_profiles)
     ? record.super_admin_profiles.map((admin) => ({
         id: admin.id,
@@ -82,6 +91,148 @@ const normalizeCollege = (record) => ({
       }))
     : [],
 });
+
+const getDepartmentCountsByCollege = async (collegeIds) => {
+  if (!Array.isArray(collegeIds) || collegeIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await supabase
+    .from(departmentHeadsTable)
+    .select("college_id, department_name")
+    .in("college_id", collegeIds);
+
+  if (error) {
+    throw mapSupabaseSetupError(error, `Failed to load department counts: ${error.message}`);
+  }
+
+  const departmentMap = new Map();
+  (data || []).forEach((row) => {
+    const key = row.college_id;
+    const departmentName = (row.department_name || "").trim();
+    if (!key || !departmentName) {
+      return;
+    }
+
+    if (!departmentMap.has(key)) {
+      departmentMap.set(key, new Set());
+    }
+    departmentMap.get(key).add(departmentName.toLowerCase());
+  });
+
+  const counts = new Map();
+  departmentMap.forEach((set, key) => {
+    counts.set(key, set.size);
+  });
+  return counts;
+};
+
+const getStudentCountsByCollege = async (collegeIds) => {
+  if (!Array.isArray(collegeIds) || collegeIds.length === 0) {
+    return new Map();
+  }
+
+  // Not all deployments may have app_users.college_id yet.
+  const { data, error } = await supabase
+    .from(usersTable)
+    .select("college_id")
+    .eq("role", "Student")
+    .in("college_id", collegeIds);
+
+  if (error) {
+    const message = `${error?.message || ""} ${error?.details || ""}`.toLowerCase();
+    const missingCollegeColumn = message.includes("college_id") && message.includes("column");
+    if (missingCollegeColumn) {
+      return new Map();
+    }
+    throw createHttpError(`Failed to load student counts: ${error.message}`, 500);
+  }
+
+  const counts = new Map();
+  (data || []).forEach((row) => {
+    if (!row.college_id) {
+      return;
+    }
+    counts.set(row.college_id, (counts.get(row.college_id) || 0) + 1);
+  });
+  return counts;
+};
+
+const getFacultyCountsByCollege = async (collegeIds) => {
+  if (!Array.isArray(collegeIds) || collegeIds.length === 0) {
+    return new Map();
+  }
+
+  // Not all deployments may have app_users.college_id yet.
+  const { data, error } = await supabase
+    .from(usersTable)
+    .select("college_id")
+    .eq("role", "Faculty")
+    .in("college_id", collegeIds);
+
+  if (error) {
+    const message = `${error?.message || ""} ${error?.details || ""}`.toLowerCase();
+    const missingCollegeColumn = message.includes("college_id") && message.includes("column");
+    if (missingCollegeColumn) {
+      return new Map();
+    }
+    throw createHttpError(`Failed to load faculty counts: ${error.message}`, 500);
+  }
+
+  const counts = new Map();
+  (data || []).forEach((row) => {
+    if (!row.college_id) {
+      return;
+    }
+    counts.set(row.college_id, (counts.get(row.college_id) || 0) + 1);
+  });
+  return counts;
+};
+
+const getAdminCountsByCollege = async (collegeIds) => {
+  if (!Array.isArray(collegeIds) || collegeIds.length === 0) {
+    return new Map();
+  }
+
+  const [headsResult, adminsResult] = await Promise.all([
+    supabase.from(departmentHeadsTable).select("college_id").in("college_id", collegeIds),
+    supabase.from(departmentAdminsTable).select("college_id").in("college_id", collegeIds),
+  ]);
+
+  const counts = new Map();
+
+  if (!headsResult.error) {
+    (headsResult.data || []).forEach((row) => {
+      if (!row.college_id) {
+        return;
+      }
+      counts.set(row.college_id, (counts.get(row.college_id) || 0) + 1);
+    });
+  } else {
+    throw mapSupabaseSetupError(headsResult.error, `Failed to load admin counts: ${headsResult.error.message}`);
+  }
+
+  if (!adminsResult.error) {
+    (adminsResult.data || []).forEach((row) => {
+      if (!row.college_id) {
+        return;
+      }
+      counts.set(row.college_id, (counts.get(row.college_id) || 0) + 1);
+    });
+  } else {
+    const rawMessage = `${adminsResult.error?.message || ""} ${adminsResult.error?.details || ""}`.toLowerCase();
+    const isMissingDepartmentAdmins =
+      adminsResult.error?.code === "PGRST205" ||
+      rawMessage.includes("department_admins") ||
+      rawMessage.includes("schema cache");
+
+    if (!isMissingDepartmentAdmins) {
+      throw createHttpError(`Failed to load admin counts: ${adminsResult.error.message}`, 500);
+    }
+  }
+
+  return counts;
+};
 
 const getCollegesWithSuperAdmins = async () => {
   assertSupabaseConfigured();
@@ -122,13 +273,26 @@ const getCollegesWithSuperAdmins = async () => {
     throw mapSupabaseSetupError(error, `Failed to load colleges: ${error.message}`);
   }
 
+  const collegeIds = (data || []).map((college) => college.id).filter(Boolean);
+  const departmentCounts = await getDepartmentCountsByCollege(collegeIds);
+  const adminCounts = await getAdminCountsByCollege(collegeIds);
+  const facultyCounts = await getFacultyCountsByCollege(collegeIds);
+  const studentCounts = await getStudentCountsByCollege(collegeIds);
+
   return (data || []).map((college) => {
     const enrichedSuperAdmins = (college.super_admin_profiles || []).map((admin) => ({
       ...admin,
       username: admin.app_users?.username || "",
     }));
 
-    return normalizeCollege({ ...college, super_admin_profiles: enrichedSuperAdmins });
+    return normalizeCollege({
+      ...college,
+      super_admin_profiles: enrichedSuperAdmins,
+      department_count: departmentCounts.get(college.id) || 0,
+      admin_count: adminCounts.get(college.id) || 0,
+      faculty_count: facultyCounts.get(college.id) || 0,
+      student_count: studentCounts.get(college.id) || 0,
+    });
   });
 };
 
@@ -221,6 +385,14 @@ const createSuperAdmin = async (payload) => {
     );
   }
 
+  await syncUserToSupabaseAuth({
+    id: user.id,
+    email: user.email,
+    password: defaultPassword,
+    username: user.username,
+    role: user.role,
+  });
+
   const newProfile = {
     user_id: user.id,
     college_id: college.id,
@@ -241,6 +413,7 @@ const createSuperAdmin = async (payload) => {
     .single();
 
   if (profileError) {
+    await deleteUserFromSupabaseAuth(user.id);
     await supabase.from(usersTable).delete().eq("id", user.id);
 
     const isConflict = profileError.code === "23505";
@@ -270,6 +443,126 @@ const createSuperAdmin = async (payload) => {
       password: defaultPassword,
     },
   };
+};
+
+const createGodAccount = async (payload) => {
+  assertSupabaseConfigured();
+
+  const username = payload?.username?.trim();
+  const email = payload?.email?.trim().toLowerCase();
+
+  if (!username || !email) {
+    throw createHttpError("Username and email are required", 400);
+  }
+
+  // Always auto-generate a strong initial password for God accounts.
+  const defaultPassword = buildGeneratedPassword();
+  const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+  const { data, error } = await supabase
+    .from(usersTable)
+    .insert({
+      username,
+      email,
+      password_hash: passwordHash,
+      role: "God",
+      is_active: true,
+    })
+    .select("id, username, email, role")
+    .single();
+
+  if (error) {
+    const isConflict = error.code === "23505";
+    throw createHttpError(
+      isConflict ? "Username or email already exists" : `Failed to create God account: ${error.message}`,
+      isConflict ? 409 : 500
+    );
+  }
+
+  await syncUserToSupabaseAuth({
+    id: data.id,
+    email: data.email,
+    password: defaultPassword,
+    username: data.username,
+    role: data.role,
+  });
+
+  return {
+    god: {
+      id: data.id,
+      username: data.username,
+      email: data.email,
+      role: data.role,
+    },
+    credentials: {
+      username: data.username,
+      password: defaultPassword,
+    },
+  };
+};
+
+const listGodAccounts = async () => {
+  assertSupabaseConfigured();
+
+  const { data, error } = await supabase
+    .from(usersTable)
+    .select("id, username, email, role, created_at")
+    .eq("role", "God")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw createHttpError(`Failed to load God accounts: ${error.message}`, 500);
+  }
+
+  return (data || []).map((user) => ({
+    id: user.id,
+    username: user.username,
+    email: user.email || "",
+    role: user.role,
+    createdAt: user.created_at || "",
+  }));
+};
+
+const deleteGodAccount = async ({ godUserId, currentUserId }) => {
+  assertSupabaseConfigured();
+
+  if (!godUserId) {
+    throw createHttpError("God user id is required", 400);
+  }
+
+  if (godUserId === currentUserId) {
+    throw createHttpError("You cannot delete your own active God account", 400);
+  }
+
+  const { data: existing, error: findError } = await supabase
+    .from(usersTable)
+    .select("id, role")
+    .eq("id", godUserId)
+    .eq("role", "God")
+    .maybeSingle();
+
+  if (findError) {
+    throw createHttpError(`Failed to verify God account: ${findError.message}`, 500);
+  }
+
+  if (!existing) {
+    throw createHttpError("God account not found", 404);
+  }
+
+  const { error: deleteError } = await supabase
+    .from(usersTable)
+    .delete()
+    .eq("id", godUserId)
+    .eq("role", "God");
+
+  if (deleteError) {
+    throw createHttpError(`Failed to delete God account: ${deleteError.message}`, 500);
+  }
+
+  await deleteUserFromSupabaseAuth(godUserId);
+
+  return { deleted: true };
 };
 
 const normalizeDepartmentHead = (record) => ({
@@ -392,6 +685,14 @@ const createDepartmentHead = async ({ superAdminUserId, payload }) => {
     );
   }
 
+  await syncUserToSupabaseAuth({
+    id: user.id,
+    email: payload.email.trim().toLowerCase(),
+    password: defaultPassword,
+    username: user.username,
+    role: "Admin",
+  });
+
   const { data: profile, error: profileError } = await supabase
     .from(departmentHeadsTable)
     .insert({
@@ -411,6 +712,7 @@ const createDepartmentHead = async ({ superAdminUserId, payload }) => {
     .single();
 
   if (profileError) {
+    await deleteUserFromSupabaseAuth(user.id);
     await supabase.from(usersTable).delete().eq("id", user.id);
     const isConflict = profileError.code === "23505";
     throw createHttpError(
@@ -534,6 +836,7 @@ const deleteDepartmentHead = async ({ superAdminUserId, departmentHeadId }) => {
   }
 
   // cleanup linked login user
+  await deleteUserFromSupabaseAuth(existing.user_id);
   await supabase.from(usersTable).delete().eq("id", existing.user_id);
 };
 
@@ -547,5 +850,8 @@ module.exports = {
   createDepartmentHead,
   updateDepartmentHead,
   deleteDepartmentHead,
+  createGodAccount,
+  listGodAccounts,
+  deleteGodAccount,
 };
 

@@ -2,6 +2,9 @@ const {
   getCollegesWithSuperAdmins,
   createCollege,
   createSuperAdmin,
+  createGodAccount,
+  listGodAccounts,
+  deleteGodAccount,
 } = require("../services/godService");
 
 const getColleges = async (_req, res, next) => {
@@ -71,10 +74,58 @@ const createSuperAdminRecord = async (req, res, next) => {
   }
 };
 
+const createGodRecord = async (req, res, next) => {
+  try {
+    const result = await createGodAccount(req.body);
+
+    return res.status(201).json({
+      ok: true,
+      message: "God account created successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const listGodRecords = async (_req, res, next) => {
+  try {
+    const users = await listGodAccounts();
+
+    return res.status(200).json({
+      ok: true,
+      message: "God accounts fetched successfully",
+      data: { users },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const deleteGodRecord = async (req, res, next) => {
+  try {
+    const result = await deleteGodAccount({
+      godUserId: req.params.userId,
+      currentUserId: req.auth?.sub,
+    });
+
+    return res.status(200).json({
+      ok: true,
+      message: "God account deleted successfully",
+      data: result,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getColleges,
   getSuperAdminCollege,
   createCollegeRecord,
   createSuperAdminRecord,
+  createGodRecord,
+  listGodRecords,
+  deleteGodRecord,
 };
 

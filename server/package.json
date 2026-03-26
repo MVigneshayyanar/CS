@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "sync:auth-users": "node scripts/sync_app_users_to_auth.js"
   },
   "keywords": [],
   "author": "",

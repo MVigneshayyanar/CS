@@ -29,10 +29,13 @@ import StudentManagement from './components/Admin/StudentManagement';
 import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
 import AdminSidebar from "./components/Admin/AdminSidebar";
+import GodSidebar from "./components/God/GodSidebar";
 
 // Super Admin & God Mode pages
 import SuperAdminDashboard from "./pages/God/SuperAdminDashboard";
 import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
+import AddCollegePage from "./pages/God/AddCollegePage";
+import GodSettings from "./pages/God/GodSettings";
 
 function App() {
   const { isCollapsed } = useSidebar();
@@ -106,6 +109,7 @@ function App() {
       case "Admin":
         return <AdminSidebar onLogout={handleLogout} />;
       case "God":
+        return <GodSidebar onLogout={handleLogout} />;
       case "SuperAdmin":
       default:
         return null;
@@ -114,14 +118,22 @@ function App() {
 
   // Add this helper function to determine if sidebar should be shown
   const hasSidebar = () => {
-    return userType === "Student" || userType === "Faculty";
+    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God";
   };
 
   return (
     <Router>
       <div className="flex min-h-screen bg-[#f0f4f8] theme-transition">
         {getSidebar()}
-        <div className={`flex-1 transition-all duration-500 ${hasSidebar() ? (isCollapsed ? 'md:ml-28' : 'md:ml-72') : ''}`}>
+        <div
+          className={`flex-1 transition-all duration-500 ${
+            hasSidebar()
+              ? isCollapsed
+                ? 'md:ml-28 ml-0'
+                : 'md:ml-72 ml-0'
+              : ''
+          }`}
+        >
           <main className="p-6 m-0">
             <Routes>
               {userType === "Student" ? (
@@ -160,6 +172,9 @@ function App() {
               ) : userType === "God" ? (
                 <>
                   <Route path="/" element={<UniversalAdminDashboard />} />
+                  <Route path="/dashboard" element={<UniversalAdminDashboard />} />
+                  <Route path="/add-college" element={<AddCollegePage />} />
+                  <Route path="/settings" element={<GodSettings />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : (
