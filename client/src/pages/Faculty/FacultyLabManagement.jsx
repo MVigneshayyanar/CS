@@ -90,12 +90,22 @@ const FacultyLabManagement = () => {
         ? selectedClass.students.map((student, index) => {
             const studentId = typeof student === 'string' ? student : student?.id || student?.username || `${selectedClass.name}-${index + 1}`;
             const studentName = typeof student === 'string' ? student : student?.name || student?.username || `Student ${index + 1}`;
+            const studentIdLower = studentId.toLowerCase();
             return {
                 id: studentId,
                 name: studentName,
-                experiments: experiments.map((exp) => (
-                    exp && (exp.completedBy === studentId || (exp.status === 'completed' && exp.completedBy === studentId))
-                )),
+                experiments: experiments.map((exp) => {
+                    // Check submissions array first (per-student tracking)
+                    if (Array.isArray(exp.submissions)) {
+                        return exp.submissions.some(sub => {
+                            const subStudent = (sub.student || '').toLowerCase();
+                            const subStatus = (sub.status || '').toLowerCase();
+                            return (subStudent === studentIdLower) && (subStatus === 'completed' || Number(sub.progress || 0) >= 100);
+                        });
+                    }
+                    // Fallback to legacy completedBy field
+                    return exp.completedBy === studentId && exp.status === 'completed';
+                }),
             };
         })
         : [];
@@ -407,7 +417,7 @@ const FacultyLabManagement = () => {
                                         key={experiment.id}
                                         experimentName={experiment.name}
                                         experimentNumber={experiment.number}
-                                        completedBy={experiment.completedBy}
+                                        completedBy={experiment.completedCount || 0}
                                         totalStudents={experiment.totalStudents}
                                         avgScore={experiment.avgScore}
                                         onClick={() => handleExperimentClick(experiment)}

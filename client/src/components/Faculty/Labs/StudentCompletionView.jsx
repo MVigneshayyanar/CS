@@ -21,18 +21,61 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
         });
     }, [students]);
 
-    // Derive completion status from real data
+    // Derive completion status from submissions array (per-student tracking)
     const completedStudents = useMemo(() => {
+        const submissions = Array.isArray(experiment?.submissions) ? experiment.submissions : [];
+        const completedIds = new Set();
+        const completedMap = new Map();
+
+        // Build map of completed submissions
+        submissions.forEach(sub => {
+            const status = (sub.status || '').toLowerCase();
+            if (status === 'completed' || Number(sub.progress || 0) >= 100) {
+                const studentKey = (sub.student || '').toLowerCase();
+                completedIds.add(studentKey);
+                completedMap.set(studentKey, sub);
+            }
+        });
+
+        // Also check legacy completedBy field
         if (experiment?.completedBy) {
-            return studentList.filter(s => s.id === experiment.completedBy);
+            completedIds.add(experiment.completedBy.toLowerCase());
         }
-        return [];
+
+        return studentList
+            .filter(s => {
+                const idLower = (s.id || '').toLowerCase();
+                const nameLower = (s.name || '').toLowerCase();
+                return completedIds.has(idLower) || completedIds.has(nameLower);
+            })
+            .map(s => {
+                const sub = completedMap.get((s.id || '').toLowerCase()) || completedMap.get((s.name || '').toLowerCase());
+                return {
+                    ...s,
+                    score: sub?.progress || 100,
+                    submissionDate: sub?.completedAt ? new Date(sub.completedAt).toLocaleDateString() : 'N/A',
+                };
+            });
     }, [studentList, experiment]);
 
     const notCompletedStudents = useMemo(() => {
-        const completedIds = completedStudents.map(s => s.id);
-        return studentList.filter(s => !completedIds.includes(s.id));
-    }, [studentList, completedStudents]);
+        const completedIds = new Set(completedStudents.map(s => (s.id || '').toLowerCase()));
+        const deadline = experiment?.deadline || experiment?.dueDate;
+        const now = new Date();
+
+        return studentList
+            .filter(s => !completedIds.has((s.id || '').toLowerCase()))
+            .map(s => {
+                let daysOverdue = 0;
+                if (deadline) {
+                    const deadlineDate = new Date(deadline);
+                    if (!isNaN(deadlineDate.getTime()) && now > deadlineDate) {
+                        daysOverdue = Math.floor((now - deadlineDate) / (1000 * 60 * 60 * 24));
+                    }
+                }
+                return { ...s, daysOverdue };
+            });
+    }, [studentList, completedStudents, experiment]);
 
     const filter = (list) => {
         if (!searchQuery.trim()) return list;

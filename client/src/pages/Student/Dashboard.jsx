@@ -75,7 +75,7 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
             {/* Left Sidebar */}
-            <ProfilePanel stats={stats} />
+            <ProfilePanel stats={stats} user={user} />
 
             {/* Main Content */}
             <div className="flex flex-col gap-5">
