@@ -33,6 +33,7 @@ import GodSidebar from "./components/God/GodSidebar";
 
 // Super Admin & God Mode pages
 import SuperAdminDashboard from "./pages/God/SuperAdminDashboard";
+import SuperAdminAssignDepartmentHead from "./pages/God/SuperAdminAssignDepartmentHead";
 import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
 import AddCollegePage from "./pages/God/AddCollegePage";
 import GodSettings from "./pages/God/GodSettings";
@@ -111,6 +112,7 @@ function App() {
       case "God":
         return <GodSidebar onLogout={handleLogout} />;
       case "SuperAdmin":
+        return <GodSidebar onLogout={handleLogout} mode="SuperAdmin" />;
       default:
         return null;
     }
@@ -118,7 +120,7 @@ function App() {
 
   // Add this helper function to determine if sidebar should be shown
   const hasSidebar = () => {
-    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God";
+    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God" || userType === "SuperAdmin";
   };
 
   return (
@@ -167,6 +169,7 @@ function App() {
               ) : userType === "SuperAdmin" ? (
                 <>
                   <Route path="/" element={<SuperAdminDashboard />} />
+                  <Route path="/assign-department-head" element={<SuperAdminAssignDepartmentHead />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : userType === "God" ? (
