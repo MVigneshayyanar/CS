@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import SettingsSidebar from '../../components/Faculty/Settings/SettingsSidebar';
 import FacultyProfileSection from '../../components/Faculty/Settings/FacultyProfileSection';
 import PasswordSection from '../../components/Faculty/Settings/PasswordSection';
-import AppearanceSection from '../../components/Faculty/Settings/AppearanceSection';
 import MessageAlert from '../../components/Faculty/Settings/MessageAlert';
 
 const FacultySettings = () => {
@@ -61,7 +60,6 @@ const FacultySettings = () => {
     switch(activeSection) {
       case 'profile': return <FacultyProfileSection {...commonProps} />;
       case 'password': return <PasswordSection passwordData={passwordData} setPasswordData={setPasswordData} {...commonProps} />;
-      case 'appearance': return <AppearanceSection {...commonProps} />;
       default: return <FacultyProfileSection {...commonProps} />;
     }
   };

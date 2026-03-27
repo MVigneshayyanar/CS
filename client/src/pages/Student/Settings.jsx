@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import {
   User,
   Lock,
@@ -12,8 +11,6 @@ import {
   GraduationCap,
   Shield,
   Hash,
-  Sun,
-  Moon,
   Bell,
 } from "lucide-react";
 import { changePassword } from "@/services/authService";
@@ -107,7 +104,6 @@ const Toggle = ({ checked, onChange }) => (
 /* ─── main component ─── */
 
 const Settings = () => {
-  const { theme: globalTheme, setTheme: setGlobalTheme } = useTheme();
   const [activeSection, setActiveSection] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw] = useState({
@@ -212,7 +208,6 @@ const Settings = () => {
   const navItems = [
     { id: "profile", label: "Academic Profile", icon: User },
     { id: "password", label: "Change Password", icon: Lock },
-    { id: "appearance", label: "Display Settings", icon: Palette },
   ];
 
   /* strength meter */
@@ -381,7 +376,6 @@ const Settings = () => {
                 <h2 className="text-lg font-extrabold text-white mb-1">
                   {activeSection === "profile" && "Academic Profile"}
                   {activeSection === "password" && "Change Password"}
-                  {activeSection === "appearance" && "Display Settings"}
                   {activeSection === "learning" && "Learning Preferences"}
                 </h2>
                 <p className="text-teal-100 text-xs max-w-sm leading-relaxed">
@@ -389,8 +383,6 @@ const Settings = () => {
                     "Your university-managed information and academic details all in one place."}
                   {activeSection === "password" &&
                     "Keep your account secure by updating your password regularly."}
-                  {activeSection === "appearance" &&
-                    "Customize how the platform looks and feels for your workflow."}
                 </p>
               </div>
               {/* Hex deco */}
@@ -580,75 +572,6 @@ const Settings = () => {
               </SectionCard>
             )}
 
-            {/* ── APPEARANCE SECTION ── */}
-            {activeSection === "appearance" && (
-              <SectionCard icon={Palette} title="Theme Preference">
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    {
-                      val: "dark",
-                      label: "Dark Mode",
-                      Icon: Moon,
-                      preview: (
-                        <div className="h-8 bg-slate-800 rounded-lg flex items-center px-3 gap-2 mt-2">
-                          <div className="w-2 h-2 rounded-full bg-slate-600" />
-                          <div className="w-2 h-2 rounded-full bg-slate-600" />
-                          <div className="w-2 h-2 rounded-full bg-teal-500" />
-                        </div>
-                      ),
-                    },
-                    {
-                      val: "light",
-                      label: "Light Mode",
-                      Icon: Sun,
-                      preview: (
-                        <div className="h-8 bg-slate-100 rounded-lg flex items-center px-3 gap-2 mt-2 border border-slate-200">
-                          <div className="w-2 h-2 rounded-full bg-slate-300" />
-                          <div className="w-2 h-2 rounded-full bg-slate-300" />
-                          <div className="w-2 h-2 rounded-full bg-teal-400" />
-                        </div>
-                      ),
-                    },
-                  ].map(({ val, label, Icon, preview }) => {
-                    const sel = globalTheme === val;
-                    return (
-                      <label key={val} className="cursor-pointer">
-                        <input
-                          type="radio"
-                          name="theme"
-                          value={val}
-                          checked={sel}
-                          onChange={() => {
-                            setGlobalTheme(val);
-                          }}
-                          className="sr-only"
-                        />
-                        <div
-                          className={`p-3.5 border-2 rounded-2xl transition-all ${sel ? "border-teal-500 bg-teal-50" : "border-slate-200 bg-slate-50 hover:border-slate-300"}`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div
-                              className={`flex items-center gap-2 text-xs font-extrabold ${sel ? "text-teal-700" : "text-slate-500"}`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {label}
-                            </div>
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${sel ? "border-teal-500 bg-teal-500" : "border-slate-300"}`}
-                            >
-                              {sel && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                              )}
-                            </div>
-                          </div>
-                          {preview}
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </SectionCard>
-            )}
 
           </div>
         </div>
