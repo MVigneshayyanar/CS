@@ -68,23 +68,16 @@ const IconLogout = () => (
   </svg>
 );
 
-const godNavItems = [
+const navItems = [
   { to: "/dashboard", label: "Dashboard", Icon: IconDashboard },
   { to: "/add-college", label: "Add New College", Icon: IconAddCollege },
   { to: "/settings", label: "Settings", Icon: IconSettings },
 ];
 
-const superAdminNavItems = [
-  { to: "/", label: "Dashboard", Icon: IconDashboard },
-  { to: "/assign-department-head", label: "Assign Department Head", Icon: IconAddCollege },
-];
-
-export default function GodSidebar({ onLogout, mode = "God" }) {
+export default function GodSidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const navItems = mode === "SuperAdmin" ? superAdminNavItems : godNavItems;
-  const homePath = mode === "SuperAdmin" ? "/" : "/dashboard";
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
@@ -126,14 +119,14 @@ export default function GodSidebar({ onLogout, mode = "God" }) {
           "md:translate-x-0",
           collapsed ? "md:w-20" : "md:w-64",
         ].join(" ")}
-        aria-label={mode === "SuperAdmin" ? "Super Admin Navigation" : "God Navigation"}
+        aria-label="God Navigation"
         aria-expanded={!collapsed}
       >
         <div
           className={`relative flex h-24 items-center ${collapsed ? "justify-center" : "justify-between px-6"}`}
         >
           <NavLink
-            to={homePath}
+            to="/dashboard"
             className="flex items-center gap-3 rounded-md focus:outline-none"
           >
             <div
@@ -161,7 +154,7 @@ export default function GodSidebar({ onLogout, mode = "God" }) {
               <NavLink
                 key={to}
                 to={to}
-                end={to === "/dashboard" || to === "/"}
+                end={to === "/dashboard"}
                 className={({ isActive }) =>
                   [
                     "group relative flex items-center gap-4 rounded-3xl px-4 py-3.5 text-sm font-medium transition-all duration-300",

@@ -42,7 +42,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6">
+    <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -52,24 +52,24 @@ const AdminDashboard = () => {
               Admin Dashboard
             </h1>
           </div>
-          <p className="text-neutral-400 text-lg">System overview and management controls</p>
+          <p className="text-slate-500 text-lg">System overview and management controls</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm">
+            <div key={index} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className={`p-3 bg-gradient-to-r ${stat.color} rounded-lg`}>
                   <stat.icon className="w-6 h-6 text-white" />
                 </div>
-                <div className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-sm font-medium ${stat.trend === 'up' ? 'text-green-600' : 'text-red-500'}`}>
                   {stat.change}
                 </div>
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
-                <p className="text-neutral-400">{stat.title}</p>
+                <h3 className="text-2xl font-bold text-slate-800">{stat.value}</h3>
+                <p className="text-slate-500">{stat.title}</p>
               </div>
             </div>
           ))}
@@ -77,46 +77,46 @@ const AdminDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-white mb-4">Quick Actions</h3>
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-slate-800 mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full text-left p-3 bg-neutral-700/50 hover:bg-neutral-600/50 rounded-lg transition-colors">
-                <div className="font-medium text-white">Add New Student</div>
-                <div className="text-sm text-neutral-400">Register a new student in the system</div>
+              <button className="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-100">
+                <div className="font-medium text-slate-800">Add New Student</div>
+                <div className="text-sm text-slate-500">Register a new student in the system</div>
               </button>
-              <button className="w-full text-left p-3 bg-neutral-700/50 hover:bg-neutral-600/50 rounded-lg transition-colors">
-                <div className="font-medium text-white">Create Lab</div>
-                <div className="text-sm text-neutral-400">Set up a new programming lab</div>
+              <button className="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-100">
+                <div className="font-medium text-slate-800">Create Lab</div>
+                <div className="text-sm text-slate-500">Set up a new programming lab</div>
               </button>
-              <button className="w-full text-left p-3 bg-neutral-700/50 hover:bg-neutral-600/50 rounded-lg transition-colors">
-                <div className="font-medium text-white">System Backup</div>
-                <div className="text-sm text-neutral-400">Create a full system backup</div>
+              <button className="w-full text-left p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-100">
+                <div className="font-medium text-slate-800">System Backup</div>
+                <div className="text-sm text-slate-500">Create a full system backup</div>
               </button>
             </div>
           </div>
 
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-white mb-4">Recent Activity</h3>
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <h3 className="text-xl font-semibold text-slate-800 mb-4">Recent Activity</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="text-sm text-white">New student registered: John Doe</div>
-                  <div className="text-xs text-neutral-400">2 minutes ago</div>
+                  <div className="text-sm text-slate-700">New student registered: John Doe</div>
+                  <div className="text-xs text-slate-400">2 minutes ago</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="text-sm text-white">Lab "Python Basics" created</div>
-                  <div className="text-xs text-neutral-400">15 minutes ago</div>
+                  <div className="text-sm text-slate-700">Lab "Python Basics" created</div>
+                  <div className="text-xs text-slate-400">15 minutes ago</div>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="text-sm text-white">System maintenance completed</div>
-                  <div className="text-xs text-neutral-400">1 hour ago</div>
+                  <div className="text-sm text-slate-700">System maintenance completed</div>
+                  <div className="text-xs text-slate-400">1 hour ago</div>
                 </div>
               </div>
             </div>
