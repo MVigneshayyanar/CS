@@ -72,6 +72,8 @@ const getFaculty = async (scope) => {
     name: user.full_name || user.username,
     email: user.email || "",
     empId: user.username,
+    qualification: user.qualification || "N/A",
+    designation: user.designation || "N/A",
     department: user.department_name || "N/A",
     specialization: user.specialization || "N/A",
   }));
@@ -111,12 +113,10 @@ const getLabs = async ({ collegeId, departmentName } = {}) => {
   }));
 };
 
-const createUserWithDefaultPassword = async ({ username, full_name, email, role, collegeId, departmentName }) => {
+const createUserWithDefaultPassword = async ({ username, full_name, email, role, collegeId, departmentName, extraFields = {} }) => {
   const passwordHash = await bcrypt.hash(username, 10);
 
-  const { data, error } = await supabase
-    .from(usersTable)
-    .insert({
+  const insertPayload = {
       username,
       full_name: full_name || null,
       email: email || null,
@@ -125,7 +125,12 @@ const createUserWithDefaultPassword = async ({ username, full_name, email, role,
       is_active: true,
       college_id: collegeId || null,
       department_name: departmentName || null,
-    })
+      ...extraFields
+  };
+
+  const { data, error } = await supabase
+    .from(usersTable)
+    .insert(insertPayload)
     .select("id, username, email, role, college_id, department_name")
     .single();
 
@@ -149,7 +154,7 @@ const createUserWithDefaultPassword = async ({ username, full_name, email, role,
   return data;
 };
 
-const updateRoleUser = async ({ id, role, username, email, collegeId, departmentName }) => {
+const updateRoleUser = async ({ id, role, username, email, collegeId, departmentName, extraFields = {} }) => {
   ensureSupabase();
 
   const { data: existing, error: findError } = await supabase
@@ -167,7 +172,7 @@ const updateRoleUser = async ({ id, role, username, email, collegeId, department
     throw createHttpError(`${role} user not found`, 404);
   }
 
-  const updatePayload = {};
+  const updatePayload = { ...extraFields };
   if (username) {
     updatePayload.username = username;
     updatePayload.password_hash = await bcrypt.hash(username, 10);
@@ -236,6 +241,10 @@ const createStudent = async (scope, payload) => {
     full_name: safeTrim(payload?.name),
     email,
     role: "Student",
+    extraFields: {
+      year,
+      branch
+    },
     ...scope
   });
 
@@ -266,6 +275,10 @@ const updateStudent = async (scope, id, payload) => {
     username: rollNo,
     full_name: safeTrim(payload?.name),
     email,
+    extraFields: {
+      year: safeTrim(payload?.year) || "N/A",
+      branch: safeTrim(payload?.branch) || "N/A"
+    },
     ...scope
   });
 
@@ -304,6 +317,11 @@ const createFaculty = async (scope, payload) => {
     full_name: safeTrim(payload?.name),
     email,
     role: "Faculty",
+    extraFields: {
+      qualification: safeTrim(payload?.qualification) || null,
+      designation: safeTrim(payload?.designation) || null,
+      specialization: safeTrim(payload?.specialization) || null,
+    },
     ...scope
   });
 
@@ -312,6 +330,8 @@ const createFaculty = async (scope, payload) => {
     name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     empId: user.username,
+    qualification: safeTrim(payload?.qualification) || "N/A",
+    designation: safeTrim(payload?.designation) || "N/A",
     department: department,
     specialization: safeTrim(payload?.specialization) || "N/A",
     credentials: {
@@ -334,6 +354,11 @@ const updateFaculty = async (scope, id, payload) => {
     username: empId,
     full_name: safeTrim(payload?.name),
     email,
+    extraFields: {
+      qualification: safeTrim(payload?.qualification) || null,
+      designation: safeTrim(payload?.designation) || null,
+      specialization: safeTrim(payload?.specialization) || null,
+    },
     ...scope
   });
 
@@ -342,6 +367,8 @@ const updateFaculty = async (scope, id, payload) => {
     name: user.full_name || safeTrim(payload?.name) || user.username,
     email: user.email || "",
     empId: user.username,
+    qualification: safeTrim(payload?.qualification) || "N/A",
+    designation: safeTrim(payload?.designation) || "N/A",
     department: safeTrim(payload?.department) || "N/A",
     specialization: safeTrim(payload?.specialization) || "N/A",
     credentials: {

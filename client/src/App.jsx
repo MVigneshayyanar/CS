@@ -28,6 +28,9 @@ import FacultySettings from "./pages/Faculty/FacultySettings";
 import StudentManagement from './components/Admin/StudentManagement';
 import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
+import CreateLab from './components/Admin/CreateLab';
+import LabDetails from './components/Admin/LabDetails';
+import CreateExperiment from './components/Admin/CreateExperiment';
 import AdminSidebar from "./components/Admin/AdminSidebar";
 import GodSidebar from "./components/God/GodSidebar";
 
@@ -162,6 +165,9 @@ function App() {
                   <Route path="/students" element={<StudentManagement />} />
                   <Route path="/faculty" element={<FacultyManagement />} />
                   <Route path="/labs" element={<LabManagement />} />
+                  <Route path="/labs/create" element={<CreateLab />} />
+                  <Route path="/labs/:labId" element={<LabDetails />} />
+                  <Route path="/labs/:labId/experiments/create" element={<CreateExperiment />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : userType === "SuperAdmin" ? (

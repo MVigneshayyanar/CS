@@ -7,6 +7,7 @@ const PORTAL_ROLE_MAP = {
   God: ["God"],
   Student: ["Student"],
   Staff: ["Faculty", "Admin", "SuperAdmin", "God"],
+  All: ["Student", "Faculty", "Admin", "SuperAdmin", "God"],
 };
 
 const ROLE_LOGIN_MAP = {

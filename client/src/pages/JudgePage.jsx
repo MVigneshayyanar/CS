@@ -467,7 +467,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                           <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                             Input
                           </label>
-                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                             {testCases[activeTestIdx].input || "No input"}
                           </div>
                         </div>
@@ -475,7 +475,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                           <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                             Expected Output
                           </label>
-                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                             {testCases[activeTestIdx].expected ||
                               testCases[activeTestIdx].expectedOutput ||
                               "No expected output"}
@@ -563,7 +563,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                               Input
                             </label>
-                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                               {testResults[activeTestIdx].input}
                             </div>
                           </div>
@@ -573,7 +573,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             Output
                           </label>
                           <div
-                            className={`bg-[#1A1A2E] border rounded-lg px-3 py-2.5 font-mono text-sm ${
+                            className={`bg-[#1A1A2E] border rounded-lg px-3 py-2.5 font-mono text-sm whitespace-pre-wrap ${
                               testResults[activeTestIdx].error
                                 ? "border-red-500/30 text-red-400"
                                 : testResults[activeTestIdx].passed === false
@@ -591,7 +591,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                               Expected
                             </label>
-                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                               {testResults[activeTestIdx].expected}
                             </div>
                           </div>
