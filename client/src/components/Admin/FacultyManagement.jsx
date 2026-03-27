@@ -43,12 +43,14 @@ const FacultyManagement = () => {
     name: '',
     email: '',
     empId: '',
+    qualification: '',
+    designation: '',
     department: '',
     specialization: '',
   });
 
   const resetForm = () => {
-    setFacultyForm({ name: '', email: '', empId: '', department: '', specialization: '' });
+    setFacultyForm({ name: '', email: '', empId: '', qualification: '', designation: '', department: '', specialization: '' });
   };
 
   const closeModal = () => {
@@ -69,6 +71,8 @@ const FacultyManagement = () => {
       name: member.name || '',
       email: member.email || '',
       empId: member.empId || '',
+      qualification: member.qualification || '',
+      designation: member.designation || '',
       department: member.department === 'N/A' ? '' : (member.department || ''),
       specialization: member.specialization === 'N/A' ? '' : (member.specialization || ''),
     });
@@ -177,10 +181,10 @@ const FacultyManagement = () => {
             <thead className="bg-neutral-800/80">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Department</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Specialization</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Qualification</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Designation</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -193,14 +197,10 @@ const FacultyManagement = () => {
               {!isLoading && filteredFaculty.map((member) => (
                 <tr key={member.id} className="hover:bg-neutral-700/30 transition-colors">
                   <td className="px-6 py-4 text-white font-medium">{member.name}</td>
-                  <td className="px-6 py-4 text-neutral-300">{member.email}</td>
                   <td className="px-6 py-4 text-neutral-300 font-mono">{member.empId}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-teal-600/20 text-teal-300 px-2 py-1 rounded text-sm">
-                      {member.department}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-neutral-300">{member.specialization}</td>
+                  <td className="px-6 py-4 text-neutral-300">{member.qualification}</td>
+                  <td className="px-6 py-4 text-neutral-300">{member.designation}</td>
+                  <td className="px-6 py-4 text-neutral-300">{member.email}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEditModal(member)} className="p-1 text-blue-400 hover:text-blue-300">
@@ -227,8 +227,10 @@ const FacultyManagement = () => {
         <Modal title={editingFaculty ? 'Edit Faculty' : 'Add Faculty'} onSubmit={handleSubmitFaculty} onClose={closeModal} isSubmitting={isSubmitting}>
           <div className="grid md:grid-cols-2 gap-4">
             <input type="text" placeholder="Full Name" value={facultyForm.name} onChange={(e) => setFacultyForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="email" placeholder="Email" value={facultyForm.email} onChange={(e) => setFacultyForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="ID" value={facultyForm.empId} onChange={(e) => setFacultyForm((prev) => ({ ...prev, empId: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
+            <input type="text" placeholder="ID (Employee ID)" value={facultyForm.empId} onChange={(e) => setFacultyForm((prev) => ({ ...prev, empId: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="text" placeholder="Qualification" value={facultyForm.qualification} onChange={(e) => setFacultyForm((prev) => ({ ...prev, qualification: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="text" placeholder="Designation" value={facultyForm.designation} onChange={(e) => setFacultyForm((prev) => ({ ...prev, designation: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="email" placeholder="Email" value={facultyForm.email} onChange={(e) => setFacultyForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
           </div>
         </Modal>
       )}

@@ -43,12 +43,14 @@ const StudentManagement = () => {
     name: '',
     email: '',
     rollNo: '',
-    year: '',
+    rollNo: '',
+    startYear: '',
+    passoutYear: '',
     branch: '',
   });
 
   const resetForm = () => {
-    setStudentForm({ name: '', email: '', rollNo: '', year: '', branch: '' });
+    setStudentForm({ name: '', email: '', rollNo: '', startYear: '', passoutYear: '', branch: '' });
   };
 
   const closeModal = () => {
@@ -65,11 +67,13 @@ const StudentManagement = () => {
 
   const openEditModal = (student) => {
     setEditingStudent(student);
+    const [stYear, poYear] = (student.year && student.year !== 'N/A') ? student.year.split('-') : ['', ''];
     setStudentForm({
       name: student.name || '',
       email: student.email || '',
       rollNo: student.rollNo || '',
-      year: student.year === 'N/A' ? '' : (student.year || ''),
+      startYear: stYear || '',
+      passoutYear: poYear || '',
       branch: student.branch === 'N/A' ? '' : (student.branch || ''),
     });
     setShowModal(true);
@@ -79,14 +83,15 @@ const StudentManagement = () => {
     event.preventDefault();
     setIsSubmitting(true);
     try {
+      const payload = { ...studentForm, year: `${studentForm.startYear}-${studentForm.passoutYear}` };
       if (editingStudent) {
-        const result = await updateAdminStudent(editingStudent.id, studentForm);
+        const result = await updateAdminStudent(editingStudent.id, payload);
         const updatedStudent = result?.data?.student;
         if (updatedStudent) {
           setStudents((prev) => prev.map((item) => (item.id === updatedStudent.id ? updatedStudent : item)));
         }
       } else {
-        const result = await createAdminStudent(studentForm);
+        const result = await createAdminStudent(payload);
         const createdStudent = result?.data?.student;
         if (createdStudent) {
           setStudents((prev) => [createdStudent, ...prev]);
@@ -150,8 +155,8 @@ const StudentManagement = () => {
         </div>
         <div className="flex items-center gap-3">
           {/* <div className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 flex items-center gap-2"> */}
-            {/* <Database className="w-4 h-4" /> */}
-            {/* Backend Synced */}
+          {/* <Database className="w-4 h-4" /> */}
+          {/* Backend Synced */}
           {/* </div> */}
           <button onClick={openCreateModal} className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg">
             <Plus className="w-4 h-4 mr-2" />
@@ -159,7 +164,7 @@ const StudentManagement = () => {
           </button>
         </div>
       </div>
-      
+
       <div className="relative">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500 w-5 h-5" />
         <input
@@ -170,17 +175,16 @@ const StudentManagement = () => {
           className="pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg w-full text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
         />
       </div>
-      
+
       <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl overflow-hidden backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-neutral-800/80">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Year</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Branch</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Email</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -193,14 +197,9 @@ const StudentManagement = () => {
               {!isLoading && filteredStudents.map((student) => (
                 <tr key={student.id} className="hover:bg-neutral-700/30 transition-colors">
                   <td className="px-6 py-4 text-white font-medium">{student.name}</td>
-                  <td className="px-6 py-4 text-neutral-300">{student.email}</td>
                   <td className="px-6 py-4 text-neutral-300 font-mono">{student.rollNo}</td>
                   <td className="px-6 py-4 text-neutral-300">{student.year}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-teal-600/20 text-teal-300 px-2 py-1 rounded text-sm">
-                      {student.branch}
-                    </span>
-                  </td>
+                  <td className="px-6 py-4 text-neutral-300">{student.email}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEditModal(student)} className="p-1 text-blue-400 hover:text-blue-300">
@@ -227,8 +226,10 @@ const StudentManagement = () => {
         <Modal title={editingStudent ? 'Edit Student' : 'Add Student'} onSubmit={handleSubmitStudent} onClose={closeModal} isSubmitting={isSubmitting}>
           <div className="grid md:grid-cols-2 gap-4">
             <input type="text" placeholder="Full Name" value={studentForm.name} onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="email" placeholder="Email" value={studentForm.email} onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
-            <input type="text" placeholder="ID" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
+            <input type="text" placeholder="ID (Roll Number)" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="number" placeholder="Starting Year (e.g., 2023)" value={studentForm.startYear} onChange={(e) => setStudentForm((prev) => ({ ...prev, startYear: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="number" placeholder="Passout Year (e.g., 2027)" value={studentForm.passoutYear} onChange={(e) => setStudentForm((prev) => ({ ...prev, passoutYear: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white" required />
+            <input type="email" placeholder="Email" value={studentForm.email} onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white md:col-span-2" required />
           </div>
         </Modal>
       )}
