@@ -2,6 +2,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSidebar } from "../../context/SidebarContext";
 import brandLogo from "../../assets/logo.svg";
+import ThemeToggle from "../ThemeToggle";
 
 const IconDashboard = () => (
   <svg
@@ -188,6 +189,8 @@ export default function SuperAdminSidebar({ onLogout }) {
         </div>
 
         <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{ paddingBottom: !collapsed ? "56px" : undefined }}>
+          <ThemeToggle collapsed={collapsed} />
+
           <button
             onClick={handleLogout}
             className="group relative w-full flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10"

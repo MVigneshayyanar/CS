@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
 import {
   Settings as SettingsIcon,
   Shield,
@@ -7,11 +6,8 @@ import {
   Monitor,
   Clock3,
   LogOut,
-  Palette,
   ChevronRight,
   Save,
-  Sun,
-  Moon,
   Eye,
   EyeOff,
 } from 'lucide-react';
@@ -56,7 +52,6 @@ const PwField = ({ label, show, onToggle, value, onChange, placeholder, hint }) 
 );
 
 const SuperAdminSettings = () => {
-  const { theme: globalTheme, setTheme: setGlobalTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('password');
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -167,7 +162,6 @@ const SuperAdminSettings = () => {
   const navItems = [
     { id: 'password', label: 'Change Password', icon: Lock },
     { id: 'security', label: 'Security', icon: Shield },
-    { id: 'appearance', label: 'Display Settings', icon: Palette },
   ];
 
   const pwStrength = Math.min(
@@ -296,15 +290,12 @@ const SuperAdminSettings = () => {
                 <h2 className="text-lg font-extrabold text-white mb-1">
                   {activeSection === 'password' && 'Change Password'}
                   {activeSection === 'security' && 'Security Controls'}
-                  {activeSection === 'appearance' && 'Display Settings'}
                 </h2>
                 <p className="text-teal-100 text-xs max-w-sm leading-relaxed">
                   {activeSection === 'password' &&
                     'Keep your account secure by updating your password regularly.'}
                   {activeSection === 'security' &&
                     'Strengthen safeguards for sensitive administrative actions.'}
-                  {activeSection === 'appearance' &&
-                    'Customize the interface theme to your workflow.'}
                 </p>
               </div>
               <div className="flex gap-2 opacity-90 pointer-events-none select-none">
@@ -453,65 +444,7 @@ const SuperAdminSettings = () => {
               </SectionCard>
             )}
 
-            {activeSection === 'appearance' && (
-              <SectionCard icon={Palette} title="Theme Preference">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    {
-                      val: 'dark',
-                      label: 'Dark Mode',
-                      Icon: Moon,
-                    },
-                    {
-                      val: 'light',
-                      label: 'Light Mode',
-                      Icon: Sun,
-                    },
-                  ].map(({ val, label, Icon }) => {
-                    const selected = globalTheme === val;
-                    return (
-                      <label key={val} className="cursor-pointer">
-                        <input
-                          type="radio"
-                          name="theme"
-                          value={val}
-                          checked={selected}
-                          onChange={() => setGlobalTheme(val)}
-                          className="sr-only"
-                        />
-                        <div
-                          className={`p-3.5 border-2 rounded-2xl transition-all ${
-                            selected
-                              ? 'border-teal-500 bg-teal-50'
-                              : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div
-                              className={`flex items-center gap-2 text-xs font-extrabold ${
-                                selected ? 'text-teal-700' : 'text-slate-500'
-                              }`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                              {label}
-                            </div>
-                            <div
-                              className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                selected ? 'border-teal-500 bg-teal-500' : 'border-slate-300'
-                              }`}
-                            >
-                              {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </SectionCard>
-            )}
-
-            {(activeSection === 'security' || activeSection === 'appearance') && (
+            {activeSection === 'security' && (
               <div className="flex justify-end">
                 <button
                   type="button"

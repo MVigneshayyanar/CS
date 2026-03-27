@@ -171,8 +171,11 @@ function App() {
                 </>
               ) : userType === "SuperAdmin" ? (
                 <>
-                  <Route path="/" element={<SuperAdminDashboard />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<SuperAdminDashboard />} />
+                  <Route path="/add-department" element={<SuperAdminAddDepartmentPage />} />
+                  <Route path="/settings" element={<SuperAdminSettings />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "God" ? (
                 <>
