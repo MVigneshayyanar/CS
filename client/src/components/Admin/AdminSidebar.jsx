@@ -100,7 +100,7 @@ const AdminSidebar = ({ onLogout }) => {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-red-400' : 'text-neutral-500 group-hover:text-white'}`} />
+                  <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-neutral-500 group-hover:text-white'}`} />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap transition-all duration-500">
                       {item.title}
