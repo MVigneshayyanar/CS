@@ -44,11 +44,11 @@ const FacultyManagement = () => {
     email: '',
     empId: '',
     department: '',
-    specialization: '',
+    designation: '',
   });
 
   const resetForm = () => {
-    setFacultyForm({ name: '', email: '', empId: '', department: '', specialization: '' });
+    setFacultyForm({ name: '', email: '', empId: '', department: '', designation: '' });
   };
 
   const closeModal = () => {
@@ -70,7 +70,7 @@ const FacultyManagement = () => {
       email: member.email || '',
       empId: member.empId || '',
       department: member.department === 'N/A' ? '' : (member.department || ''),
-      specialization: member.specialization === 'N/A' ? '' : (member.specialization || ''),
+      designation: member.designation === 'N/A' ? '' : (member.designation || ''),
     });
     setShowModal(true);
   };
@@ -115,7 +115,7 @@ const FacultyManagement = () => {
   const filterData = () => {
     if (!searchTerm) return faculty;
     return faculty.filter(item =>
-      ['name', 'email', 'empId', 'department'].some(field =>
+      ['name', 'email', 'empId', 'department', 'designation', 'specialization'].some(field =>
         item[field]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
@@ -194,7 +194,7 @@ const FacultyManagement = () => {
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department</th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Specialization</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Designation</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -214,7 +214,7 @@ const FacultyManagement = () => {
                         {member.department}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600 text-sm">{member.specialization}</td>
+                    <td className="px-6 py-4 text-slate-600 text-sm">{member.designation}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
                         <button onClick={() => openEditModal(member)} className="text-blue-400 hover:text-blue-600 transition-colors p-1.5 rounded-lg hover:bg-blue-50">
@@ -243,6 +243,7 @@ const FacultyManagement = () => {
               <input type="text" placeholder="Full Name" value={facultyForm.name} onChange={(e) => setFacultyForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all" required />
               <input type="email" placeholder="Email" value={facultyForm.email} onChange={(e) => setFacultyForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all" required />
               <input type="text" placeholder="Employee ID" value={facultyForm.empId} onChange={(e) => setFacultyForm((prev) => ({ ...prev, empId: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all md:col-span-2" required />
+              <input type="text" placeholder="Designation (e.g. Asst. Professor)" value={facultyForm.designation} onChange={(e) => setFacultyForm((prev) => ({ ...prev, designation: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all md:col-span-2" />
             </div>
           </Modal>
         )}

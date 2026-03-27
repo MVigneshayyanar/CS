@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Database, Edit, Plus, Save, Search, Trash2, X, Users, GraduationCap } from 'lucide-react';
+import { Edit, Plus, Save, Search, Trash2, X, GraduationCap } from 'lucide-react';
 import {
   createAdminStudent,
   deleteAdminStudent,
   fetchAdminStudents,
   updateAdminStudent,
 } from '@/services/adminService';
+
+const currentYear = new Date().getFullYear();
+const joiningYearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 10 + i); // past 10 years up to current year
+const passoutYearOptions = Array.from({ length: 8 }, (_, i) => currentYear + i);       // current year + next 7 years
 
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
   <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto p-4 sm:p-6">
@@ -43,12 +47,12 @@ const StudentManagement = () => {
     name: '',
     email: '',
     rollNo: '',
-    year: '',
-    branch: '',
+    joiningYear: '',
+    passoutYear: '',
   });
 
   const resetForm = () => {
-    setStudentForm({ name: '', email: '', rollNo: '', year: '', branch: '' });
+    setStudentForm({ name: '', email: '', rollNo: '', joiningYear: '', passoutYear: '' });
   };
 
   const closeModal = () => {
@@ -69,8 +73,8 @@ const StudentManagement = () => {
       name: student.name || '',
       email: student.email || '',
       rollNo: student.rollNo || '',
-      year: student.year === 'N/A' ? '' : (student.year || ''),
-      branch: student.branch === 'N/A' ? '' : (student.branch || ''),
+      joiningYear: student.joiningYear || '',
+      passoutYear: student.passoutYear || '',
     });
     setShowModal(true);
   };
@@ -90,7 +94,7 @@ const StudentManagement = () => {
         const createdStudent = result?.data?.student;
         if (createdStudent) {
           setStudents((prev) => [createdStudent, ...prev]);
-          alert(`Student created. Username: ${createdStudent.credentials?.username || createdStudent.rollNo}, Password: ${createdStudent.credentials?.password || createdStudent.rollNo}`);
+          alert(`Student created.\nUsername: ${createdStudent.credentials?.username || createdStudent.rollNo}\nPassword: ${createdStudent.credentials?.password || createdStudent.rollNo}`);
         }
       }
       closeModal();
@@ -115,7 +119,7 @@ const StudentManagement = () => {
   const filterData = () => {
     if (!searchTerm) return students;
     return students.filter(item =>
-      ['name', 'email', 'rollNo', 'branch'].some(field =>
+      ['name', 'email', 'rollNo'].some(field =>
         item[field]?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
@@ -151,7 +155,7 @@ const StudentManagement = () => {
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-white leading-tight">Student Management</h1>
-              <p className="text-xs text-teal-100">Add and manage students from backend database</p>
+              <p className="text-xs text-teal-100">Add and manage students</p>
             </div>
           </div>
           <button
@@ -176,7 +180,7 @@ const StudentManagement = () => {
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search by name, email, roll number, or branch..."
+              placeholder="Search by name, email, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl w-full text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
@@ -184,7 +188,7 @@ const StudentManagement = () => {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table — no department/branch column */}
         <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -193,15 +197,14 @@ const StudentManagement = () => {
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Year</th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Branch</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Batch</th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {isLoading && (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-slate-400 text-sm">Loading students...</td>
+                    <td colSpan="5" className="px-6 py-8 text-center text-slate-400 text-sm">Loading students...</td>
                   </tr>
                 )}
                 {!isLoading && filteredStudents.map((student) => (
@@ -209,11 +212,14 @@ const StudentManagement = () => {
                     <td className="px-6 py-4 text-slate-800 font-medium text-sm">{student.name}</td>
                     <td className="px-6 py-4 text-slate-600 text-sm">{student.email}</td>
                     <td className="px-6 py-4 text-slate-600 font-mono text-sm">{student.rollNo}</td>
-                    <td className="px-6 py-4 text-slate-600 text-sm">{student.year}</td>
                     <td className="px-6 py-4">
-                      <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium">
-                        {student.branch}
-                      </span>
+                      {(student.joiningYear || student.passoutYear) ? (
+                        <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                          {student.joiningYear || '?'} – {student.passoutYear || '?'}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 text-sm">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
@@ -229,7 +235,7 @@ const StudentManagement = () => {
                 ))}
                 {!isLoading && filteredStudents.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-slate-400 text-sm italic">No students found.</td>
+                    <td colSpan="5" className="px-6 py-8 text-center text-slate-400 text-sm italic">No students found.</td>
                   </tr>
                 )}
               </tbody>
@@ -237,12 +243,73 @@ const StudentManagement = () => {
           </div>
         </div>
 
+        {/* Modal: Add / Edit Student */}
         {showModal && (
           <Modal title={editingStudent ? 'Edit Student' : 'Add Student'} onSubmit={handleSubmitStudent} onClose={closeModal} isSubmitting={isSubmitting}>
-            <div className="grid md:grid-cols-2 gap-4">
-              <input type="text" placeholder="Full Name" value={studentForm.name} onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all" required />
-              <input type="email" placeholder="Email" value={studentForm.email} onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all" required />
-              <input type="text" placeholder="Roll Number / ID" value={studentForm.rollNo} onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))} className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all md:col-span-2" required />
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Student Name</label>
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={studentForm.name}
+                    onChange={(e) => setStudentForm((prev) => ({ ...prev, name: e.target.value }))}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Email ID</label>
+                  <input
+                    type="email"
+                    placeholder="student@email.com"
+                    value={studentForm.email}
+                    onChange={(e) => setStudentForm((prev) => ({ ...prev, email: e.target.value }))}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Student ID / Roll Number</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 22CS101"
+                  value={studentForm.rollNo}
+                  onChange={(e) => setStudentForm((prev) => ({ ...prev, rollNo: e.target.value }))}
+                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Joining Year</label>
+                  <select
+                    value={studentForm.joiningYear}
+                    onChange={(e) => setStudentForm((prev) => ({ ...prev, joiningYear: e.target.value }))}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    required
+                  >
+                    <option value="">Select Year</option>
+                    {joiningYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Passout Year</label>
+                  <select
+                    value={studentForm.passoutYear}
+                    onChange={(e) => setStudentForm((prev) => ({ ...prev, passoutYear: e.target.value }))}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    required
+                  >
+                    <option value="">Select Year</option>
+                    {passoutYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
             </div>
           </Modal>
         )}
