@@ -138,7 +138,7 @@ function App() {
             <Routes>
               {userType === "Student" ? (
                 <>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/labs" element={<Labs />} />
                   <Route path="/labs/experiments" element={<Experiments />} />
@@ -146,37 +146,38 @@ function App() {
                   <Route path="/statistics" element={<Statistics />} />
                   <Route path="/reports" element={<Reports />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "Faculty" ? (
                 <>
-                  <Route path="/" element={<FacultyDashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<FacultyDashboard />} />
                   <Route path="/labs" element={<FacultyLabManagement />} />
                   <Route path="/settings" element={<FacultySettings />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "Admin" ? (
                 <>
-                  <Route path="/" element={<AdminDashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<AdminDashboard />} />
                   <Route path="/students" element={<StudentManagement />} />
                   <Route path="/faculty" element={<FacultyManagement />} />
                   <Route path="/labs" element={<LabManagement />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "SuperAdmin" ? (
                 <>
-                  <Route path="/" element={<SuperAdminDashboard />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="/dashboard" element={<SuperAdminDashboard />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "God" ? (
                 <>
-                  <Route path="/" element={<UniversalAdminDashboard />} />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   <Route path="/dashboard" element={<UniversalAdminDashboard />} />
                   <Route path="/add-college" element={<AddCollegePage />} />
                   <Route path="/settings" element={<GodSettings />} />
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : (
                 <Route path="*" element={<Navigate to="/" replace />} />

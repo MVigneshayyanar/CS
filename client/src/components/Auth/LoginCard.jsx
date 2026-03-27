@@ -147,18 +147,6 @@ const LoginCard = ({ onLogin }) => {
           )}
         </button>
       </form>
-
-      {/* Login Source */}
-      {/* <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg"> */}
-        {/* <h4 className="text-xs font-semibold text-gray-300 mb-2">
-          Authentication:
-        </h4> */}
-        {/* <div className="text-xs text-gray-400 space-y-1">
-          <div>
-            Uses backend API and Supabase users table for all roles.
-          </div>
-        </div> */}
-      {/* </div> */}
     </div>
   );
 };
