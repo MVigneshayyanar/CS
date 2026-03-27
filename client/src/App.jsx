@@ -24,7 +24,7 @@ import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultyLabManagement from "./pages/Faculty/FacultyLabManagement";
 import FacultySettings from "./pages/Faculty/FacultySettings";
 
-// Admin pages
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 import StudentManagement from './components/Admin/StudentManagement';
 import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
@@ -158,7 +158,8 @@ function App() {
                 </>
               ) : userType === "Admin" ? (
                 <>
-                  <Route path="/" element={<StudentManagement />} />
+                  <Route path="/" element={<AdminDashboard />} />
+                  <Route path="/dashboard" element={<AdminDashboard />} />
                   <Route path="/students" element={<StudentManagement />} />
                   <Route path="/faculty" element={<FacultyManagement />} />
                   <Route path="/labs" element={<LabManagement />} />

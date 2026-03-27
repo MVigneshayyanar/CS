@@ -6,7 +6,8 @@ import {
   FlaskConical, 
   ChevronLeft, 
   Building2,
-  LogOut
+  LogOut,
+  LayoutDashboard
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
@@ -14,6 +15,11 @@ const AdminSidebar = ({ onLogout }) => {
   const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
 
   const menuItems = [
+    {
+      title: 'Dashboard',
+      icon: LayoutDashboard,
+      path: '/dashboard'
+    },
     {
       title: 'Student Management',
       icon: Users,

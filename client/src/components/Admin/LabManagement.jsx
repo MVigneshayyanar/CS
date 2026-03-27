@@ -10,28 +10,28 @@ import {
 } from '@/services/adminService';
 
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
-  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-neutral-900 border border-neutral-700 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">{title}</h2>
-        <button onClick={onClose} className="text-neutral-400 hover:text-white transition-colors p-1">
+        <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+        <button onClick={onClose} className="text-slate-500 hover:text-slate-900 transition-colors p-1">
           <X className="w-6 h-6" />
         </button>
       </div>
       <form onSubmit={onSubmit} className="space-y-6">
         {children}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-neutral-700">
+        <div className="flex justify-end space-x-3 pt-6 border-t border-slate-200">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 text-neutral-300 bg-neutral-800 border border-neutral-600 rounded-lg hover:bg-neutral-700 transition-colors"
+            className="px-6 py-2 text-slate-700 bg-slate-50 border border-slate-300 rounded-lg hover:bg-slate-200 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg disabled:opacity-60"
+            className="px-6 py-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-slate-900 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg disabled:opacity-60"
           >
             <Save className="w-4 h-4 mr-2" />
             {isSubmitting ? 'Saving...' : 'Save'}
@@ -189,16 +189,16 @@ const LabManagement = () => {
           <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
             Lab Management
           </h1>
-          <p className="text-neutral-400 mt-2">Create and manage programming labs and experiments (backend synced)</p>
+          <p className="text-slate-500 mt-2">Create and manage programming labs and experiments (backend synced)</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* <div className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 rounded-lg px-3 py-2 flex items-center gap-2"> */}
+          {/* <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2"> */}
             {/* <Database className="w-4 h-4" /> */}
             {/* Backend Synced */}
           {/* </div> */}
           <button
             onClick={() => openModal()}
-            className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-6 py-3 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg"
+            className="bg-gradient-to-r from-teal-600 to-cyan-600 text-slate-900 px-6 py-3 rounded-lg hover:from-teal-700 hover:to-cyan-700 transition-all flex items-center shadow-lg"
           >
             <Plus className="w-5 h-5 mr-2" />
             Create Lab
@@ -207,33 +207,33 @@ const LabManagement = () => {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-500 w-5 h-5" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
         <input
           type="text"
           placeholder="Search labs..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg w-full text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+          className="pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
         />
       </div>
 
       <div className="grid gap-6">
         {isLoading && (
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 text-neutral-400">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 text-slate-500">
             Loading labs...
           </div>
         )}
 
         {!isLoading && filteredLabs.map((lab) => (
-          <div key={lab.id} className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-6 backdrop-blur-sm hover:bg-neutral-800/70 transition-all">
+          <div key={lab.id} className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 backdrop-blur-sm hover:bg-slate-50/70 transition-all">
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-2">{lab.name}</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{lab.name}</h3>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full">
                     {lab.language}
                   </span>
-                  <span className="text-neutral-400">Faculty: {lab.faculty}</span>
+                  <span className="text-slate-500">Faculty: {lab.faculty}</span>
                 </div>
               </div>
               <div className="flex space-x-3">
@@ -248,11 +248,11 @@ const LabManagement = () => {
 
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h4 className="font-semibold text-neutral-300 mb-3 flex items-center">
+                <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
                   <Users className="w-4 h-4 mr-2" />
                   Assigned Students ({lab.students?.length || 0})
                 </h4>
-                <div className="bg-neutral-900/50 border border-neutral-700 rounded-lg p-4 max-h-32 overflow-y-auto">
+                <div className="bg-white/50 border border-slate-200 rounded-lg p-4 max-h-32 overflow-y-auto">
                   {(lab.students || []).map((student, index) => (
                     <span key={`${lab.id}-${index}`} className="inline-block bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full text-sm mr-2 mb-2">
                       {student}
@@ -261,15 +261,15 @@ const LabManagement = () => {
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold text-neutral-300 mb-3 flex items-center">
+                <h4 className="font-semibold text-slate-700 mb-3 flex items-center">
                   <FlaskConical className="w-4 h-4 mr-2" />
                   Experiments ({lab.experiments?.length || 0})
                 </h4>
-                <div className="bg-neutral-900/50 border border-neutral-700 rounded-lg p-4 max-h-32 overflow-y-auto space-y-2">
+                <div className="bg-white/50 border border-slate-200 rounded-lg p-4 max-h-32 overflow-y-auto space-y-2">
                   {(lab.experiments || []).map((exp, index) => (
-                    <div key={`${lab.id}-exp-${index}`} className="bg-neutral-800/50 rounded p-2">
-                      <div className="font-medium text-white text-sm">{exp.title}</div>
-                      <div className="text-xs text-neutral-400">{Array.isArray(exp.testCases) ? exp.testCases.length : 0} test cases</div>
+                    <div key={`${lab.id}-exp-${index}`} className="bg-white shadow-sm rounded p-2">
+                      <div className="font-medium text-slate-900 text-sm">{exp.title}</div>
+                      <div className="text-xs text-slate-500">{Array.isArray(exp.testCases) ? exp.testCases.length : 0} test cases</div>
                     </div>
                   ))}
                 </div>
@@ -279,7 +279,7 @@ const LabManagement = () => {
         ))}
 
         {!isLoading && filteredLabs.length === 0 && (
-          <div className="bg-neutral-800/50 border border-neutral-700 rounded-xl p-8 text-center text-neutral-500">
+          <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-8 text-center text-slate-400">
             No labs found.
           </div>
         )}
@@ -294,13 +294,13 @@ const LabManagement = () => {
                 placeholder="Lab Name"
                 value={labForm.name}
                 onChange={(e) => setLabForm({...labForm, name: e.target.value})}
-                className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500"
+                className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400"
                 required
               />
               <select
                 value={labForm.language}
                 onChange={(e) => setLabForm({...labForm, language: e.target.value})}
-                className="p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white"
+                className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
                 required
               >
                 <option value="">Select Language</option>
@@ -312,11 +312,11 @@ const LabManagement = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-3">Assign Faculty</label>
+              <label className="block text-sm font-medium text-slate-700 mb-3">Assign Faculty</label>
               <select
                 value={labForm.faculty}
                 onChange={(e) => setLabForm({...labForm, faculty: e.target.value})}
-                className="w-full p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white"
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
                 required
               >
                 <option value="">Select Faculty</option>
@@ -327,10 +327,10 @@ const LabManagement = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-3">Assign Students</label>
-              <div className="border border-neutral-700 rounded-lg p-4 max-h-32 overflow-y-auto bg-neutral-800">
+              <label className="block text-sm font-medium text-slate-700 mb-3">Assign Students</label>
+              <div className="border border-slate-200 rounded-lg p-4 max-h-32 overflow-y-auto bg-slate-50">
                 {students.map(student => (
-                  <label key={student.id} className="flex items-center space-x-3 mb-2 cursor-pointer hover:bg-neutral-700/30 p-2 rounded">
+                  <label key={student.id} className="flex items-center space-x-3 mb-2 cursor-pointer hover:bg-slate-50/50 p-2 rounded">
                     <input
                       type="checkbox"
                       checked={labForm.students.includes(student.name)}
@@ -341,16 +341,16 @@ const LabManagement = () => {
                           setLabForm({...labForm, students: labForm.students.filter(s => s !== student.name)});
                         }
                       }}
-                      className="rounded border-neutral-600 text-teal-600"
+                      className="rounded border-slate-300 text-teal-600"
                     />
-                    <span className="text-sm text-white">{student.name} ({student.rollNo})</span>
+                    <span className="text-sm text-slate-900">{student.name} ({student.rollNo})</span>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="border-t border-neutral-700 pt-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Add Experiments</h3>
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Add Experiments</h3>
 
               <div className="space-y-4 mb-6">
                 <input
@@ -358,19 +358,19 @@ const LabManagement = () => {
                   placeholder="Experiment Title"
                   value={experimentForm.title}
                   onChange={(e) => setExperimentForm({...experimentForm, title: e.target.value})}
-                  className="w-full p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400"
                 />
                 <textarea
                   placeholder="Experiment Description"
                   value={experimentForm.description}
                   onChange={(e) => setExperimentForm({...experimentForm, description: e.target.value})}
-                  className="w-full p-4 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500"
+                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400"
                   rows="3"
                 />
 
                 <div>
                   <div className="flex justify-between items-center mb-3">
-                    <label className="text-sm font-medium text-neutral-300">Test Cases</label>
+                    <label className="text-sm font-medium text-slate-700">Test Cases</label>
                     <button type="button" onClick={addTestCase} className="text-teal-400 hover:text-teal-300 text-sm font-medium">
                       + Add Test Case
                     </button>
@@ -383,14 +383,14 @@ const LabManagement = () => {
                           placeholder="Input"
                           value={testCase.input}
                           onChange={(e) => updateTestCase(index, 'input', e.target.value)}
-                          className="flex-1 p-3 bg-neutral-800 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500"
+                          className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded text-sm text-slate-900 placeholder-slate-400"
                         />
                         <input
                           type="text"
                           placeholder="Expected Output"
                           value={testCase.expectedOutput}
                           onChange={(e) => updateTestCase(index, 'expectedOutput', e.target.value)}
-                          className="flex-1 p-3 bg-neutral-800 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500"
+                          className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded text-sm text-slate-900 placeholder-slate-400"
                         />
                         {experimentForm.testCases.length > 1 && (
                           <button type="button" onClick={() => removeTestCase(index)} className="text-red-400 hover:text-red-300 p-1">
@@ -406,7 +406,7 @@ const LabManagement = () => {
                   <button
                     type="button"
                     onClick={addExperimentToLab}
-                    className="w-full p-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all"
+                    className="w-full p-3 bg-gradient-to-r from-green-600 to-green-700 text-slate-900 rounded-lg hover:from-green-700 hover:to-green-800 transition-all"
                   >
                     Add Experiment to Lab
                   </button>
@@ -415,15 +415,15 @@ const LabManagement = () => {
 
               {labForm.experiments.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-neutral-300 mb-3">Added Experiments</h4>
+                  <h4 className="font-medium text-slate-700 mb-3">Added Experiments</h4>
                   <div className="space-y-3">
                     {labForm.experiments.map((exp, index) => (
-                      <div key={exp.id || index} className="bg-neutral-800/50 border border-neutral-700 rounded-lg p-4">
+                      <div key={exp.id || index} className="bg-white shadow-sm border border-slate-200 rounded-lg p-4">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h5 className="font-medium text-white">{exp.title}</h5>
-                            <p className="text-sm text-neutral-400 mb-2">{exp.description}</p>
-                            <div className="text-xs text-neutral-500">
+                            <h5 className="font-medium text-slate-900">{exp.title}</h5>
+                            <p className="text-sm text-slate-500 mb-2">{exp.description}</p>
+                            <div className="text-xs text-slate-400">
                               {exp.testCases.length} test case{exp.testCases.length !== 1 ? 's' : ''}
                             </div>
                           </div>
