@@ -29,6 +29,7 @@ import StudentManagement from './components/Admin/StudentManagement';
 import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
 import AdminSidebar from "./components/Admin/AdminSidebar";
+import ExperimentManagement from "./pages/Admin/ExperimentManagement";
 import GodSidebar from "./components/God/GodSidebar";
 import SuperAdminSidebar from "./components/God/SuperAdminSidebar";
 
@@ -167,6 +168,7 @@ function App() {
                   <Route path="/students" element={<StudentManagement />} />
                   <Route path="/faculty" element={<FacultyManagement />} />
                   <Route path="/labs" element={<LabManagement />} />
+                  <Route path="/labs/:labId/experiments" element={<ExperimentManagement />} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </>
               ) : userType === "SuperAdmin" ? (

@@ -8,7 +8,7 @@ import {
 } from '@/services/adminService';
 
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
-  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto p-4 sm:p-6">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
     <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-2xl shadow-xl max-h-[85vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6 gap-4">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{title}</h2>

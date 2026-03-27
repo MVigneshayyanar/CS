@@ -32,6 +32,14 @@ export const fetchAdminLabs = async () => {
   return response.data;
 };
 
+export const fetchAdminLab = async (id) => {
+  const headers = await getAuthHeaders();
+  const response = await adminApi.get(`/admin/labs/${id}`, {
+    headers,
+  });
+  return response.data;
+};
+
 export const createAdminStudent = async (payload) => {
   const headers = await getAuthHeaders();
   const response = await adminApi.post("/admin/students", payload, {

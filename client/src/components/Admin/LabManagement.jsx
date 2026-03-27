@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Users, FlaskConical, Search, Save, X, CheckSquare, Filter, LogOut } from 'lucide-react';
+import { Plus, Edit, Trash2, Users, FlaskConical, Search, Save, X, CheckSquare, Filter, LogOut, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   fetchAdminFaculty,
   fetchAdminStudents,
@@ -11,7 +12,7 @@ import {
 
 /* ───── Reusable Modal Shell ───── */
 const Modal = ({ title, children, onClose, footer }) => (
-  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-start justify-center z-50 overflow-y-auto p-4 sm:p-6">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
     <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-3xl shadow-xl max-h-[85vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6 gap-4">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900">{title}</h2>
@@ -34,8 +35,8 @@ const currentYear = new Date().getFullYear();
 const joiningYearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 10 + i);
 const passoutYearOptions = Array.from({ length: 8 }, (_, i) => currentYear + i);
 
-/* ───── Main Component ───── */
 const LabManagement = () => {
+  const navigate = useNavigate();
   const [labs, setLabs] = useState([]);
   const [faculty, setFaculty] = useState([]);
   const [students, setStudents] = useState([]);
@@ -59,12 +60,10 @@ const LabManagement = () => {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [studentFilterYear, setStudentFilterYear] = useState('all');
 
-  // Experiment modal
-  const [experimentLab, setExperimentLab] = useState(null);
-  const [showExperimentModal, setShowExperimentModal] = useState(false);
-  const [experimentForm, setExperimentForm] = useState({
-    title: '', description: '', testCases: [{ input: '', expectedOutput: '' }]
-  });
+  // Experiment state removed as it is now a separate page
+  // const [experimentLab, setExperimentLab] = useState(null);
+  // ...
+
 
   /* ── Data Loading ── */
   const loadData = async () => {
@@ -162,7 +161,10 @@ const LabManagement = () => {
 
   const getFilteredStudents = () => {
     if (studentFilterYear === 'all') return students;
-    return students.filter(s => s.year?.toString() === studentFilterYear);
+    return students.filter(s => {
+      const batch = s.joiningYear && s.passoutYear ? `${s.joiningYear}-${s.passoutYear}` : 'Other';
+      return batch === studentFilterYear;
+    });
   };
 
   const toggleStudent = (name) => {
@@ -201,68 +203,7 @@ const LabManagement = () => {
     }
   };
 
-  /* ── Experiments ── */
-  const openExperimentModal = (lab) => {
-    setExperimentLab(lab);
-    setExperimentForm({ title: '', description: '', testCases: [{ input: '', expectedOutput: '' }] });
-    setShowExperimentModal(true);
-  };
-
-  const addTestCase = () => {
-    setExperimentForm(prev => ({
-      ...prev,
-      testCases: [...prev.testCases, { input: '', expectedOutput: '' }],
-    }));
-  };
-
-  const updateTestCase = (index, field, value) => {
-    const updated = [...experimentForm.testCases];
-    updated[index][field] = value;
-    setExperimentForm(prev => ({ ...prev, testCases: updated }));
-  };
-
-  const removeTestCase = (index) => {
-    setExperimentForm(prev => ({
-      ...prev,
-      testCases: prev.testCases.filter((_, i) => i !== index),
-    }));
-  };
-
-  const saveExperiment = async () => {
-    if (!experimentLab || !experimentForm.title) return;
-    setIsSubmitting(true);
-    try {
-      const newExp = { ...experimentForm, id: Date.now() };
-      const payload = {
-        ...experimentLab,
-        experiments: [...(experimentLab.experiments || []), newExp],
-      };
-      const result = await updateAdminLab(experimentLab.id, payload);
-      const updated = result?.data?.lab;
-      if (updated) setLabs(prev => prev.map(l => l.id === updated.id ? updated : l));
-      setShowExperimentModal(false);
-      setExperimentLab(null);
-    } catch (error) {
-      alert(error?.response?.data?.message || 'Failed to add experiment');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const deleteExperiment = async (lab, expIndex) => {
-    setIsSubmitting(true);
-    try {
-      const updatedExperiments = (lab.experiments || []).filter((_, i) => i !== expIndex);
-      const payload = { ...lab, experiments: updatedExperiments };
-      const result = await updateAdminLab(lab.id, payload);
-      const updated = result?.data?.lab;
-      if (updated) setLabs(prev => prev.map(l => l.id === updated.id ? updated : l));
-    } catch (error) {
-      alert(error?.response?.data?.message || 'Failed to delete experiment');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  /* ── Experiments logic moved to separate page ── */
 
   /* ── Filter labs ── */
   const filteredLabs = searchTerm
@@ -273,8 +214,10 @@ const LabManagement = () => {
       )
     : labs;
 
-  /* ── Build unique year combos for student filter ── */
-  const uniqueYears = [...new Set(students.map(s => s.year).filter(Boolean))].sort();
+  /* ── Build unique batch combos for student filter ── */
+  const uniqueBatches = [...new Set(students.map(s => 
+    s.joiningYear && s.passoutYear ? `${s.joiningYear}-${s.passoutYear}` : 'Other'
+  ))].sort();
 
   /* ──────────────── RENDER ──────────────── */
   return (
@@ -388,35 +331,27 @@ const LabManagement = () => {
                   </div>
 
                   {/* ── Experiments Card ── */}
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col">
-                    <h4 className="font-semibold text-slate-700 mb-3 flex items-center text-sm">
-                      <FlaskConical className="w-4 h-4 mr-2" />
-                      Experiments ({(lab.experiments || []).length})
-                    </h4>
-                    <div className="flex-1 max-h-28 overflow-y-auto space-y-2 mb-3">
-                      {(lab.experiments || []).length > 0 ? (
-                        lab.experiments.map((exp, i) => (
-                          <div key={i} className="bg-white border border-slate-200 rounded-lg p-2 flex justify-between items-center">
-                            <div>
-                              <div className="font-medium text-slate-800 text-xs">{exp.title}</div>
-                              <div className="text-[10px] text-slate-400">{(exp.testCases || []).length} test cases</div>
-                            </div>
-                            <button onClick={() => deleteExperiment(lab, i)} className="text-red-400 hover:text-red-600 p-1">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">No experiments</p>
-                      )}
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-semibold text-slate-700 mb-2 flex items-center text-sm">
+                        <FlaskConical className="w-4 h-4 mr-2" />
+                        Experiments
+                      </h4>
+                      <p className="text-xs text-slate-500 mb-4">
+                        Manage problem statements and test cases for this laboratory.
+                      </p>
                     </div>
-                    <div className="flex justify-end">
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                        {(lab.experiments || []).length} ADDED
+                      </span>
                       <button
-                        onClick={() => openExperimentModal(lab)}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
+                        onClick={() => navigate(`/labs/${lab.id}/experiments`)}
+                        className="flex items-center gap-1.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 px-4 py-2 rounded-xl transition-all shadow-sm"
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Experiment
+                        Manage
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -541,16 +476,16 @@ const LabManagement = () => {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
                   <Filter className="w-4 h-4" />
-                  Filter by Year:
+                  Filter by Batch:
                 </div>
                 <select
                   value={studentFilterYear}
                   onChange={(e) => setStudentFilterYear(e.target.value)}
                   className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
                 >
-                  <option value="all">All Years</option>
-                  {uniqueYears.map(y => (
-                    <option key={y} value={y}>{y}</option>
+                  <option value="all">All Batches</option>
+                  {uniqueBatches.map(b => (
+                    <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
 
@@ -580,8 +515,7 @@ const LabManagement = () => {
                         <th className="w-10 px-4 py-3"></th>
                         <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name</th>
                         <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Roll No</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Year</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Branch</th>
+                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Batch</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -601,76 +535,16 @@ const LabManagement = () => {
                           </td>
                           <td className="px-4 py-3 text-sm font-medium text-slate-800">{student.name}</td>
                           <td className="px-4 py-3 text-sm text-slate-600 font-mono">{student.rollNo}</td>
-                          <td className="px-4 py-3 text-sm text-slate-600">{student.year || '—'}</td>
                           <td className="px-4 py-3">
-                            <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">{student.branch || '—'}</span>
+                            <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-teal-100 italic">
+                              {student.joiningYear && student.passoutYear ? `${student.joiningYear}–${student.passoutYear}` : 'N/A'}
+                            </span>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 )}
-              </div>
-            </div>
-          </Modal>
-        )}
-
-        {/* ════════════════════════════════════════════════
-            MODAL: Add Experiment
-        ════════════════════════════════════════════════ */}
-        {showExperimentModal && experimentLab && (
-          <Modal
-            title={`Add Experiment — ${experimentLab.name}`}
-            onClose={() => { setShowExperimentModal(false); setExperimentLab(null); }}
-            footer={
-              <>
-                <button type="button" onClick={() => { setShowExperimentModal(false); setExperimentLab(null); }} className="px-6 py-2 text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors w-full sm:w-auto">Cancel</button>
-                <button type="button" onClick={saveExperiment} disabled={isSubmitting || !experimentForm.title} className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60 gap-2">
-                  <Save className="w-4 h-4" />{isSubmitting ? 'Saving...' : 'Add Experiment'}
-                </button>
-              </>
-            }
-          >
-            <div className="space-y-5">
-              <input
-                type="text"
-                placeholder="Experiment Title"
-                value={experimentForm.title}
-                onChange={(e) => setExperimentForm({ ...experimentForm, title: e.target.value })}
-                className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              />
-              <textarea
-                placeholder="Experiment Description"
-                value={experimentForm.description}
-                onChange={(e) => setExperimentForm({ ...experimentForm, description: e.target.value })}
-                className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                rows="3"
-              />
-
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Test Cases</label>
-                  <button type="button" onClick={addTestCase} className="text-teal-600 hover:text-teal-700 text-sm font-medium">+ Add Test Case</button>
-                </div>
-                <div className="space-y-3">
-                  {experimentForm.testCases.map((tc, i) => (
-                    <div key={i} className="flex gap-3 items-center">
-                      <input
-                        type="text" placeholder="Input" value={tc.input}
-                        onChange={(e) => updateTestCase(i, 'input', e.target.value)}
-                        className="flex-1 p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                      />
-                      <input
-                        type="text" placeholder="Expected Output" value={tc.expectedOutput}
-                        onChange={(e) => updateTestCase(i, 'expectedOutput', e.target.value)}
-                        className="flex-1 p-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                      />
-                      {experimentForm.testCases.length > 1 && (
-                        <button type="button" onClick={() => removeTestCase(i)} className="text-red-400 hover:text-red-600 p-1"><X className="w-4 h-4" /></button>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </Modal>
