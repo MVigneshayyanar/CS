@@ -4,8 +4,7 @@ import { User, Lock, Palette, ChevronRight } from './SettingsIcons';
 const SettingsSidebar = ({ activeSection, setActiveSection }) => {
   const settingsNavigation = [
     { id: 'profile', label: 'Faculty Profile', icon: User },
-    { id: 'password', label: 'Change Password', icon: Lock },
-    { id: 'appearance', label: 'Display Settings', icon: Palette }
+    { id: 'password', label: 'Change Password', icon: Lock }
   ];
 
   return (

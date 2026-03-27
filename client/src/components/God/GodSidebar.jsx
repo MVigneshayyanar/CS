@@ -74,6 +74,8 @@ const navItems = [
   { to: "/settings", label: "Settings", Icon: IconSettings },
 ];
 
+import ThemeToggle from "../ThemeToggle";
+
 export default function GodSidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -127,7 +129,7 @@ export default function GodSidebar({ onLogout }) {
         >
           <NavLink
             to="/dashboard"
-            className="flex items-center gap-3 rounded-md focus:outline-none"
+            className={`flex items-center rounded-md focus:outline-none ${collapsed ? 'justify-center mx-auto' : 'gap-3'}`}
           >
             <div
               className={`rounded-full bg-gradient-to-tr from-orange-400 via-pink-500 to-indigo-500 flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? "h-12 w-12" : "h-10 w-10"}`}
@@ -157,7 +159,8 @@ export default function GodSidebar({ onLogout }) {
                 end={to === "/dashboard"}
                 className={({ isActive }) =>
                   [
-                    "group relative flex items-center gap-4 rounded-3xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                    "group relative flex items-center rounded-3xl py-3.5 text-sm font-medium transition-all duration-300",
+                    collapsed ? "justify-center px-0" : "px-4 gap-4",
                     isActive
                       ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
                       : "text-white/60 hover:text-white hover:bg-white/5",
@@ -187,10 +190,13 @@ export default function GodSidebar({ onLogout }) {
           </nav>
         </div>
 
+
         <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{ paddingBottom: !collapsed ? "56px" : undefined }}>
+          <ThemeToggle collapsed={collapsed} />
+          
           <button
             onClick={handleLogout}
-            className="group relative w-full flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className={`group relative w-full flex items-center rounded-3xl py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 ${collapsed ? 'justify-center px-0' : 'px-4 gap-4'}`}
           >
             <div className="flex-shrink-0">
               <IconLogout />

@@ -10,6 +10,7 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import ThemeToggle from '../ThemeToggle';
 
 const AdminSidebar = ({ onLogout }) => {
   const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
@@ -68,8 +69,8 @@ const AdminSidebar = ({ onLogout }) => {
       aria-expanded={!isCollapsed}
     >
       {/* Header */}
-      <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'}`}>
-        <div className="flex items-center gap-3">
+      <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center mx-auto' : 'justify-between px-6'}`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center mx-auto' : 'gap-3'}`}>
           <div className="rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10">
             <div className="h-full w-full rounded-full bg-[#18181b] flex items-center justify-center overflow-hidden">
               <Building2 className="w-6 h-6 text-white" />
@@ -92,7 +93,8 @@ const AdminSidebar = ({ onLogout }) => {
               to={item.path}
               end={item.path === '/students' || item.path === '/faculty' || item.path === '/labs'}
               className={({ isActive }) => [
-                "group relative flex items-center gap-4 rounded-3xl px-4 py-3.5 text-sm font-medium transition-all duration-300",
+                "group relative flex items-center rounded-3xl py-3.5 text-sm font-medium transition-all duration-300",
+                isCollapsed ? "justify-center px-0" : "px-4 gap-4",
                 isActive
                   ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
                   : "text-white/60 hover:text-white hover:bg-white/5",
@@ -123,11 +125,14 @@ const AdminSidebar = ({ onLogout }) => {
         </nav>
       </div>
 
-      {/* Logout and Shrink Button at Bottom */}
+
+      {/* Theme and Logout at Bottom */}
       <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{paddingBottom: !isCollapsed ? '56px' : undefined}}>
+        <ThemeToggle collapsed={isCollapsed} />
+        
         <button
           onClick={onLogout}
-          className="group relative w-full flex items-center gap-4 rounded-3xl px-4 py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+          className={`group relative w-full flex items-center rounded-3xl py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-4'}`}
         >
           <LogOut className="w-5 h-5 text-neutral-500 group-hover:text-red-300" />
           {!isCollapsed && (
