@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, UserCog, Search, Save, X, Mail, User, Shield, Phone, ChevronDown } from 'lucide-react';
+import { Plus, Edit, Trash2, UserCog, Search, Save, X, Mail, User, Building2, GraduationCap, Shield, Phone, TrendingUp, Bell, ChevronDown, LogOut } from 'lucide-react';
 import {
   fetchSuperAdminCollege,
   createDepartmentHead,
   updateDepartmentHead,
   deleteDepartmentHead,
 } from '@/services/superAdminService';
+import { logoutUser } from '@/services/authService';
 
 const Modal = ({ title, children, onSubmit, onClose }) => (
   <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
@@ -45,7 +45,6 @@ const Modal = ({ title, children, onSubmit, onClose }) => (
 );
 
 const SuperAdminDashboard = () => {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [college, setCollege] = useState(null);
   const [departments, setDepartments] = useState([]);
@@ -56,8 +55,10 @@ const SuperAdminDashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDepartmentMenuOpen, setIsDepartmentMenuOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const profileMenuRef = useRef(null);
   const departmentMenuRef = useRef(null);
 
   const [adminForm, setAdminForm] = useState({
@@ -72,6 +73,17 @@ const SuperAdminDashboard = () => {
     joiningDate: '',
     permissions: []
   });
+
+  const AVAILABLE_PERMISSIONS = [
+    'manage_students',
+    'manage_faculty',
+    'manage_labs',
+    'view_reports',
+    'conduct_exams',
+    'manage_curriculum',
+    'approve_leaves',
+    'generate_certificates'
+  ];
 
   const resetForm = () => {
     setAdminForm({
@@ -120,21 +132,11 @@ const SuperAdminDashboard = () => {
     setNewDepartmentName('');
   };
 
-  const mapDepartments = (departmentNames, departmentHeads = [], departmentWiseCounts = []) => {
-    const countByDepartment = new Map(
-      (departmentWiseCounts || []).map((item) => [
-        (item.department || '').toLowerCase().trim(),
-        item,
-      ])
-    );
-
-    return (departmentNames || []).map((name, index) => {
+  const mapDepartments = (departmentNames, departmentHeads = []) =>
+    (departmentNames || []).map((name, index) => {
       const staffInDept = departmentHeads.filter(
         (head) => (head.department || '').toLowerCase() === name.toLowerCase()
       );
-
-      const stats = countByDepartment.get((name || '').toLowerCase().trim()) || {};
-
       return {
         id: `dept-${index}-${name}`,
         name,
@@ -144,12 +146,8 @@ const SuperAdminDashboard = () => {
           .join('')
           .toUpperCase(),
         totalStaff: staffInDept.length,
-        studentCount: Number(stats.studentCount) || 0,
-        facultyCount: Number(stats.facultyCount) || 0,
-        adminCount: Number(stats.adminCount) || staffInDept.length,
       };
     });
-  };
 
   const loadCollegeData = async () => {
     try {
@@ -164,17 +162,7 @@ const SuperAdminDashboard = () => {
       const heads = collegeData.departmentHeads || [];
       setAdmins(heads);
 
-      const mergedDepartmentNames = [
-        ...(collegeData.departments || []),
-        ...((collegeData.departmentWiseCounts || []).map((item) => item.department).filter(Boolean)),
-      ];
-
-      const uniqueDepartmentNames = [...new Set(mergedDepartmentNames.map((name) => name.trim()))].filter(Boolean);
-      const incomingDepartments = mapDepartments(
-        uniqueDepartmentNames,
-        heads,
-        collegeData.departmentWiseCounts || []
-      );
+      const incomingDepartments = mapDepartments(collegeData.departments || [], heads);
       if (incomingDepartments.length) {
         setDepartments(incomingDepartments);
       }
@@ -193,6 +181,9 @@ const SuperAdminDashboard = () => {
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
       if (departmentMenuRef.current && !departmentMenuRef.current.contains(event.target)) {
         setIsDepartmentMenuOpen(false);
       }
@@ -217,6 +208,18 @@ const SuperAdminDashboard = () => {
     setEditingItem(null);
     setIsDepartmentMenuOpen(false);
     resetForm();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      sessionStorage.removeItem('isAuthenticated');
+      sessionStorage.removeItem('userType');
+      window.location.reload();
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Logout failed. Please try again.';
+      alert(message);
+    }
   };
 
   const validateAdminForm = () => {
@@ -334,75 +337,76 @@ const SuperAdminDashboard = () => {
     return permission.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const totalStudents = Number(college?.studentCount) || 0;
-  const totalFaculty = Number(college?.facultyCount) || 0;
-  const totalAdmins = Number(college?.adminCount) || admins.length;
-
   return (
+    <>
+      <style>{`
+        @keyframes saFloat {
+          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.45; }
+          50% { transform: translateY(-8px) scale(1.04); opacity: 0.8; }
+        }
+        .sa-hex {
+          clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
+          animation: saFloat 4.8s ease-in-out infinite;
+        }
+        .sa-hex--slow {
+          animation-duration: 6s;
+        }
+      `}</style>
       <div className="min-h-screen bg-[#f0f4f8]">
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
-        <div className="mb-8">
-          <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col md:flex-row md:items-center justify-between overflow-hidden gap-3 mb-5">
-            <div className="relative z-10 flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-extrabold text-white leading-tight">Super Admin Dashboard</h1>
-                <p className="text-xs text-teal-100">Manage departments and department heads</p>
-              </div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
-
-            <div className="relative z-10 flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-              {/* <button
-                type="button"
-                onClick={() => navigate('/assign-department-head')}
-                className="bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold"
-              >
-                <Plus className="w-4 h-4 mr-1.5" />
-                Assign Department Head
-              </button> */}
-              {/* <button
-                type="button"
-                onClick={handleLogout}
-                className="bg-teal-700 text-white px-4 py-2 rounded-xl hover:bg-teal-800 transition-all border border-teal-500 text-sm font-semibold"
-              >
-                Logout
-              </button> */}
-            </div>
-
-            <div className="absolute -right-8 -top-6 w-32 h-32 rounded-full bg-white/10" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Students</p>
-              <p className="text-2xl font-extrabold text-slate-800">{totalStudents}</p>
-              <p className="text-xs text-slate-500 mt-1">Across all departments</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Faculty</p>
-              <p className="text-2xl font-extrabold text-slate-800">{totalFaculty}</p>
-              <p className="text-xs text-slate-500 mt-1">Across all departments</p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">Admins</p>
-              <p className="text-2xl font-extrabold text-slate-800">{totalAdmins}</p>
-              <p className="text-xs text-slate-500 mt-1">Department-level admins</p>
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 leading-tight">Super Admin Dashboard</h1>
+              <p className="text-xs text-slate-400">Manage college administration and department heads</p>
             </div>
           </div>
-        </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
+              <Search className="w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                className="text-sm text-slate-500 outline-none bg-transparent w-56 placeholder:text-slate-400"
+                placeholder="Search by name, email, department or employee ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
+              <Bell className="w-4 h-4 text-slate-500" />
+            </div>
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="h-9 pl-2 pr-2.5 bg-white border border-slate-200 rounded-xl flex items-center gap-1.5 shadow-sm hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 text-white text-xs font-bold flex items-center justify-center">
+                  S
+                </div>
+                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </button>
 
-        <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
-            <Search className="w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              className="text-sm text-slate-600 outline-none bg-transparent w-full placeholder:text-slate-400"
-              placeholder="Search by name, email, department or employee ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <p className="text-sm font-semibold text-slate-800">Super Admin</p>
+                    <p className="text-xs text-slate-500">{college?.name || 'Account'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full px-3 py-2.5 text-sm text-left text-red-600 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -417,6 +421,76 @@ const SuperAdminDashboard = () => {
           </div>
         ) : (
           <div className="space-y-4">
+            <div className="grid grid-cols-[280px_1fr] gap-5 items-stretch">
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-teal-500 to-cyan-500 flex items-center justify-center text-white text-3xl font-bold mx-auto shadow-md">
+                  S
+                </div>
+                <div className="mt-4 text-center">
+                  <div className="text-xl font-extrabold text-slate-900">{college.name}</div>
+                  <div className="text-slate-400 text-sm flex items-center justify-center mt-1">
+                    <GraduationCap className="w-4 h-4 mr-1" />
+                    {college.code}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-5">
+                  <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                    <div className="text-2xl font-bold text-teal-600">{admins.length}</div>
+                    <div className="text-xs text-slate-400">Department Heads</div>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
+                    <div className="text-2xl font-bold text-cyan-600">{departments.length}</div>
+                    <div className="text-xs text-slate-400">Departments</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative overflow-hidden bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-7 text-white shadow-sm flex items-center justify-between">
+                <div className="relative z-10">
+                  <h2 className="text-3xl font-extrabold leading-tight">Welcome Back, Super Admin!</h2>
+                  <p className="text-teal-50 mt-2 text-sm">Track all departments and manage department heads from one place.</p>
+                </div>
+                <button
+                  onClick={() => openModal()}
+                  className="relative z-10 bg-white text-teal-700 font-semibold px-5 py-3 rounded-xl hover:bg-teal-50 transition-all flex items-center"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Assign Department Head
+                </button>
+
+                <div className="pointer-events-none absolute right-8 top-1/2 hidden md:grid grid-cols-2 gap-3 -translate-y-1/2">
+                  <div className="sa-hex h-16 w-14 bg-teal-300/35" />
+                  <div className="sa-hex sa-hex--slow h-12 w-10 bg-lime-300/40" />
+                  <div className="sa-hex sa-hex--slow h-12 w-10 bg-lime-300/35" />
+                  <div className="sa-hex h-16 w-14 bg-cyan-300/30" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {departments.map((dept) => (
+                <div key={dept.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-slate-800">{dept.name}</h3>
+                    <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-lg text-xs font-semibold border border-teal-100">
+                      {dept.code}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5 text-sm text-slate-500">
+                    <div className="flex justify-between">
+                      <span>Staff:</span>
+                      <span className="text-teal-600 font-semibold">{dept.totalStaff}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Head:</span>
+                      <span className="text-slate-800 font-semibold">
+                        {admins.find((admin) => (admin.department || '').toLowerCase() === (dept.name || '').toLowerCase())?.name || 'Not Assigned'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <div className="space-y-2">
               <h2 className="text-2xl font-extrabold text-slate-900">Department Heads</h2>
@@ -527,7 +601,7 @@ const SuperAdminDashboard = () => {
 
             {showModal && (
               <Modal
-                title="Edit Department Head"
+                title={editingItem ? 'Edit Department Head' : 'Assign Department Head'}
                 onSubmit={handleSubmit}
                 onClose={closeModal}
               >
@@ -707,6 +781,7 @@ const SuperAdminDashboard = () => {
         )}
       </div>
       </div>
+    </>
   );
 };
 

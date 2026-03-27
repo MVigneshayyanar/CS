@@ -3,6 +3,7 @@ import logo from "@/assets/logo.svg";
 import { loginByPortal } from "@/services/authService";
 
 const LoginCard = ({ onLogin }) => {
+  const [userType, setUserType] = useState("Student");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ const LoginCard = ({ onLogin }) => {
       const result = await loginByPortal({
         identifier: username,
         password,
-        portal: "All",
+        portal: userType,
       });
 
       const { accessToken, refreshToken, user } = result?.data || {};
@@ -49,15 +50,52 @@ const LoginCard = ({ onLogin }) => {
           <img src={logo} alt="Lab Management Logo" className="h-12 w-auto" />
         </div>
 
+        <div className="flex justify-center mb-6">
+          <div className="relative flex bg-[#3a3a3a] rounded-full overflow-hidden w-[220px]">
+            <span
+              className={`absolute top-0 bottom-0 w-1/2 bg-green-500 rounded-full transition-transform duration-300 ease-in-out ${
+                userType === "Student" ? "translate-x-0" : "translate-x-full"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setUserType("Student")}
+              disabled={isLoading}
+              className={`relative z-10 w-1/2 py-1 text-sm font-semibold rounded-full transition-all duration-300 disabled:opacity-50 ${
+                userType === "Student" ? "text-black" : "text-white"
+              }`}
+            >
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserType("Staff")}
+              disabled={isLoading}
+              className={`relative z-10 w-1/2 py-1 text-sm font-semibold rounded-full transition-all duration-300 disabled:opacity-50 ${
+                userType === "Staff" ? "text-black" : "text-white"
+              }`}
+            >
+              Staff
+            </button>
+          </div>
+        </div>
+
+        <div className="text-center mb-4">
+          <p className="text-sm text-gray-400">
+            Logging in as{" "}
+            <span className="text-green-400 font-semibold">{userType}</span>
+          </p>
+        </div>
+
         <div className="mb-4">
-          <label className="text-sm block mb-1">Username / ID :</label>
+          <label className="text-sm block mb-1">Username :</label>
           <input
             type="text"
             autoComplete="username"
             className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter username or roll number"
+            placeholder={`Enter ${userType.toLowerCase()} username`}
             disabled={isLoading}
           />
         </div>
@@ -105,17 +143,17 @@ const LoginCard = ({ onLogin }) => {
               Authenticating...
             </>
           ) : (
-            "Login"
+            `Login as ${userType}`
           )}
         </button>
       </form>
 
       {/* Login Source */}
       {/* <div className="mt-4 p-3 bg-[#2a2a2a] rounded-lg"> */}
-      {/* <h4 className="text-xs font-semibold text-gray-300 mb-2">
+        {/* <h4 className="text-xs font-semibold text-gray-300 mb-2">
           Authentication:
         </h4> */}
-      {/* <div className="text-xs text-gray-400 space-y-1">
+        {/* <div className="text-xs text-gray-400 space-y-1">
           <div>
             Uses backend API and Supabase users table for all roles.
           </div>

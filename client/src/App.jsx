@@ -24,19 +24,15 @@ import FacultyDashboard from "./pages/Faculty/FacultyDashboard";
 import FacultyLabManagement from "./pages/Faculty/FacultyLabManagement";
 import FacultySettings from "./pages/Faculty/FacultySettings";
 
-// Admin pages
+import AdminDashboard from "./pages/Admin/AdminDashboard";
 import StudentManagement from './components/Admin/StudentManagement';
 import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
-import CreateLab from './components/Admin/CreateLab';
-import LabDetails from './components/Admin/LabDetails';
-import CreateExperiment from './components/Admin/CreateExperiment';
 import AdminSidebar from "./components/Admin/AdminSidebar";
 import GodSidebar from "./components/God/GodSidebar";
 
 // Super Admin & God Mode pages
 import SuperAdminDashboard from "./pages/God/SuperAdminDashboard";
-import SuperAdminAssignDepartmentHead from "./pages/God/SuperAdminAssignDepartmentHead";
 import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
 import AddCollegePage from "./pages/God/AddCollegePage";
 import GodSettings from "./pages/God/GodSettings";
@@ -115,7 +111,6 @@ function App() {
       case "God":
         return <GodSidebar onLogout={handleLogout} />;
       case "SuperAdmin":
-        return <GodSidebar onLogout={handleLogout} mode="SuperAdmin" />;
       default:
         return null;
     }
@@ -123,7 +118,7 @@ function App() {
 
   // Add this helper function to determine if sidebar should be shown
   const hasSidebar = () => {
-    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God" || userType === "SuperAdmin";
+    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God";
   };
 
   return (
@@ -163,19 +158,16 @@ function App() {
                 </>
               ) : userType === "Admin" ? (
                 <>
-                  <Route path="/" element={<StudentManagement />} />
+                  <Route path="/" element={<AdminDashboard />} />
+                  <Route path="/dashboard" element={<AdminDashboard />} />
                   <Route path="/students" element={<StudentManagement />} />
                   <Route path="/faculty" element={<FacultyManagement />} />
                   <Route path="/labs" element={<LabManagement />} />
-                  <Route path="/labs/create" element={<CreateLab />} />
-                  <Route path="/labs/:labId" element={<LabDetails />} />
-                  <Route path="/labs/:labId/experiments/create" element={<CreateExperiment />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : userType === "SuperAdmin" ? (
                 <>
                   <Route path="/" element={<SuperAdminDashboard />} />
-                  <Route path="/assign-department-head" element={<SuperAdminAssignDepartmentHead />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : userType === "God" ? (
