@@ -30,9 +30,12 @@ import FacultyManagement from './components/Admin/FacultyManagement';
 import LabManagement from './components/Admin/LabManagement';
 import AdminSidebar from "./components/Admin/AdminSidebar";
 import GodSidebar from "./components/God/GodSidebar";
+import SuperAdminSidebar from "./components/God/SuperAdminSidebar";
 
 // Super Admin & God Mode pages
 import SuperAdminDashboard from "./pages/God/SuperAdminDashboard";
+import SuperAdminAddDepartmentPage from "./pages/God/SuperAdminAddDepartmentPage";
+import SuperAdminSettings from "./pages/God/SuperAdminSettings";
 import UniversalAdminDashboard from "./pages/God/UniversalAdminDashboard";
 import AddCollegePage from "./pages/God/AddCollegePage";
 import GodSettings from "./pages/God/GodSettings";
@@ -111,6 +114,7 @@ function App() {
       case "God":
         return <GodSidebar onLogout={handleLogout} />;
       case "SuperAdmin":
+        return <SuperAdminSidebar onLogout={handleLogout} />;
       default:
         return null;
     }
@@ -118,7 +122,7 @@ function App() {
 
   // Add this helper function to determine if sidebar should be shown
   const hasSidebar = () => {
-    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God";
+    return userType === "Student" || userType === "Faculty" || userType === "Admin" || userType === "God" || userType === "SuperAdmin";
   };
 
   return (
@@ -168,6 +172,9 @@ function App() {
               ) : userType === "SuperAdmin" ? (
                 <>
                   <Route path="/" element={<SuperAdminDashboard />} />
+                  <Route path="/dashboard" element={<SuperAdminDashboard />} />
+                  <Route path="/add-department" element={<SuperAdminAddDepartmentPage />} />
+                  <Route path="/settings" element={<SuperAdminSettings />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
               ) : userType === "God" ? (

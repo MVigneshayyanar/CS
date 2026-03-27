@@ -16,9 +16,36 @@ export const fetchSuperAdminCollege = async () => {
   return response.data;
 };
 
+export const fetchDepartmentMembersByRole = async (departmentName) => {
+  const headers = await getAuthHeaders();
+  const encodedDepartment = encodeURIComponent(departmentName);
+  const response = await superAdminApi.get(`/super-admin/departments/${encodedDepartment}/members`, {
+    headers,
+  });
+  return response.data;
+};
+
+export const addSuperAdminDepartment = async (name) => {
+  const headers = await getAuthHeaders();
+  const response = await superAdminApi.post(
+    "/super-admin/departments",
+    { name },
+    { headers }
+  );
+  return response.data;
+};
+
 export const createDepartmentHead = async (payload) => {
   const headers = await getAuthHeaders();
   const response = await superAdminApi.post("/super-admin/department-heads", payload, {
+    headers,
+  });
+  return response.data;
+};
+
+export const addDepartmentAdmin = async (payload) => {
+  const headers = await getAuthHeaders();
+  const response = await superAdminApi.post("/super-admin/admins", payload, {
     headers,
   });
   return response.data;
