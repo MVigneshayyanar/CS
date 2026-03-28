@@ -61,18 +61,18 @@ const navItems = [
 ];
 
 import ThemeToggle from "./ThemeToggle";
+import LogoutConfirmation from "./LogoutConfirmation";
 
 export default function Sidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    }
+    setShowLogoutConfirm(true);
   };
 
   const widthDesktop = collapsed ? "md:w-20" : "md:w-64";
@@ -82,8 +82,9 @@ export default function Sidebar({ onLogout }) {
 
   return (
     <>
-      {/* Mobile trigger */}
-      <button
+      <>
+        {/* Mobile trigger */}
+        <button
         onClick={() => setMobileOpen(true)}
         className="md:hidden fixed left-3 top-3 z-50 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
         aria-label="Open menu"
@@ -234,6 +235,16 @@ export default function Sidebar({ onLogout }) {
           onClick={() => setMobileOpen(false)}
         />
       )}
+
+        <LogoutConfirmation
+          isOpen={showLogoutConfirm}
+          onConfirm={() => {
+            setShowLogoutConfirm(false);
+            onLogout();
+          }}
+          onCancel={() => setShowLogoutConfirm(false)}
+        />
+      </>
     </>
   );
 }

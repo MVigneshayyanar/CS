@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSidebar } from '../../context/SidebarContext';
 import {
   Users, 
@@ -11,9 +11,11 @@ import {
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import ThemeToggle from '../ThemeToggle';
+import LogoutConfirmation from '../LogoutConfirmation';
 
 const AdminSidebar = ({ onLogout }) => {
   const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const menuItems = [
     {
@@ -57,7 +59,8 @@ const AdminSidebar = ({ onLogout }) => {
   ];
 
   return (
-    <aside
+    <>
+      <aside
       className={[
         "fixed top-4 bottom-4 left-4 z-40 flex flex-col",
         "bg-[#18181b] text-white",
@@ -131,7 +134,7 @@ const AdminSidebar = ({ onLogout }) => {
         <ThemeToggle collapsed={isCollapsed} />
         
         <button
-          onClick={onLogout}
+          onClick={() => setShowLogoutConfirm(true)}
           className={`group relative w-full flex items-center rounded-3xl py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-4'}`}
         >
           <LogOut className="w-5 h-5 text-neutral-500 group-hover:text-red-300" />
@@ -171,6 +174,16 @@ const AdminSidebar = ({ onLogout }) => {
         </div>
       </div>
     </aside>
+
+    <LogoutConfirmation
+      isOpen={showLogoutConfirm}
+      onConfirm={() => {
+        setShowLogoutConfirm(false);
+        onLogout();
+      }}
+      onCancel={() => setShowLogoutConfirm(false)}
+    />
+    </>
   );
 };
 
