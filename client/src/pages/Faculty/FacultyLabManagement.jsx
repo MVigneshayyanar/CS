@@ -88,9 +88,13 @@ const FacultyLabManagement = () => {
 
     const classData = Array.isArray(selectedClass?.students) && selectedClass.students.length > 0
         ? selectedClass.students.map((student, index) => {
-            const studentId = typeof student === 'string' ? student : student?.id || student?.username || `${selectedClass.name}-${index + 1}`;
-            const studentName = typeof student === 'string' ? student : student?.name || student?.username || `Student ${index + 1}`;
-            const studentIdLower = studentId.toLowerCase();
+            const studentId = typeof student === 'string' 
+                ? student 
+                : student?.rollNo || student?.id || student?.username || `${selectedClass.name}-${index + 1}`;
+            const studentName = typeof student === 'string' 
+                ? student 
+                : student?.name || student?.username || `Student ${index + 1}`;
+            const studentIdLower = (studentId || "").toString().toLowerCase();
             return {
                 id: studentId,
                 name: studentName,

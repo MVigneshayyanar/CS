@@ -17,9 +17,9 @@ const Experiments = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const labParam = searchParams.get("lab");
-    if (labParam) {
-      setLabFilter(labParam);
+    const labIdParam = searchParams.get("labId");
+    if (labIdParam) {
+      setLabFilter(labIdParam);
     }
 
     const fetchExperimentsData = async () => {
@@ -30,8 +30,9 @@ const Experiments = () => {
         const allExperiments = labs.flatMap((lab) =>
           (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => ({
             id: `${lab.id}-${index}`,
-            lab: lab.originalName || lab.fullName || lab.name,
-            labKey: lab.originalName || lab.fullName || lab.name,
+            labId: lab.id, // Added for precise filtering
+            lab: lab.name,
+            labKey: lab.id, // Primary key
             labAlias: lab.language || lab.name,
             sno: index + 1,
             title: exp.title || `Experiment ${index + 1}`,
@@ -61,11 +62,8 @@ const Experiments = () => {
     let filtered = experiments;
 
     if (labFilter !== "all") {
-      const target = labFilter.toLowerCase();
-      filtered = filtered.filter((exp) =>
-        (exp.lab || "").toLowerCase() === target ||
-        (exp.labAlias || "").toLowerCase() === target ||
-        (exp.labKey || "").toLowerCase() === target
+      filtered = filtered.filter((exp) => 
+        exp.labId === labFilter || exp.labKey === labFilter
       );
     }
 
@@ -103,7 +101,7 @@ const Experiments = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1.5 grayscale-0">
-                    {labFilter !== "all" ? `${labFilter} Experiments` : "All Experiments"}
+                    {labFilter !== "all" ? (experiments.find(e => e.labId === labFilter)?.lab || "Specific Lab") : "All Experiments"}
                   </h1>
                   <div className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-2">
                     <div className="w-1 h-1 rounded-full bg-teal-500" />

@@ -49,9 +49,9 @@ const LabManagement = () => {
   const [editingLab, setEditingLab] = useState(null);
   const [labForm, setLabForm] = useState({
     name: '',
+    language: '',
+    batch: '',
     faculty: [],
-    joiningYear: '',
-    passoutYear: '',
   });
 
   // Assign students panel
@@ -89,12 +89,12 @@ const LabManagement = () => {
     if (lab) {
       setLabForm({
         name: lab.name || '',
+        language: lab.language || '',
+        batch: lab.batch || (lab.joiningYear && lab.passoutYear ? `${lab.joiningYear}-${lab.passoutYear}` : ''),
         faculty: Array.isArray(lab.faculty) ? lab.faculty : (lab.faculty ? [lab.faculty] : []),
-        joiningYear: lab.joiningYear || '',
-        passoutYear: lab.passoutYear || '',
       });
     } else {
-      setLabForm({ name: '', faculty: [], joiningYear: '', passoutYear: '' });
+      setLabForm({ name: '', language: '', batch: '', faculty: [] });
     }
     setShowCreateModal(true);
   };
@@ -105,14 +105,21 @@ const LabManagement = () => {
     try {
       const payload = {
         ...labForm,
-        // Keep existing students & experiments when editing
-        ...(editingLab ? {
-          students: editingLab.students || [],
-          experiments: editingLab.experiments || [],
-        } : {
-          students: [],
-          experiments: [],
-        }),
+        // Keep existing experiments
+        experiments: editingLab ? (editingLab.experiments || []) : [],
+        // Auto-map students based on batch if it's a new lab or batch changed
+        students: (() => {
+          if (!labForm.batch) return editingLab ? (editingLab.students || []) : [];
+          
+          const [join, pass] = labForm.batch.split('-');
+          const batchStudents = students
+            .filter(s => s.joiningYear === join && s.passoutYear === pass)
+            .map(s => ({ name: s.name, rollNo: s.rollNo }));
+
+          // If editing and batch matches, keep existing students (might have manual removals)
+          // Actually, the user wants "auto mapping", so if batch is set, we take the whole batch.
+          return batchStudents;
+        })(),
       };
       if (editingLab) {
         const result = await updateAdminLab(editingLab.id, payload);
@@ -167,22 +174,45 @@ const LabManagement = () => {
     });
   };
 
-  const toggleStudent = (name) => {
-    setSelectedStudents(prev =>
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
+  const toggleStudent = (student) => {
+    const studentInfo = { name: student.name, rollNo: student.rollNo };
+    setSelectedStudents(prev => {
+      const exists = prev.some(s =>
+        (typeof s === 'object' ? s.rollNo === studentInfo.rollNo : s === studentInfo.name)
+      );
+      if (exists) {
+        return prev.filter(s =>
+          (typeof s === 'object' ? s.rollNo !== studentInfo.rollNo : s !== studentInfo.name)
+        );
+      }
+      return [...prev, studentInfo];
+    });
   };
 
   const selectAllFiltered = () => {
     const filtered = getFilteredStudents();
-    const allNames = filtered.map(s => s.name);
-    const allSelected = allNames.every(n => selectedStudents.includes(n));
+    const allStudentInfos = filtered.map(s => ({ name: s.name, rollNo: s.rollNo }));
+    const allSelected = filtered.every(f =>
+      selectedStudents.some(s => (typeof s === 'object' ? s.rollNo === f.rollNo : s === f.name))
+    );
+
     if (allSelected) {
       // deselect all filtered
-      setSelectedStudents(prev => prev.filter(n => !allNames.includes(n)));
+      const filteredRolls = new Set(filtered.map(f => f.rollNo));
+      setSelectedStudents(prev => prev.filter(s =>
+        (typeof s === 'object' ? !filteredRolls.has(s.rollNo) : !filtered.some(f => f.name === s))
+      ));
     } else {
       // select all filtered (merge with existing)
-      setSelectedStudents(prev => [...new Set([...prev, ...allNames])]);
+      setSelectedStudents(prev => {
+        const next = [...prev];
+        allStudentInfos.forEach(info => {
+          if (!next.some(s => (typeof s === 'object' ? s.rollNo === info.rollNo : s === info.name))) {
+            next.push(info);
+          }
+        });
+        return next;
+      });
     }
   };
 
@@ -208,14 +238,14 @@ const LabManagement = () => {
   /* ── Filter labs ── */
   const filteredLabs = searchTerm
     ? labs.filter(l =>
-        [l.name, ...(Array.isArray(l.faculty) ? l.faculty : [l.faculty])].some(
-          v => v?.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+      [l.name, ...(Array.isArray(l.faculty) ? l.faculty : [l.faculty])].some(
+        v => v?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
+    )
     : labs;
 
   /* ── Build unique batch combos for student filter ── */
-  const uniqueBatches = [...new Set(students.map(s => 
+  const uniqueBatches = [...new Set(students.map(s =>
     s.joiningYear && s.passoutYear ? `${s.joiningYear}-${s.passoutYear}` : 'Other'
   ))].sort();
 
@@ -310,8 +340,10 @@ const LabManagement = () => {
                     <div className="flex-1 max-h-28 overflow-y-auto mb-3">
                       {(lab.students || []).length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
-                          {lab.students.map((s, i) => (
-                            <span key={i} className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-medium">{s}</span>
+                          {Array.isArray(lab.students) && lab.students.map((std, i) => (
+                            <span key={i} className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-xs font-semibold">
+                              {typeof std === 'object' ? std.name : std}
+                            </span>
                           ))}
                         </div>
                       ) : (
@@ -341,7 +373,7 @@ const LabManagement = () => {
                         Manage problem statements and test cases for this laboratory.
                       </p>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
                         {(lab.experiments || []).length} ADDED
@@ -385,17 +417,34 @@ const LabManagement = () => {
             }
           >
             <div className="space-y-5">
-              {/* Lab name */}
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Laboratory Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Data Structures Lab"
-                  value={labForm.name}
-                  onChange={(e) => setLabForm({ ...labForm, name: e.target.value })}
-                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                  required
-                />
+              {/* Lab name & Language */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Laboratory Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Data Structures Lab"
+                    value={labForm.name}
+                    onChange={(e) => setLabForm({ ...labForm, name: e.target.value })}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Programming Language</label>
+                  <select
+                    value={labForm.language}
+                    onChange={(e) => setLabForm({ ...labForm, language: e.target.value })}
+                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                    required
+                  >
+                    <option value="">Select Language</option>
+                    <option value="C">C Language</option>
+                    <option value="C++">C++ (CPP)</option>
+                    <option value="Java">Java</option>
+                    <option value="Python">Python</option>
+                  </select>
+                </div>
               </div>
 
               {/* Faculty multi-select */}
@@ -422,32 +471,23 @@ const LabManagement = () => {
                 </div>
               </div>
 
-              {/* Year range */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Joining Year</label>
-                  <select
-                    value={labForm.joiningYear}
-                    onChange={(e) => setLabForm({ ...labForm, joiningYear: e.target.value })}
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  >
-                    <option value="">Select Year</option>
-                    {joiningYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Passout Year</label>
-                  <select
-                    value={labForm.passoutYear}
-                    onChange={(e) => setLabForm({ ...labForm, passoutYear: e.target.value })}
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                    required
-                  >
-                    <option value="">Select Year</option>
-                    {passoutYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
+              {/* Batch selection */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Select Student Batch</label>
+                <select
+                  value={labForm.batch}
+                  onChange={(e) => setLabForm({ ...labForm, batch: e.target.value })}
+                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                  required
+                >
+                  <option value="">Select Batch</option>
+                  {uniqueBatches.map(b => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+                <p className="mt-2 text-[10px] text-slate-400 italic">
+                  Selecting a batch will automatically map all matching students to this laboratory.
+                </p>
               </div>
             </div>
           </Modal>
@@ -499,7 +539,9 @@ const LabManagement = () => {
                     className="flex items-center gap-1.5 text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <CheckSquare className="w-3.5 h-3.5" />
-                    {getFilteredStudents().every(s => selectedStudents.includes(s.name)) ? 'Deselect All' : 'Select All'}
+                    {getFilteredStudents().length > 0 && getFilteredStudents().every(f =>
+                      selectedStudents.some(s => (typeof s === 'object' ? s.rollNo === f.rollNo : s === f.name))
+                    ) ? 'Deselect All' : 'Select All'}
                   </button>
                 </div>
               </div>
@@ -512,36 +554,38 @@ const LabManagement = () => {
                   <table className="w-full">
                     <thead className="sticky top-0 z-10">
                       <tr className="bg-slate-50 border-b border-slate-200">
-                        <th className="w-10 px-4 py-3"></th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Roll No</th>
-                        <th className="px-4 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Batch</th>
+                        <th className="w-10 px-5 py-3"></th>
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Name</th>
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Roll No</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {getFilteredStudents().map(student => (
-                        <tr
-                          key={student.id}
-                          onClick={() => toggleStudent(student.name)}
-                          className={`cursor-pointer transition-colors ${selectedStudents.includes(student.name) ? 'bg-teal-50/60' : 'hover:bg-slate-50'}`}
-                        >
-                          <td className="px-4 py-3">
-                            <input
-                              type="checkbox"
-                              checked={selectedStudents.includes(student.name)}
-                              onChange={() => toggleStudent(student.name)}
-                              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm font-medium text-slate-800">{student.name}</td>
-                          <td className="px-4 py-3 text-sm text-slate-600 font-mono">{student.rollNo}</td>
-                          <td className="px-4 py-3">
-                            <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-teal-100 italic">
-                              {student.joiningYear && student.passoutYear ? `${student.joiningYear}–${student.passoutYear}` : 'N/A'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      {getFilteredStudents().map(student => {
+                        const isSelected = selectedStudents.some(s => s.rollNo === student.rollNo);
+                        return (
+                          <tr
+                            key={student.id}
+                            onClick={() => toggleStudent(student)}
+                            className={`hover:bg-slate-50 transition-colors cursor-pointer ${isSelected ? 'bg-teal-50/50' : ''}`}
+                          >
+                            <td className="px-5 py-3">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => { }} // handled by row click
+                                className="accent-teal-600"
+                              />
+                            </td>
+                            <td className="px-5 py-3 text-sm font-semibold text-slate-700">{student.name}</td>
+                            <td className="px-5 py-3 text-sm text-slate-600 font-mono">{student.rollNo}</td>
+                            <td className="px-5 py-3">
+                              <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-teal-100 italic">
+                                {student.joiningYear && student.passoutYear ? `${student.joiningYear}–${student.passoutYear}` : 'N/A'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 )}

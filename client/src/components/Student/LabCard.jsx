@@ -24,7 +24,7 @@ export default function LabCard({ lab }) {
 
   return (
     <Link 
-      to={`/labs/experiments?lab=${encodeURIComponent(lab.name)}`}
+      to={`/labs/experiments?labId=${lab.id}`}
       className="block group"
     >
       <div className="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 relative overflow-hidden h-full flex flex-col">
