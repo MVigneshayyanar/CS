@@ -16,7 +16,7 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
             if (typeof s === 'string') return { name: s, id: s };
             return {
                 name: s.name || s.username || `Student ${idx + 1}`,
-                id: s.id || s.username || `ID-${idx + 1}`
+                id: s.rollNo || s.id || s.username || `ID-${idx + 1}`
             };
         });
     }, [students]);

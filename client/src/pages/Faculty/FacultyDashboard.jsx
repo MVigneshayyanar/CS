@@ -275,7 +275,7 @@ const FacultyDashboard = () => {
               <div className="relative bg-teal-600 rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-lg font-extrabold text-white mb-1">
-                    Good Morning, {username}!
+                    Good Morning, {dashboardData?.user?.name || username}!
                   </h2>
                   <p className="text-teal-100 text-xs max-w-sm leading-relaxed mb-3">
                     You have{" "}

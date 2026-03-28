@@ -38,190 +38,211 @@ const Reports = () => {
 
     setIsGeneratingPDF(true);
     try {
-      // Dynamically import libraries
       const { jsPDF } = await import("jspdf");
-      
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4"
       });
 
-      // Get lab data to fetch test cases
       const labsResult = await fetchStudentLabs();
       const labs = labsResult?.data?.labs || [];
+      const dashResult = await fetchStudentDashboard();
+      const student = dashResult?.data?.user || {};
 
-      let yPosition = 20;
+      let yPos = 20;
       const pageHeight = pdf.internal.pageSize.getHeight();
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 15;
+      const margin = 20;
       const contentWidth = pageWidth - 2 * margin;
 
-      // Add header
-      pdf.setFontSize(20);
-      pdf.setFont(undefined, "bold");
-      pdf.text("Completed Programs Report", margin, yPosition);
-      yPosition += 10;
+      // 1. Draw Header Background
+      pdf.setFillColor(13, 148, 136); // Teal-600
+      pdf.rect(0, 0, pageWidth, 45, "F");
 
-      // Add generation date
-      pdf.setFontSize(10);
-      pdf.setFont(undefined, "normal");
-      const generatedDate = new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-      pdf.text(`Generated: ${generatedDate}`, margin, yPosition);
-      yPosition += 10;
-
-      // Add summary
-      pdf.setFontSize(12);
-      pdf.setFont(undefined, "bold");
-      pdf.text("Summary", margin, yPosition);
-      yPosition += 6;
+      // 2. Report Header Text
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(22);
+      pdf.text("LABORATORY REPORT", margin, 20);
 
       pdf.setFontSize(10);
-      pdf.setFont(undefined, "normal");
-      pdf.text(`Total Completed Programs: ${completedPrograms.length}`, margin + 5, yPosition);
-      yPosition += 8;
+      pdf.setFont("helvetica", "normal");
+      pdf.text("OFFICIAL COMPLETION DOCUMENT", margin, 26);
 
-      // Add each completed program
+      // Student Info in Header
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`Student: ${student.name || "N/A"}`, pageWidth - margin, 20, { align: "right" });
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`ID: ${student.username || "N/A"}`, pageWidth - margin, 26, { align: "right" });
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - margin, 32, { align: "right" });
+
+      yPos = 55;
+      pdf.setTextColor(30, 41, 59); // Slate-800
+
+      // 3. Summary Section
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      pdf.text("Report Summary", margin, yPos);
+      yPos += 8;
+
+      pdf.setDrawColor(226, 232, 240); // Slate-200
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 8;
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(10);
+      pdf.text(`Total Experiments Completed: ${completedPrograms.length}`, margin + 2, yPos);
+      yPos += 12;
+
+      // 4. Detailed Programs
       completedPrograms.forEach((program, index) => {
-        if (yPosition > pageHeight - 40) {
+        // Break page if near bottom
+        if (yPos > pageHeight - 40) {
           pdf.addPage();
-          yPosition = 20;
+          yPos = 20;
         }
 
-        // Program title
+        // Program Title Header
+        pdf.setFillColor(248, 250, 252); // Slate-50
+        pdf.rect(margin, yPos - 5, contentWidth, 10, "F");
+        pdf.setDrawColor(226, 232, 240);
+        pdf.rect(margin, yPos - 5, contentWidth, 10, "D");
+        
+        pdf.setTextColor(13, 148, 136);
+        pdf.setFont("helvetica", "bold");
         pdf.setFontSize(12);
-        pdf.setFont(undefined, "bold");
-        const titleText = `Program ${index + 1}: ${program.programName}`;
-        pdf.text(titleText, margin, yPosition);
-        yPosition += 8;
+        pdf.text(`${index + 1}. ${program.programName}`, margin + 4, yPos + 1.5);
+        
+        pdf.setTextColor(100, 116, 139);
+        pdf.setFontSize(9);
+        pdf.text(`Status: Completed`, pageWidth - margin - 4, yPos + 1.5, { align: "right" });
+        
+        yPos += 12;
+        pdf.setTextColor(30, 41, 59);
 
-        // Program details
+        // Metadata grid
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.text("Section:", margin + 2, yPos);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(program.section || "N/A", margin + 18, yPos);
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Date:", margin + 50, yPos);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(program.deadline || "N/A", margin + 62, yPos);
+
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Performance:", margin + 100, yPos);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(`${program.progress}% Accuracy`, margin + 125, yPos);
+        
+        yPos += 10;
+
+        // --- CODE BOX ---
+        pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
-        pdf.setFont(undefined, "normal");
-        pdf.text(`Section: ${program.section}`, margin + 5, yPosition);
-        yPosition += 6;
-        pdf.text(`Completion Date: ${program.deadline}`, margin + 5, yPosition);
-        yPosition += 6;
-        pdf.text(`Progress: ${program.progress}%`, margin + 5, yPosition);
-        yPosition += 10;
+        pdf.text("Implementation Code:", margin, yPos);
+        yPos += 5;
 
-        // Find student's code for this program
-        const studentCode = localStorage.getItem(`experiment_${program.id}_code`) || 
-                          localStorage.getItem(`${program.programName}_code`) ||
-                          "Code not found";
+        const studentCode = program.studentCode || "No code recorded for this session.";
+        pdf.setFont("courier", "normal");
+        pdf.setFontSize(8);
+        
+        const codeLines = pdf.splitTextToSize(studentCode, contentWidth - 10);
+        const codeDisplay = codeLines.slice(0, 25);
+        const boxHeight = (codeDisplay.length * 4) + 6;
 
-        // Find test cases from backend data
+        pdf.setFillColor(250, 250, 250);
+        pdf.rect(margin, yPos, contentWidth, boxHeight, "F");
+        pdf.setDrawColor(226, 232, 240);
+        pdf.rect(margin, yPos, contentWidth, boxHeight, "D");
+        
+        pdf.text(codeDisplay, margin + 4, yPos + 5);
+        yPos += boxHeight + 10;
+
+        // --- TEST CASES ---
         let testCasesData = [];
         for (const lab of labs) {
-          const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
-          for (let i = 0; i < experiments.length; i++) {
-            if (experiments[i].title === program.programName) {
-              testCasesData = experiments[i].testCases || [];
-              break;
-            }
-          }
+           const experiments = Array.isArray(lab.experiments) ? lab.experiments : [];
+           const found = experiments.find(e => e.title === program.programName);
+           if (found) {
+             testCasesData = found.testCases || [];
+             break;
+           }
         }
 
-        // Add Student Code section
-        pdf.setFontSize(11);
-        pdf.setFont(undefined, "bold");
-        pdf.text("Student Code:", margin, yPosition);
-        yPosition += 6;
-
-        pdf.setFontSize(9);
-        pdf.setFont(undefined, "normal");
-        const codeLines = pdf.splitTextToSize(studentCode, contentWidth - 10);
-        const maxCodeLines = 15;
-        const codeLinesDisplay = codeLines.slice(0, maxCodeLines);
-        
-        pdf.text(codeLinesDisplay, margin + 5, yPosition);
-        yPosition += Math.min(codeLines.length, maxCodeLines) * 5 + 8;
-
-        if (codeLines.length > maxCodeLines) {
-          pdf.setFontSize(8);
-          pdf.setFont(undefined, "italic");
-          pdf.text(`[Code truncated - showing first ${maxCodeLines} lines of ${codeLines.length} total]`, margin + 5, yPosition);
-          yPosition += 6;
-        }
-
-        yPosition += 4;
-
-        // Add Test Cases section
         if (testCasesData.length > 0) {
-          if (yPosition > pageHeight - 50) {
+          if (yPos > pageHeight - 30) {
             pdf.addPage();
-            yPosition = 20;
+            yPos = 20;
           }
 
-          pdf.setFontSize(11);
-          pdf.setFont(undefined, "bold");
-          pdf.text("Test Cases:", margin, yPosition);
-          yPosition += 6;
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(10);
+          pdf.text("Validation Results:", margin, yPos);
+          yPos += 6;
 
-          testCasesData.forEach((testCase, tcIndex) => {
-            if (yPosition > pageHeight - 30) {
+          testCasesData.forEach((tc, tcIdx) => {
+            if (yPos > pageHeight - 25) {
               pdf.addPage();
-              yPosition = 20;
+              yPos = 20;
             }
 
+            const result = Array.isArray(program.testResults) 
+              ? program.testResults.find(r => r.input === tc.input)
+              : null;
+            const isPassed = result ? result.passed : true;
+
+            // Test Case Row
+            pdf.setFillColor(isPassed ? 240 : 254, isPassed ? 253 : 242, isPassed ? 244 : 242);
+            pdf.rect(margin, yPos - 1, contentWidth, 8, "F");
+            
             pdf.setFontSize(9);
-            pdf.setFont(undefined, "bold");
-            pdf.text(`Test Case ${tcIndex + 1}:`, margin + 5, yPosition);
-            yPosition += 5;
-
-            pdf.setFont(undefined, "normal");
-            if (testCase.input) {
-              const inputText = typeof testCase.input === "object" 
-                ? JSON.stringify(testCase.input) 
-                : String(testCase.input);
-              pdf.text(`Input: ${inputText}`, margin + 10, yPosition);
-              yPosition += 5;
-            }
-
-            if (testCase.expectedOutput || testCase.expected_output) {
-              const expectedOutput = testCase.expectedOutput || testCase.expected_output;
-              const outputText = typeof expectedOutput === "object" 
-                ? JSON.stringify(expectedOutput) 
-                : String(expectedOutput);
-              pdf.text(`Expected Output: ${outputText}`, margin + 10, yPosition);
-              yPosition += 5;
-            }
-
-            if (testCase.passed) {
-              pdf.setFont(undefined, "bold");
-              pdf.setTextColor(34, 197, 94); // Green color
-              pdf.text("✓ PASSED", margin + 10, yPosition);
-              pdf.setTextColor(0, 0, 0);
-              yPosition += 6;
+            pdf.setFont("helvetica", "bold");
+            pdf.text(`Test #${tcIdx + 1}`, margin + 2, yPos + 4);
+            
+            pdf.setFont("helvetica", "normal");
+            const inputShort = String(tc.input).substring(0, 30);
+            pdf.text(`Input: ${inputShort}`, margin + 25, yPos + 4);
+            
+            pdf.setFont("helvetica", "bold");
+            if (isPassed) {
+              pdf.setTextColor(21, 128, 61); // Green-700
+              pdf.text("PASSED", pageWidth - margin - 5, yPos + 4, { align: "right" });
             } else {
-              pdf.setFont(undefined, "bold");
-              pdf.setTextColor(239, 68, 68); // Red color
-              pdf.text("✗ FAILED", margin + 10, yPosition);
-              pdf.setTextColor(0, 0, 0);
-              yPosition += 6;
+              pdf.setTextColor(185, 28, 28); // Red-700
+              pdf.text("FAILED", pageWidth - margin - 5, yPos + 4, { align: "right" });
             }
+            pdf.setTextColor(30, 41, 59);
+            yPos += 10;
           });
         }
-
-        yPosition += 10;
+        
+        yPos += 5;
       });
 
-      // Save the PDF
-      pdf.save(`completed-programs-report-${new Date().getTime()}.pdf`);
-      alert("PDF report generated successfully!");
+      // Page numbering
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(148, 163, 184);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: "center" });
+        pdf.text("CodeSphere Academic Reports", margin, pageHeight - 10);
+      }
+
+      pdf.save(`LabReport_${student.username || "Student"}_${new Date().getTime()}.pdf`);
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF report. Please ensure you have internet connection and try again.");
+      console.error("PDF Error:", error);
+      alert("Error generating professional report. Checking connection...");
     } finally {
       setIsGeneratingPDF(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#f0f4f8]">

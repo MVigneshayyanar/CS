@@ -79,7 +79,7 @@ const Dashboard = () => {
 
             {/* Main Content */}
             <div className="flex flex-col gap-5">
-              <Banner />
+              <Banner user={user} />
               <StatsSection stats={stats} />
               <ProgressSection progressData={progressData} />
               <AssignmentsSection

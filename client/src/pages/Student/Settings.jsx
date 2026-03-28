@@ -150,9 +150,9 @@ const Settings = () => {
             name: u.name || "Student",
             email: u.email || "—",
             phone: "+91 —",
-            department: "Computer Science",
+            department: u.department || "Computer Science",
             semester: "Current",
-            batch: "2024-2025",
+            batch: u.batch || "2024-2025",
             section: "A",
             rollNumber: u.username || "—",
             yearOfStudy: "3rd Year",
@@ -302,7 +302,7 @@ const Settings = () => {
                   {academicData.studentId}
                 </p>
                 <p className="text-[10.5px] text-slate-400 mt-0.5">
-                  {academicData.program}
+                  {academicData.department}
                 </p>
                 <span className="inline-block mt-2 text-[10px] font-extrabold bg-teal-50 text-teal-700 px-3 py-1 rounded-full">
                   Active Student
@@ -465,20 +465,7 @@ const Settings = () => {
                 >
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Department" value={academicData.department} />
-                    <Field label="Program" value={academicData.program} />
-                    <Field
-                      label="Current Semester"
-                      value={academicData.semester}
-                    />
-                    <Field
-                      label="Year of Study"
-                      value={academicData.yearOfStudy}
-                    />
                     <Field label="Batch" value={academicData.batch} />
-                    <Field
-                      label="Section"
-                      value={`Section ${academicData.section}`}
-                    />
                   </div>
                 </SectionCard>
 

@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useTheme } from "next-themes";
 import { useSidebar } from "./context/SidebarContext";
+
+// Utility to scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
@@ -128,6 +137,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="flex min-h-screen bg-[#f0f4f8] theme-transition">
         {getSidebar()}
         <div

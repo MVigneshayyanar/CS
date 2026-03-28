@@ -400,7 +400,9 @@ const ExperimentView = () => {
       exitFullscreen();
     }
     setTimeout(() => {
-      navigate('/labs/experiments');
+      // Return to the particular lab's experiment list instead of all experiments
+      const returnUrl = labId ? `/labs/experiments?labId=${labId}` : '/labs/experiments';
+      navigate(returnUrl);
     }, 100);
   };
 

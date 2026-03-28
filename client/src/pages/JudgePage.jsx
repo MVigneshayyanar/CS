@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import CodeEditor from "../components/CodeEditor.jsx";
 import { submitCode } from "../services/judgeService";
 import CelebrationSplash from "../components/CelebrationSplash.jsx";
@@ -43,8 +43,20 @@ const LANGUAGES = [
   { value: "javascript", label: "JavaScript", icon: "🟨" },
 ];
 
-const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete, onAutoExit }) => {
+const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete, onAutoExit, lockLanguage = true }) => {
   const defaultLang = initialLanguage || "java";
+  
+  // Filter languages if locked
+  const availableLanguages = lockLanguage && initialLanguage 
+    ? LANGUAGES.filter(l => l.value === mapLanguageKeyInternal(initialLanguage))
+    : LANGUAGES;
+
+  // Helper inside component for mapping just in case
+  function mapLanguageKeyInternal(lang) {
+    const l = (lang || "").toLowerCase();
+    if (l === "c++") return "cpp";
+    return l;
+  }
   const startCode =
     initialCode || experimentCode || getStarterCode(defaultLang);
 
@@ -63,8 +75,43 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
   const [consoleExpanded, setConsoleExpanded] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
 
+  const [consoleHeight, setConsoleHeight] = useState(240);
+  const [isResizing, setIsResizing] = useState(false);
   const outputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const resizerRef = useRef(null);
+
+  const startResizing = (e) => {
+    setIsResizing(true);
+    e.preventDefault();
+  };
+
+  const stopResizing = () => {
+    setIsResizing(false);
+  };
+
+  const resize = (e) => {
+    if (isResizing) {
+      const newHeight = window.innerHeight - e.clientY - 40; // adjusting for a bit of margin
+      if (newHeight > 100 && newHeight < window.innerHeight * 0.8) {
+        setConsoleHeight(newHeight);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", resize);
+      window.addEventListener("mouseup", stopResizing);
+    } else {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizing]);
 
   const currentLang = LANGUAGES.find((l) => l.value === language) || LANGUAGES[0];
 
@@ -189,7 +236,14 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         ]);
         if (labId && experimentIndex !== undefined) {
           try {
-            await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+            const singleResult = [{
+              passed: !data.error,
+              input: "",
+              expected: "",
+              actual: data.output || data.error || "No output",
+              error: data.error || null,
+            }];
+            await updateExperimentStatus(labId, experimentIndex, "completed", 100, code, singleResult);
             if (onComplete) onComplete();
           } catch (e) {
             console.error(e);
@@ -240,7 +294,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
           setShowCelebration(true);
           if (labId && experimentIndex !== undefined) {
             try {
-              await updateExperimentStatus(labId, experimentIndex, "completed", 100);
+              await updateExperimentStatus(labId, experimentIndex, "completed", 100, code, results);
               if (onComplete) onComplete();
             } catch (dbError) {
               console.error(dbError);
@@ -287,27 +341,29 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         {/* Language Selector */}
         <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => setShowLangDropdown(!showLangDropdown)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2A2A3E] hover:bg-[#33334D] border border-[#3D3D5C] text-sm text-neutral-200 transition-all duration-200 group"
+            onClick={() => availableLanguages.length > 1 && setShowLangDropdown(!showLangDropdown)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2A2A3E] border border-[#3D3D5C] text-sm text-neutral-200 transition-all duration-200 ${availableLanguages.length > 1 ? 'hover:bg-[#33334D] cursor-pointer' : 'cursor-default'}`}
           >
             <span className="text-base">{currentLang.icon}</span>
             <span className="font-medium">{currentLang.label}</span>
-            <ChevronDown
-              className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
-                showLangDropdown ? "rotate-180" : ""
-              }`}
-            />
+            {availableLanguages.length > 1 && (
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
+                  showLangDropdown ? "rotate-180" : ""
+                }`}
+              />
+            )}
           </button>
 
           {/* Dropdown */}
-          {showLangDropdown && (
+          {showLangDropdown && availableLanguages.length > 1 && (
             <>
               <div
                 className="fixed inset-0 z-10"
                 onClick={() => setShowLangDropdown(false)}
               />
               <div className="absolute top-full left-0 mt-1 w-48 bg-[#1E1E36] border border-[#3D3D5C] rounded-lg shadow-2xl z-20 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                {LANGUAGES.map((lang) => (
+                {availableLanguages.map((lang) => (
                   <button
                     key={lang.value}
                     onClick={() => handleLanguageChange(lang.value)}
@@ -366,7 +422,13 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
 
       {/* ─── Bottom Console Panel ─── */}
       {consoleExpanded && (
-        <div className="flex flex-col border-t border-[#2D2D44] bg-[#16162A]" style={{ height: '240px', minHeight: '200px' }}>
+        <div className="flex flex-col border-t border-[#2D2D44] bg-[#16162A]" style={{ height: `${consoleHeight}px`, minHeight: '100px' }}>
+          {/* Resize Handler */}
+          <div
+            onMouseDown={startResizing}
+            className="h-1.5 w-full bg-[#2D2D44] hover:bg-emerald-500/50 cursor-ns-resize transition-colors absolute -top-0.5 z-30"
+            title="Drag to resize"
+          />
 
           {/* Console Tabs */}
           <div className="flex items-center justify-between px-1 border-b border-[#2D2D44]">
@@ -467,7 +529,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                           <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                             Input
                           </label>
-                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                             {testCases[activeTestIdx].input || "No input"}
                           </div>
                         </div>
@@ -475,7 +537,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                           <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                             Expected Output
                           </label>
-                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                          <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                             {testCases[activeTestIdx].expected ||
                               testCases[activeTestIdx].expectedOutput ||
                               "No expected output"}
@@ -563,7 +625,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                               Input
                             </label>
-                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                               {testResults[activeTestIdx].input}
                             </div>
                           </div>
@@ -573,7 +635,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             Output
                           </label>
                           <div
-                            className={`bg-[#1A1A2E] border rounded-lg px-3 py-2.5 font-mono text-sm ${
+                            className={`bg-[#1A1A2E] border rounded-lg px-3 py-2.5 font-mono text-sm whitespace-pre-wrap ${
                               testResults[activeTestIdx].error
                                 ? "border-red-500/30 text-red-400"
                                 : testResults[activeTestIdx].passed === false
@@ -591,7 +653,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                             <label className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mb-1 block">
                               Expected
                             </label>
-                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300">
+                            <div className="bg-[#1A1A2E] border border-[#2D2D44] rounded-lg px-3 py-2.5 font-mono text-sm text-neutral-300 whitespace-pre-wrap">
                               {testResults[activeTestIdx].expected}
                             </div>
                           </div>

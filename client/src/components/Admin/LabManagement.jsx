@@ -149,12 +149,12 @@ const LabManagement = () => {
   };
 
   /* ── Toggle faculty in multi-select ── */
-  const toggleFaculty = (name) => {
+  const toggleFaculty = (empId) => {
     setLabForm(prev => ({
       ...prev,
-      faculty: prev.faculty.includes(name)
-        ? prev.faculty.filter(f => f !== name)
-        : [...prev.faculty, name],
+      faculty: prev.faculty.includes(empId)
+        ? prev.faculty.filter(f => f !== empId)
+        : [...prev.faculty, empId],
     }));
   };
 
@@ -310,7 +310,10 @@ const LabManagement = () => {
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-slate-900 mb-1">{lab.name}</h3>
                     <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-                      <span>Faculty: {facultyList.join(', ') || '—'}</span>
+                      <span>Faculty: {facultyList.map(empId => {
+                        const f = faculty.find(fac => fac.empId === empId);
+                        return f ? f.name : empId;
+                      }).join(', ') || '—'}</span>
                       {(lab.joiningYear || lab.passoutYear) && (
                         <span className="bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
                           {lab.joiningYear || '?'} – {lab.passoutYear || '?'}
@@ -458,12 +461,13 @@ const LabManagement = () => {
                     <label key={f.id} className="flex items-center gap-3 cursor-pointer hover:bg-white p-2.5 rounded-lg transition-colors">
                       <input
                         type="checkbox"
-                        checked={labForm.faculty.includes(f.name)}
-                        onChange={() => toggleFaculty(f.name)}
+                        checked={labForm.faculty.includes(f.empId)}
+                        onChange={() => toggleFaculty(f.empId)}
                         className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
                       />
                       <div>
                         <span className="text-sm font-medium text-slate-700">{f.name}</span>
+                        <span className="text-[10px] text-slate-400 ml-2 font-mono">({f.empId})</span>
                         {f.department && <span className="text-xs text-slate-400 ml-2">· {f.department}</span>}
                       </div>
                     </label>

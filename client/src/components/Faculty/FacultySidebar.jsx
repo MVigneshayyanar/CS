@@ -154,26 +154,6 @@ export default function FacultySidebar({ onLogout }) {
               </span>
             )}
           </NavLink>
-
-          <button
-            onClick={toggleCollapsed}
-            className={`grid h-8 w-8 place-content-center rounded-full hover:bg-white/20 transition-all duration-300 bg-white/5 ${collapsed ? "absolute -right-1 top-20 shadow-lg border border-white/10" : ""}`}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className={`h-4 w-4 text-white transition-transform duration-500 ${collapsed ? "rotate-180" : ""}`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
         </div>
 
         <div className="flex-1 px-4 py-2 overflow-y-auto no-scrollbar">
