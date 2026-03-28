@@ -5,7 +5,7 @@ const statusClasses = {
   not_completed: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
-const ReportsSection = ({ reportData, onDownloadCompleted }) => {
+const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) => {
   const summary = reportData?.summary || {
     totalPrograms: 0,
     completedPrograms: 0,
@@ -26,10 +26,20 @@ const ReportsSection = ({ reportData, onDownloadCompleted }) => {
           <button
             type="button"
             onClick={onDownloadCompleted}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+            disabled={isGeneratingPDF}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
           >
-            <Download className="w-4 h-4" />
-            Download Completed Report
+            {isGeneratingPDF ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                Download Completed Report
+              </>
+            )}
           </button>
         </div>
 

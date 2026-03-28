@@ -75,24 +75,25 @@ const navItems = [
 ];
 
 import ThemeToggle from "../ThemeToggle";
+import LogoutConfirmation from "../LogoutConfirmation";
 
 export default function GodSidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
 
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    }
+    setShowLogoutConfirm(true);
   };
 
   return (
     <>
-      <button
-        onClick={() => setMobileOpen(true)}
+      <>
+        <button
+          onClick={() => setMobileOpen(true)}
         className="md:hidden fixed left-3 top-3 z-50 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
         aria-label="Open menu"
       >
@@ -258,6 +259,16 @@ export default function GodSidebar({ onLogout }) {
           onClick={() => setMobileOpen(false)}
         />
       )}
+
+        <LogoutConfirmation
+          isOpen={showLogoutConfirm}
+          onConfirm={() => {
+            setShowLogoutConfirm(false);
+            onLogout();
+          }}
+          onCancel={() => setShowLogoutConfirm(false)}
+        />
+      </>
     </>
   );
 }
