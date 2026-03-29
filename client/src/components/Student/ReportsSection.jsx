@@ -5,7 +5,88 @@ const statusClasses = {
   not_completed: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
-const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) => {
+const formatDisplayDate = (dateValue) => {
+  if (!dateValue) return "N/A";
+  const dateObj = new Date(dateValue);
+  return Number.isNaN(dateObj.getTime())
+    ? String(dateValue)
+    : dateObj.toLocaleDateString("en-GB");
+};
+
+const getCompletionDate = (program) => {
+  const submissions = Array.isArray(program?.submissions)
+    ? program.submissions
+    : [];
+  const submissionWithCompletionDate = submissions.find(
+    (sub) =>
+      sub?.completedAt ||
+      sub?.completed_at ||
+      sub?.completionDate ||
+      sub?.dateCompleted ||
+      sub?.submittedAt ||
+      sub?.createdAt ||
+      sub?.created_at,
+  );
+
+  const testResults = Array.isArray(program?.testResults)
+    ? program.testResults
+    : [];
+  const testResultWithTimestamp = testResults.find(
+    (result) =>
+      result?.timestamp ||
+      result?.completedAt ||
+      result?.completed_at ||
+      result?.completionDate ||
+      result?.dateCompleted ||
+      result?.submittedAt ||
+      result?.createdAt ||
+      result?.created_at,
+  );
+
+  const completionDate =
+    program?.completedAt ||
+    program?.completed_at ||
+    program?.completionDate ||
+    program?.dateCompleted ||
+    program?.completedOn ||
+    program?.completed_on ||
+    program?.submittedAt ||
+    program?.submitted_at ||
+    submissionWithCompletionDate?.completedAt ||
+    submissionWithCompletionDate?.completed_at ||
+    submissionWithCompletionDate?.completionDate ||
+    submissionWithCompletionDate?.dateCompleted ||
+    submissionWithCompletionDate?.submittedAt ||
+    submissionWithCompletionDate?.createdAt ||
+    submissionWithCompletionDate?.created_at ||
+    testResultWithTimestamp?.timestamp ||
+    testResultWithTimestamp?.completedAt ||
+    testResultWithTimestamp?.completed_at ||
+    testResultWithTimestamp?.completionDate ||
+    testResultWithTimestamp?.dateCompleted ||
+    testResultWithTimestamp?.submittedAt ||
+    testResultWithTimestamp?.createdAt ||
+    testResultWithTimestamp?.created_at ||
+    program?.updatedAt;
+
+  if (program?.status !== "completed") {
+    return "N/A";
+  }
+
+  return completionDate ? formatDisplayDate(completionDate) : "N/A";
+};
+
+const getDeadlineDate = (program) => {
+  const deadlineDate =
+    program?.deadline || program?.dateDue || program?.dueDate || program?.date;
+  return formatDisplayDate(deadlineDate);
+};
+
+const ReportsSection = ({
+  reportData,
+  onDownloadCompleted,
+  isGeneratingPDF,
+}) => {
   const summary = reportData?.summary || {
     totalPrograms: 0,
     completedPrograms: 0,
@@ -18,7 +99,9 @@ const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) =>
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
-            <h3 className="text-base font-extrabold text-slate-900">Program Reports</h3>
+            <h3 className="text-base font-extrabold text-slate-900">
+              Program Reports
+            </h3>
             <p className="text-xs text-slate-500 mt-1">
               Section-wise report of completed and not completed programs
             </p>
@@ -49,21 +132,27 @@ const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) =>
               <FolderKanban className="w-4 h-4" />
               Total Programs
             </div>
-            <p className="text-2xl font-extrabold text-slate-900 mt-2">{summary.totalPrograms}</p>
+            <p className="text-2xl font-extrabold text-slate-900 mt-2">
+              {summary.totalPrograms}
+            </p>
           </div>
           <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3">
             <div className="flex items-center gap-2 text-emerald-700 text-xs font-semibold uppercase tracking-wide">
               <FileCheck2 className="w-4 h-4" />
               Completed
             </div>
-            <p className="text-2xl font-extrabold text-emerald-800 mt-2">{summary.completedPrograms}</p>
+            <p className="text-2xl font-extrabold text-emerald-800 mt-2">
+              {summary.completedPrograms}
+            </p>
           </div>
           <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
             <div className="flex items-center gap-2 text-rose-700 text-xs font-semibold uppercase tracking-wide">
               <FileX2 className="w-4 h-4" />
               Not Completed
             </div>
-            <p className="text-2xl font-extrabold text-rose-800 mt-2">{summary.notCompletedPrograms}</p>
+            <p className="text-2xl font-extrabold text-rose-800 mt-2">
+              {summary.notCompletedPrograms}
+            </p>
           </div>
         </div>
       </div>
@@ -80,8 +169,12 @@ const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) =>
           >
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
-                <h4 className="text-sm font-extrabold text-slate-900">{sectionItem.section}</h4>
-                <p className="text-xs text-slate-500 mt-1">Programs grouped by section</p>
+                <h4 className="text-sm font-extrabold text-slate-900">
+                  {sectionItem.section}
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Programs grouped by section
+                </p>
               </div>
               <div className="flex items-center gap-2 text-xs font-semibold">
                 <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700">
@@ -100,22 +193,37 @@ const ReportsSection = ({ reportData, onDownloadCompleted, isGeneratingPDF }) =>
                     <th className="pb-2 font-semibold">Program</th>
                     <th className="pb-2 font-semibold">Status</th>
                     <th className="pb-2 font-semibold">Progress</th>
+                    <th className="pb-2 font-semibold">Completed On</th>
                     <th className="pb-2 font-semibold">Deadline</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sectionItem.programs.map((program) => (
-                    <tr key={program.id} className="border-b border-slate-100 last:border-0">
-                      <td className="py-3 text-slate-800 font-medium">{program.programName}</td>
+                    <tr
+                      key={program.id}
+                      className="border-b border-slate-100 last:border-0"
+                    >
+                      <td className="py-3 text-slate-800 font-medium">
+                        {program.programName}
+                      </td>
                       <td className="py-3">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClasses[program.status]}`}
                         >
-                          {program.status === "completed" ? "Completed" : "Not Completed"}
+                          {program.status === "completed"
+                            ? "Completed"
+                            : "Not Completed"}
                         </span>
                       </td>
-                      <td className="py-3 text-slate-700">{program.progress}%</td>
-                      <td className="py-3 text-slate-600">{program.deadline}</td>
+                      <td className="py-3 text-slate-700">
+                        {program.progress}%
+                      </td>
+                      <td className="py-3 text-slate-600">
+                        {getCompletionDate(program)}
+                      </td>
+                      <td className="py-3 text-slate-600">
+                        {getDeadlineDate(program)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

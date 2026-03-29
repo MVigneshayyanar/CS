@@ -40,11 +40,19 @@ export const fetchStudentReports = async () => {
   return response.data;
 };
 
-export const updateExperimentStatus = async (labId, experimentIndex, status, progress, code, testResults) => {
+export const updateExperimentStatus = async (
+  labId,
+  experimentIndex,
+  status,
+  progress,
+  code,
+  testResults,
+  completedAt,
+) => {
   const headers = await getAuthHeaders();
   const response = await studentApi.put(
     "/student/experiment-status",
-    { labId, experimentIndex, status, progress, code, testResults },
+    { labId, experimentIndex, status, progress, code, testResults, completedAt },
     { headers }
   );
   return response.data;

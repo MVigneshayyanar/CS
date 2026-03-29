@@ -142,8 +142,12 @@ const Settings = () => {
         if (result?.data?.user) {
           const u = result.data.user;
           const stats = result.data.stats || [];
-          const labs = stats.find(s => s.label.toLowerCase().includes("total"))?.value || 0;
-          const tasks = stats.find(s => s.label.toLowerCase().includes("pending"))?.value || 0;
+          const labs =
+            stats.find((s) => s.label.toLowerCase().includes("total"))?.value ||
+            0;
+          const tasks =
+            stats.find((s) => s.label.toLowerCase().includes("pending"))
+              ?.value || 0;
 
           setAcademicData({
             studentId: u.username || "—",
@@ -204,7 +208,6 @@ const Settings = () => {
     }
   };
 
-
   const navItems = [
     { id: "profile", label: "Academic Profile", icon: User },
     { id: "password", label: "Change Password", icon: Lock },
@@ -256,10 +259,11 @@ const Settings = () => {
         {/* ── Alert ── */}
         {message.text && (
           <div
-            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${message.type === "success"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-red-50 text-red-600 border-red-200"
-              }`}
+            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${
+              message.type === "success"
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-red-50 text-red-600 border-red-200"
+            }`}
           >
             {message.text}
             <button
@@ -340,8 +344,9 @@ const Settings = () => {
                           setActiveSection(id);
                           setMessage({ type: "", text: "" });
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${active ? "bg-teal-50" : "hover:bg-slate-50"
-                          }`}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
+                          active ? "bg-teal-50" : "hover:bg-slate-50"
+                        }`}
                       >
                         <div className="flex items-center gap-2.5">
                           <div
@@ -434,11 +439,7 @@ const Settings = () => {
             {/* ── PROFILE SECTION ── */}
             {activeSection === "profile" && (
               <>
-                <SectionCard
-                  icon={User}
-                  title="Personal Details"
-                  badge="Read only"
-                >
+                <SectionCard icon={User} title="Personal Details">
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Full Name" value={academicData.name} />
                     <Field
@@ -458,11 +459,7 @@ const Settings = () => {
                   </div>
                 </SectionCard>
 
-                <SectionCard
-                  icon={GraduationCap}
-                  title="Academic Information"
-                  badge="Read only"
-                >
+                <SectionCard icon={GraduationCap} title="Academic Information">
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Department" value={academicData.department} />
                     <Field label="Batch" value={academicData.batch} />
@@ -558,8 +555,6 @@ const Settings = () => {
                 </form>
               </SectionCard>
             )}
-
-
           </div>
         </div>
       </div>

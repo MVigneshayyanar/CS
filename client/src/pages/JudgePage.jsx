@@ -43,13 +43,27 @@ const LANGUAGES = [
   { value: "javascript", label: "JavaScript", icon: "🟨" },
 ];
 
-const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange, testCases, labId, experimentIndex, onComplete, onAutoExit, lockLanguage = true }) => {
+const JudgePage = ({
+  initialLanguage,
+  initialCode,
+  experimentCode,
+  onCodeChange,
+  testCases,
+  labId,
+  experimentIndex,
+  onComplete,
+  onAutoExit,
+  lockLanguage = true,
+}) => {
   const defaultLang = initialLanguage || "java";
-  
+
   // Filter languages if locked
-  const availableLanguages = lockLanguage && initialLanguage 
-    ? LANGUAGES.filter(l => l.value === mapLanguageKeyInternal(initialLanguage))
-    : LANGUAGES;
+  const availableLanguages =
+    lockLanguage && initialLanguage
+      ? LANGUAGES.filter(
+          (l) => l.value === mapLanguageKeyInternal(initialLanguage),
+        )
+      : LANGUAGES;
 
   // Helper inside component for mapping just in case
   function mapLanguageKeyInternal(lang) {
@@ -113,7 +127,8 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
     };
   }, [isResizing]);
 
-  const currentLang = LANGUAGES.find((l) => l.value === language) || LANGUAGES[0];
+  const currentLang =
+    LANGUAGES.find((l) => l.value === language) || LANGUAGES[0];
 
   const handleLanguageChange = (newLang) => {
     setLanguage(newLang);
@@ -223,7 +238,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         const data = await submitCode(code, language);
         setResult(
           "✅ Submission Successful:\n" +
-            (data.output || data.error || "No output")
+            (data.output || data.error || "No output"),
         );
         setTestResults([
           {
@@ -236,14 +251,24 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         ]);
         if (labId && experimentIndex !== undefined) {
           try {
-            const singleResult = [{
-              passed: !data.error,
-              input: "",
-              expected: "",
-              actual: data.output || data.error || "No output",
-              error: data.error || null,
-            }];
-            await updateExperimentStatus(labId, experimentIndex, "completed", 100, code, singleResult);
+            const singleResult = [
+              {
+                passed: !data.error,
+                input: "",
+                expected: "",
+                actual: data.output || data.error || "No output",
+                error: data.error || null,
+              },
+            ];
+            await updateExperimentStatus(
+              labId,
+              experimentIndex,
+              "completed",
+              100,
+              code,
+              singleResult,
+              new Date().toISOString(),
+            );
             if (onComplete) onComplete();
           } catch (e) {
             console.error(e);
@@ -294,13 +319,21 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
           setShowCelebration(true);
           if (labId && experimentIndex !== undefined) {
             try {
-              await updateExperimentStatus(labId, experimentIndex, "completed", 100, code, results);
+              await updateExperimentStatus(
+                labId,
+                experimentIndex,
+                "completed",
+                100,
+                code,
+                results,
+                new Date().toISOString(),
+              );
               if (onComplete) onComplete();
             } catch (dbError) {
               console.error(dbError);
             }
           }
-          
+
           setTimeout(() => {
             setShowCelebration(false);
             if (onAutoExit) onAutoExit();
@@ -311,7 +344,10 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
       }
 
       setTimeout(() => {
-        outputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        outputRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
       }, 100);
     } catch (error) {
       setResult("Server Error: " + error.message);
@@ -341,8 +377,11 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
         {/* Language Selector */}
         <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => availableLanguages.length > 1 && setShowLangDropdown(!showLangDropdown)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2A2A3E] border border-[#3D3D5C] text-sm text-neutral-200 transition-all duration-200 ${availableLanguages.length > 1 ? 'hover:bg-[#33334D] cursor-pointer' : 'cursor-default'}`}
+            onClick={() =>
+              availableLanguages.length > 1 &&
+              setShowLangDropdown(!showLangDropdown)
+            }
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#2A2A3E] border border-[#3D3D5C] text-sm text-neutral-200 transition-all duration-200 ${availableLanguages.length > 1 ? "hover:bg-[#33334D] cursor-pointer" : "cursor-default"}`}
           >
             <span className="text-base">{currentLang.icon}</span>
             <span className="font-medium">{currentLang.label}</span>
@@ -411,7 +450,7 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
       </div>
 
       {/* ─── Code Editor Area ─── */}
-      <div className={`flex-1 min-h-0 ${consoleExpanded ? '' : 'flex-grow'}`}>
+      <div className={`flex-1 min-h-0 ${consoleExpanded ? "" : "flex-grow"}`}>
         <CodeEditor
           code={code}
           setCode={handleEditorChange}
@@ -422,7 +461,10 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
 
       {/* ─── Bottom Console Panel ─── */}
       {consoleExpanded && (
-        <div className="flex flex-col border-t border-[#2D2D44] bg-[#16162A]" style={{ height: `${consoleHeight}px`, minHeight: '100px' }}>
+        <div
+          className="flex flex-col border-t border-[#2D2D44] bg-[#16162A]"
+          style={{ height: `${consoleHeight}px`, minHeight: "100px" }}
+        >
           {/* Resize Handler */}
           <div
             onMouseDown={startResizing}
@@ -499,7 +541,6 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
 
           {/* Console Content */}
           <div ref={outputRef} className="flex-1 overflow-auto p-3">
-
             {/* ── Testcase Tab ── */}
             {activeTab === "testcase" && (
               <div>
@@ -549,7 +590,9 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                 ) : (
                   <div className="flex items-center gap-2 text-neutral-500 text-sm py-4">
                     <Terminal className="w-4 h-4" />
-                    <span>No test cases provided. Click Run to execute your code.</span>
+                    <span>
+                      No test cases provided. Click Run to execute your code.
+                    </span>
                   </div>
                 )}
               </div>
@@ -572,7 +615,9 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                       {testResults.every((r) => r.passed === true) ? (
                         <div className="flex items-center gap-2 text-emerald-400">
                           <CheckCircle2 className="w-5 h-5" />
-                          <span className="font-semibold text-sm">Accepted</span>
+                          <span className="font-semibold text-sm">
+                            Accepted
+                          </span>
                           <span className="text-neutral-500 text-xs ml-1">
                             — All {testResults.length} test cases passed
                           </span>
@@ -580,9 +625,12 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                       ) : testResults.some((r) => r.passed === false) ? (
                         <div className="flex items-center gap-2 text-red-400">
                           <XCircle className="w-5 h-5" />
-                          <span className="font-semibold text-sm">Wrong Answer</span>
+                          <span className="font-semibold text-sm">
+                            Wrong Answer
+                          </span>
                           <span className="text-neutral-500 text-xs ml-1">
-                            — {passedCount}/{testResults.length} test cases passed
+                            — {passedCount}/{testResults.length} test cases
+                            passed
                           </span>
                         </div>
                       ) : (
@@ -639,10 +687,10 @@ const JudgePage = ({ initialLanguage, initialCode, experimentCode, onCodeChange,
                               testResults[activeTestIdx].error
                                 ? "border-red-500/30 text-red-400"
                                 : testResults[activeTestIdx].passed === false
-                                ? "border-red-500/30 text-red-400"
-                                : testResults[activeTestIdx].passed === true
-                                ? "border-emerald-500/30 text-emerald-400"
-                                : "border-[#2D2D44] text-neutral-300"
+                                  ? "border-red-500/30 text-red-400"
+                                  : testResults[activeTestIdx].passed === true
+                                    ? "border-emerald-500/30 text-emerald-400"
+                                    : "border-[#2D2D44] text-neutral-300"
                             }`}
                           >
                             {testResults[activeTestIdx].actual || "No output"}

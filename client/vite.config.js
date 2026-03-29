@@ -17,7 +17,14 @@ export default defineConfig({
   server: {
     hmr: false,
     port: 5173,
-    host: true
+    host: true,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_PROXY_TARGET || 'https://backend-lab-s7e7.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   optimizeDeps: {
     exclude: ['react-py'], // Exclude react-py from dependency optimization
