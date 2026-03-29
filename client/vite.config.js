@@ -23,6 +23,11 @@ export default defineConfig({
         target: process.env.VITE_API_PROXY_TARGET || 'https://backend-lab-s7e7.onrender.com',
         changeOrigin: true,
         secure: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.removeHeader('origin')
+          })
+        },
       },
     },
   },

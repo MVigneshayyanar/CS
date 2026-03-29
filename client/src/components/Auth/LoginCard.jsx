@@ -29,15 +29,29 @@ const LoginCard = ({ onLogin }) => {
       const actualUserType = user?.role;
 
       if (!actualUserType || !accessToken || !refreshToken) {
-        throw new Error("Login failed: backend did not provide valid token pair");
+        throw new Error(
+          "Login failed: backend did not provide valid token pair",
+        );
       }
 
       if (onLogin) {
         onLogin(actualUserType);
       }
     } catch (error) {
-      const message = error?.response?.data?.message || "Login failed. Please check your credentials.";
-      alert(message);
+      const message =
+        error?.response?.data?.message ||
+        "Login failed. Please check your credentials.";
+      const normalized = String(message).toLowerCase();
+      if (
+        normalized.includes("cors") ||
+        normalized.includes("blocked for origin")
+      ) {
+        alert(
+          "Unable to reach server from this environment. Please restart frontend and try again.",
+        );
+      } else {
+        alert(message);
+      }
     } finally {
       setIsLoading(false);
     }

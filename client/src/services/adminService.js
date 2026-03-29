@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAuthHeaders } from "./authSession";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://backend-lab-s7e7.onrender.com/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const adminApi = axios.create({
   baseURL: API_BASE_URL,

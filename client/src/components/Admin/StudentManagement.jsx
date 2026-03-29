@@ -29,6 +29,11 @@ const getBatchLabel = (student) => {
   return `${student.joiningYear || "?"} – ${student.passoutYear || "?"}`;
 };
 
+const getSectionLabel = (student) => {
+  if (!student?.section) return "Unassigned";
+  return String(student.section).toUpperCase();
+};
+
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
   <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
     <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-2xl shadow-xl max-h-[85vh] overflow-y-auto">
@@ -73,12 +78,14 @@ const StudentManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBatch, setSelectedBatch] = useState("all");
+  const [selectedSection, setSelectedSection] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [studentForm, setStudentForm] = useState({
     name: "",
     email: "",
     rollNo: "",
+    section: "",
     joiningYear: "",
     passoutYear: "",
   });
@@ -88,6 +95,7 @@ const StudentManagement = () => {
       name: "",
       email: "",
       rollNo: "",
+      section: "",
       joiningYear: "",
       passoutYear: "",
     });
@@ -111,6 +119,7 @@ const StudentManagement = () => {
       name: student.name || "",
       email: student.email || "",
       rollNo: student.rollNo || "",
+      section: student.section || "",
       joiningYear: student.joiningYear || "",
       passoutYear: student.passoutYear || "",
     });
@@ -163,6 +172,19 @@ const StudentManagement = () => {
   };
 
   const batchOptions = Array.from(new Set(students.map(getBatchLabel)));
+  const sectionOptions = Array.from(
+    new Set(students.map(getSectionLabel)),
+  ).sort();
+
+  const availableSectionOptions = Array.from(
+    new Set([
+      "A",
+      "B",
+      "C",
+      "D",
+      ...sectionOptions.filter((s) => s !== "Unassigned"),
+    ]),
+  );
 
   const filterData = () => {
     return students.filter((item) => {
@@ -178,7 +200,10 @@ const StudentManagement = () => {
       const matchesBatch =
         selectedBatch === "all" || getBatchLabel(item) === selectedBatch;
 
-      return matchesSearch && matchesBatch;
+      const matchesSection =
+        selectedSection === "all" || getSectionLabel(item) === selectedSection;
+
+      return matchesSearch && matchesBatch && matchesSection;
     });
   };
 
@@ -237,7 +262,7 @@ const StudentManagement = () => {
               {filteredStudents.length === 1 ? "" : "s"}
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_220px] gap-3">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
@@ -275,6 +300,33 @@ const StudentManagement = () => {
                 </button>
               )}
             </div>
+            <div className="flex items-stretch gap-2">
+              <div className="relative flex-1">
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 w-4 h-4" />
+                <select
+                  value={selectedSection}
+                  onChange={(e) => setSelectedSection(e.target.value)}
+                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl w-full text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                >
+                  <option value="all">Section: All</option>
+                  {sectionOptions.map((section) => (
+                    <option key={section} value={section}>
+                      Section: {section}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+              </div>
+              {selectedSection !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedSection("all")}
+                  className="px-3 py-3 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -297,6 +349,9 @@ const StudentManagement = () => {
                     Batch
                   </th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Section
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -305,7 +360,7 @@ const StudentManagement = () => {
                 {isLoading && (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       className="px-6 py-8 text-center text-slate-400 text-sm"
                     >
                       Loading students...
@@ -337,6 +392,15 @@ const StudentManagement = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
+                        {student.section ? (
+                          <span className="bg-cyan-50 text-cyan-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                            {getSectionLabel(student)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-sm">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEditModal(student)}
@@ -357,7 +421,7 @@ const StudentManagement = () => {
                 {!isLoading && filteredStudents.length === 0 && (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6"
                       className="px-6 py-8 text-center text-slate-400 text-sm italic"
                     >
                       No students found.
@@ -434,6 +498,30 @@ const StudentManagement = () => {
                   className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Section
+                </label>
+                <select
+                  value={studentForm.section}
+                  onChange={(e) =>
+                    setStudentForm((prev) => ({
+                      ...prev,
+                      section: e.target.value,
+                    }))
+                  }
+                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  required
+                >
+                  <option value="">Select Section</option>
+                  {availableSectionOptions.map((section) => (
+                    <option key={section} value={section}>
+                      {section}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

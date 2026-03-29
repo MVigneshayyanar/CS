@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAuthHeaders } from "./authSession";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 const facultyApi = axios.create({
   baseURL: API_BASE_URL,
@@ -24,11 +24,11 @@ export const fetchFacultyLabs = async () => {
   return response.data;
 };
 
-export const updateExperimentDeadline = async (labId, experimentIndex, deadline) => {
+export const updateExperimentDeadline = async (labId, experimentIndex, deadline, section) => {
   const headers = await getAuthHeaders();
   const response = await facultyApi.put(
     "/faculty/experiment-deadline",
-    { labId, experimentIndex, deadline },
+    { labId, experimentIndex, deadline, section },
     { headers }
   );
   return response.data;

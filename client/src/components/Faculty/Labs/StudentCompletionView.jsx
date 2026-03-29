@@ -1,151 +1,211 @@
-import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, X, Search } from 'lucide-react';
+import React, { useState, useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import { Calendar, X, Search } from "lucide-react";
 
-import { updateExperimentDeadline } from '@/services/facultyService';
+import { updateExperimentDeadline } from "@/services/facultyService";
 
 const StudentCompletionView = ({ experiment, students, onClose }) => {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showDueDateModal, setShowDueDateModal] = useState(false);
-    const [dueDate, setDueDate] = useState(experiment?.deadline || experiment?.dueDate || '');
-    const [isUpdatingDeadline, setIsUpdatingDeadline] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSection, setSelectedSection] = useState("all");
+  const [showDueDateModal, setShowDueDateModal] = useState(false);
+  const [dueDate, setDueDate] = useState(
+    experiment?.deadline || experiment?.dueDate || "",
+  );
+  const [deadlineSection, setDeadlineSection] = useState("all");
+  const [isUpdatingDeadline, setIsUpdatingDeadline] = useState(false);
 
-    // Normalize student list
-    const studentList = useMemo(() => {
-        return (students || []).map((s, idx) => {
-            if (typeof s === 'string') return { name: s, id: s };
-            return {
-                name: s.name || s.username || `Student ${idx + 1}`,
-                id: s.rollNo || s.id || s.username || `ID-${idx + 1}`
-            };
-        });
-    }, [students]);
+  const getStudentSection = (student) => {
+    const sectionValue =
+      student?.section || student?.sec || student?.classSection;
+    return sectionValue ? String(sectionValue).toUpperCase() : "Unassigned";
+  };
 
-    // Derive completion status from submissions array (per-student tracking)
-    const completedStudents = useMemo(() => {
-        const submissions = Array.isArray(experiment?.submissions) ? experiment.submissions : [];
-        const completedIds = new Set();
-        const completedMap = new Map();
+  // Normalize student list
+  const studentList = useMemo(() => {
+    return (students || []).map((s, idx) => {
+      if (typeof s === "string") return { name: s, id: s };
+      return {
+        name: s.name || s.username || `Student ${idx + 1}`,
+        id: s.rollNo || s.id || s.username || `ID-${idx + 1}`,
+        section: getStudentSection(s),
+      };
+    });
+  }, [students]);
 
-        // Build map of completed submissions
-        submissions.forEach(sub => {
-            const status = (sub.status || '').toLowerCase();
-            if (status === 'completed' || Number(sub.progress || 0) >= 100) {
-                const studentKey = (sub.student || '').toLowerCase();
-                completedIds.add(studentKey);
-                completedMap.set(studentKey, sub);
-            }
-        });
+  const sectionOptions = useMemo(() => {
+    return Array.from(
+      new Set(studentList.map((s) => s.section || "Unassigned")),
+    ).sort();
+  }, [studentList]);
 
-        // Also check legacy completedBy field
-        if (experiment?.completedBy) {
-            completedIds.add(experiment.completedBy.toLowerCase());
-        }
+  // Derive completion status from submissions array (per-student tracking)
+  const completedStudents = useMemo(() => {
+    const submissions = Array.isArray(experiment?.submissions)
+      ? experiment.submissions
+      : [];
+    const completedIds = new Set();
+    const completedMap = new Map();
 
-        return studentList
-            .filter(s => {
-                const idLower = (s.id || '').toLowerCase();
-                const nameLower = (s.name || '').toLowerCase();
-                return completedIds.has(idLower) || completedIds.has(nameLower);
-            })
-            .map(s => {
-                const sub = completedMap.get((s.id || '').toLowerCase()) || completedMap.get((s.name || '').toLowerCase());
-                return {
-                    ...s,
-                    score: sub?.progress || 100,
-                    submissionDate: sub?.completedAt ? new Date(sub.completedAt).toLocaleDateString() : 'N/A',
-                };
-            });
-    }, [studentList, experiment]);
+    // Build map of completed submissions
+    submissions.forEach((sub) => {
+      const status = (sub.status || "").toLowerCase();
+      if (status === "completed" || Number(sub.progress || 0) >= 100) {
+        const studentKey = (sub.student || "").toLowerCase();
+        completedIds.add(studentKey);
+        completedMap.set(studentKey, sub);
+      }
+    });
 
-    const notCompletedStudents = useMemo(() => {
-        const completedIds = new Set(completedStudents.map(s => (s.id || '').toLowerCase()));
-        const deadline = experiment?.deadline || experiment?.dueDate;
-        const now = new Date();
-
-        return studentList
-            .filter(s => !completedIds.has((s.id || '').toLowerCase()))
-            .map(s => {
-                let daysOverdue = 0;
-                if (deadline) {
-                    const deadlineDate = new Date(deadline);
-                    if (!isNaN(deadlineDate.getTime()) && now > deadlineDate) {
-                        daysOverdue = Math.floor((now - deadlineDate) / (1000 * 60 * 60 * 24));
-                    }
-                }
-                return { ...s, daysOverdue };
-            });
-    }, [studentList, completedStudents, experiment]);
-
-    const filter = (list) => {
-        if (!searchQuery.trim()) return list;
-        const q = searchQuery.toLowerCase();
-        return list.filter(
-            (s) =>
-                s.name?.toLowerCase().includes(q) ||
-                s.id?.toLowerCase().includes(q)
-        );
-    };
-
-    const filteredCompletedStudents = useMemo(() => filter(completedStudents), [completedStudents, searchQuery]);
-    const filteredNotCompletedStudents = useMemo(() => filter(notCompletedStudents), [notCompletedStudents, searchQuery]);
-
-    const chartData = [
-        { name: 'Completed', value: completedStudents.length, color: '#10b981' },
-        { name: 'Not Completed', value: notCompletedStudents.length, color: '#ef4444' },
-    ];
-
-    function truncateString(str, maxLength) {
-        if (str.length > maxLength) {
-            return str.slice(0, maxLength - 5) + '...';
-        }
-        return str;
+    // Also check legacy completedBy field
+    if (experiment?.completedBy) {
+      completedIds.add(experiment.completedBy.toLowerCase());
     }
 
-    const scoreData = completedStudents.slice(0, 5).map(student => ({
-        name: truncateString(student.name.split(' ')[0], 10),
-        fullName: student.name,
-        score: student.score || 100
-    }));
+    return studentList
+      .filter((s) => {
+        const idLower = (s.id || "").toLowerCase();
+        const nameLower = (s.name || "").toLowerCase();
+        return completedIds.has(idLower) || completedIds.has(nameLower);
+      })
+      .map((s) => {
+        const sub =
+          completedMap.get((s.id || "").toLowerCase()) ||
+          completedMap.get((s.name || "").toLowerCase());
+        return {
+          ...s,
+          score: sub?.progress || 100,
+          submissionDate: sub?.completedAt
+            ? new Date(sub.completedAt).toLocaleDateString()
+            : "N/A",
+        };
+      });
+  }, [studentList, experiment]);
 
-    const CustomTooltip = ({ active, payload }) => {
-        if (active && payload?.length) {
-            return (
-                <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
-                    <p className="font-bold text-slate-800">
-                        {payload[0].payload.fullName}
-                    </p>
-                    <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
-                </div>
+  const notCompletedStudents = useMemo(() => {
+    const completedIds = new Set(
+      completedStudents.map((s) => (s.id || "").toLowerCase()),
+    );
+    const deadline = experiment?.deadline || experiment?.dueDate;
+    const now = new Date();
+
+    return studentList
+      .filter((s) => !completedIds.has((s.id || "").toLowerCase()))
+      .map((s) => {
+        let daysOverdue = 0;
+        if (deadline) {
+          const deadlineDate = new Date(deadline);
+          if (!isNaN(deadlineDate.getTime()) && now > deadlineDate) {
+            daysOverdue = Math.floor(
+              (now - deadlineDate) / (1000 * 60 * 60 * 24),
             );
+          }
         }
-        return null;
-    };
+        return { ...s, daysOverdue };
+      });
+  }, [studentList, completedStudents, experiment]);
 
-    const handleSetDueDate = async () => {
-        if (!experiment?.id) return;
-        try {
-            setIsUpdatingDeadline(true);
-            const [labId, expIdxStr] = experiment.id.split('-');
-            const experimentIndex = parseInt(expIdxStr);
-            await updateExperimentDeadline(labId, experimentIndex, dueDate);
-            alert('Due date updated successfully!');
-            setShowDueDateModal(false);
-        } catch (error) {
-            alert('Failed to update due date: ' + (error.response?.data?.message || error.message));
-        } finally {
-            setIsUpdatingDeadline(false);
-        }
-    };
+  const filter = (list) => {
+    if (!searchQuery.trim()) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter(
+      (s) =>
+        s.name?.toLowerCase().includes(q) || s.id?.toLowerCase().includes(q),
+    );
+  };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        try {
-            return new Date(dateString).toLocaleDateString();
-        } catch (e) {
-            return dateString;
-        }
-    };
+  const filterBySection = (list) => {
+    if (selectedSection === "all") return list;
+    return list.filter((s) => (s.section || "Unassigned") === selectedSection);
+  };
+
+  const filteredCompletedStudents = useMemo(
+    () => filter(filterBySection(completedStudents)),
+    [completedStudents, searchQuery, selectedSection],
+  );
+  const filteredNotCompletedStudents = useMemo(
+    () => filter(filterBySection(notCompletedStudents)),
+    [notCompletedStudents, searchQuery, selectedSection],
+  );
+
+  const chartData = [
+    { name: "Completed", value: completedStudents.length, color: "#10b981" },
+    {
+      name: "Not Completed",
+      value: notCompletedStudents.length,
+      color: "#ef4444",
+    },
+  ];
+
+  function truncateString(str, maxLength) {
+    if (str.length > maxLength) {
+      return str.slice(0, maxLength - 5) + "...";
+    }
+    return str;
+  }
+
+  const scoreData = completedStudents.slice(0, 5).map((student) => ({
+    name: truncateString(student.name.split(" ")[0], 10),
+    fullName: student.name,
+    score: student.score || 100,
+  }));
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload?.length) {
+      return (
+        <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
+          <p className="font-bold text-slate-800">
+            {payload[0].payload.fullName}
+          </p>
+          <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const handleSetDueDate = async () => {
+    if (!experiment?.id) return;
+    try {
+      setIsUpdatingDeadline(true);
+      const [labId, expIdxStr] = experiment.id.split("-");
+      const experimentIndex = parseInt(expIdxStr);
+      await updateExperimentDeadline(
+        labId,
+        experimentIndex,
+        dueDate,
+        deadlineSection === "all" ? undefined : deadlineSection,
+      );
+      alert("Due date updated successfully!");
+      setShowDueDateModal(false);
+    } catch (error) {
+      alert(
+        "Failed to update due date: " +
+          (error.response?.data?.message || error.message),
+      );
+    } finally {
+      setIsUpdatingDeadline(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (e) {
+      return dateString;
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
@@ -181,23 +241,37 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
 
         {/* Search */}
         <div className="px-6 py-3 border-b border-slate-50">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search students by name or ID..."
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <X className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search students by name or ID..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <X className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+              )}
+            </div>
+            <select
+              value={selectedSection}
+              onChange={(e) => setSelectedSection(e.target.value)}
+              className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+            >
+              <option value="all">All Sections</option>
+              {sectionOptions.map((sec) => (
+                <option key={sec} value={sec}>
+                  {sec}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -244,106 +318,149 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
             </div>
           </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Completed Students */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4 text-emerald-400">
-                                    Completed Students ({filteredCompletedStudents.length})
-                                </h3>
-                                <div className="space-y-3">
-                                    {filteredCompletedStudents && filteredCompletedStudents.length > 0 ? (
-                                        filteredCompletedStudents.map((student, index) => (
-                                            <div key={student?.id || index} className="bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4 backdrop-blur-sm">
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <h4 className="font-semibold text-white">{student?.name || 'Unknown'}</h4>
-                                                        <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-lg font-semibold text-emerald-400">{student?.score || 0}%</div>
-                                                        <div className="text-xs text-neutral-500">Submitted: {student?.submissionDate || 'Unknown'}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center text-neutral-400 py-8">
-                                            {searchQuery ? `No completed students found starting with "${searchQuery}"` : "No completed students"}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Not Completed Students */}
-                            <div>
-                                <h3 className="text-lg font-semibold mb-4 text-red-400">
-                                    Not Completed Students ({filteredNotCompletedStudents.length})
-                                </h3>
-                                <div className="space-y-3">
-                                    {filteredNotCompletedStudents && filteredNotCompletedStudents.length > 0 ? (
-                                        filteredNotCompletedStudents.map((student, index) => (
-                                            <div key={student?.id || index} className="bg-red-900/20 border border-red-700/30 rounded-xl p-4 backdrop-blur-sm">
-                                                <div className="flex justify-between items-center">
-                                                    <div>
-                                                        <h4 className="font-semibold text-white">{student?.name || 'Unknown'}</h4>
-                                                        <p className="text-sm text-neutral-400">{student?.id || 'No ID'}</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="text-lg font-semibold text-red-400">
-                                                            {student?.daysOverdue || 0} days overdue
-                                                        </div>
-                                                        <div className="text-xs text-neutral-500">Status: Pending</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center text-neutral-400 py-8">
-                                            {searchQuery ? `No incomplete students found starting with "${searchQuery}"` : "No incomplete students"}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Completed Students */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-emerald-400">
+                Completed Students ({filteredCompletedStudents.length})
+              </h3>
+              <div className="space-y-3">
+                {filteredCompletedStudents &&
+                filteredCompletedStudents.length > 0 ? (
+                  filteredCompletedStudents.map((student, index) => (
+                    <div
+                      key={student?.id || index}
+                      className="bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4 backdrop-blur-sm"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-semibold text-white">
+                            {student?.name || "Unknown"}
+                          </h4>
+                          <p className="text-sm text-neutral-400">
+                            {student?.id || "No ID"}
+                          </p>
                         </div>
-                    </div>
-                </div>
-
-                {/* Due Date Modal */}
-                {showDueDateModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
-                        <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
-                            <h3 className="text-xl font-semibold text-white mb-4">Set Due Date</h3>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                                    Due Date
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    value={dueDate}
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full px-3 py-2 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-                                />
-                            </div>
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={() => setShowDueDateModal(false)}
-                                    className="px-4 py-2 bg-neutral-600/50 text-white rounded-lg hover:bg-neutral-600 transition-colors duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSetDueDate}
-                                    disabled={isUpdatingDeadline}
-                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50"
-                                >
-                                    {isUpdatingDeadline ? 'Saving...' : 'Set Due Date'}
-                                </button>
-                            </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-emerald-400">
+                            {student?.score || 0}%
+                          </div>
+                          <div className="text-xs text-neutral-500">
+                            Submitted: {student?.submissionDate || "Unknown"}
+                          </div>
                         </div>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center text-neutral-400 py-8">
+                    {searchQuery
+                      ? `No completed students found starting with "${searchQuery}"`
+                      : "No completed students"}
+                  </div>
                 )}
+              </div>
+            </div>
+
+            {/* Not Completed Students */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4 text-red-400">
+                Not Completed Students ({filteredNotCompletedStudents.length})
+              </h3>
+              <div className="space-y-3">
+                {filteredNotCompletedStudents &&
+                filteredNotCompletedStudents.length > 0 ? (
+                  filteredNotCompletedStudents.map((student, index) => (
+                    <div
+                      key={student?.id || index}
+                      className="bg-red-900/20 border border-red-700/30 rounded-xl p-4 backdrop-blur-sm"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-semibold text-white">
+                            {student?.name || "Unknown"}
+                          </h4>
+                          <p className="text-sm text-neutral-400">
+                            {student?.id || "No ID"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-red-400">
+                            {student?.daysOverdue || 0} days overdue
+                          </div>
+                          <div className="text-xs text-neutral-500">
+                            Status: Pending
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-neutral-400 py-8">
+                    {searchQuery
+                      ? `No incomplete students found starting with "${searchQuery}"`
+                      : "No incomplete students"}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Due Date Modal */}
+      {showDueDateModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
+          <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Set Due Date
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
+                Section
+              </label>
+              <select
+                value={deadlineSection}
+                onChange={(e) => setDeadlineSection(e.target.value)}
+                className="w-full px-3 py-2 mb-3 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              >
+                <option value="all">All Sections</option>
+                {sectionOptions.map((sec) => (
+                  <option key={sec} value={sec}>
+                    {sec}
+                  </option>
+                ))}
+              </select>
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
+                Due Date
+              </label>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3 py-2 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              />
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDueDateModal(false)}
+                className="px-4 py-2 bg-neutral-600/50 text-white rounded-lg hover:bg-neutral-600 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSetDueDate}
+                disabled={isUpdatingDeadline}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50"
+              >
+                {isUpdatingDeadline ? "Saving..." : "Set Due Date"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default StudentCompletionView;
