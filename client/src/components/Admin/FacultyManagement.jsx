@@ -6,6 +6,7 @@ import {
   fetchAdminFaculty,
   updateAdminFaculty,
 } from '@/services/adminService';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
   <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
@@ -39,6 +40,8 @@ const FacultyManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState(null);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deletingFacultyId, setDeletingFacultyId] = useState('');
   const [facultyForm, setFacultyForm] = useState({
     name: '',
     email: '',
@@ -109,6 +112,21 @@ const FacultyManagement = () => {
     } catch (error) {
       const message = error?.response?.data?.message || 'Failed to delete faculty';
       alert(message);
+    }
+  };
+
+  const requestDeleteFaculty = (member) => {
+    setDeleteCandidate(member);
+  };
+
+  const confirmDeleteFaculty = async () => {
+    if (!deleteCandidate) return;
+    setDeletingFacultyId(deleteCandidate.id);
+    try {
+      await handleDeleteFaculty(deleteCandidate.id);
+      setDeleteCandidate(null);
+    } finally {
+      setDeletingFacultyId('');
     }
   };
 
@@ -220,7 +238,12 @@ const FacultyManagement = () => {
                         <button onClick={() => openEditModal(member)} className="text-blue-400 hover:text-blue-600 transition-colors p-1.5 rounded-lg hover:bg-blue-50">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDeleteFaculty(member.id)} className="text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50">
+                        <button
+                          onClick={() => requestDeleteFaculty(member)}
+                          disabled={deletingFacultyId === member.id}
+                          className="text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                          aria-label="Delete faculty"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -247,6 +270,16 @@ const FacultyManagement = () => {
             </div>
           </Modal>
         )}
+
+        <DeleteConfirmationModal
+          isOpen={Boolean(deleteCandidate)}
+          title="Delete faculty"
+          message="This will permanently delete the faculty account."
+          itemName={deleteCandidate ? `${deleteCandidate.name} (${deleteCandidate.empId})` : ''}
+          isProcessing={Boolean(deletingFacultyId)}
+          onCancel={() => setDeleteCandidate(null)}
+          onConfirm={confirmDeleteFaculty}
+        />
       </div>
     </div>
   );

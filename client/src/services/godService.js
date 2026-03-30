@@ -62,6 +62,24 @@ export const addSuperAdmin = async (payload) => {
   return response.data;
 };
 
+export const deleteCollege = async (collegeId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.delete(`/god/colleges/${collegeId}`, {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const deleteSuperAdmin = async (superAdminId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.delete(`/god/super-admins/${superAdminId}`, {
+    headers,
+  });
+
+  return response.data;
+};
+
 export const updateSuperAdmin = async (adminId, payload) => {
   const headers = await getAuthHeaders();
   const response = await godApi.put(`/god/super-admins/${adminId}`, payload, {
