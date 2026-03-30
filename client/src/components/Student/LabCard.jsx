@@ -21,6 +21,13 @@ export default function LabCard({ lab }) {
     "from-cyan-400 to-blue-500"
   ];
   const gradient = gradients[lab.name.charCodeAt(0) % gradients.length];
+  const dueDate = (() => {
+    if (!lab?.date) return "N/A";
+    const dateObj = new Date(lab.date);
+    return Number.isNaN(dateObj.getTime())
+      ? String(lab.date)
+      : dateObj.toLocaleDateString("en-GB");
+  })();
 
   return (
     <Link 
@@ -41,7 +48,7 @@ export default function LabCard({ lab }) {
                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Due Date</span>
                <div className="flex items-center gap-1.5 text-slate-700 font-bold text-xs bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
                 <Calendar className="w-3.5 h-3.5 text-teal-500" />
-                {lab.date}
+                {dueDate}
               </div>
             </div>
           </div>

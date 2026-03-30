@@ -36,6 +36,14 @@ const normalizeQueue = (experimentQueueData) => {
   return [];
 };
 
+const formatDueDate = (dateValue) => {
+  if (!dateValue) return "";
+  const dateObj = new Date(dateValue);
+  return Number.isNaN(dateObj.getTime())
+    ? String(dateValue)
+    : dateObj.toLocaleDateString("en-GB");
+};
+
 const ExperimentQueue = ({ experimentQueueData = [] }) => {
   const queue = normalizeQueue(experimentQueueData);
 
@@ -73,7 +81,7 @@ const ExperimentQueue = ({ experimentQueueData = [] }) => {
                   (Array.isArray(exp.classes)
                     ? exp.classes.join(", ")
                     : "Class")}
-                {exp.dueDate ? ` · Due ${exp.dueDate}` : ""}
+                {exp.dueDate ? ` · Due ${formatDueDate(exp.dueDate)}` : ""}
               </p>
             </div>
 

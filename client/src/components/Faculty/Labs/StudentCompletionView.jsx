@@ -178,8 +178,16 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
     if (!experiment?.id) return;
     try {
       setIsUpdatingDeadline(true);
-      const [labId, expIdxStr] = experiment.id.split("-");
-      const experimentIndex = parseInt(expIdxStr);
+      const separatorIndex = experiment.id.lastIndexOf("-");
+      if (separatorIndex <= 0) {
+        throw new Error("Invalid experiment id format");
+      }
+      const labId = experiment.id.slice(0, separatorIndex);
+      const expIdxStr = experiment.id.slice(separatorIndex + 1);
+      const experimentIndex = parseInt(expIdxStr, 10);
+      if (Number.isNaN(experimentIndex)) {
+        throw new Error("Invalid experiment index");
+      }
       await updateExperimentDeadline(
         labId,
         experimentIndex,
@@ -201,8 +209,11 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     try {
-      return new Date(dateString).toLocaleDateString();
-    } catch (e) {
+      const dateObj = new Date(dateString);
+      return Number.isNaN(dateObj.getTime())
+        ? dateString
+        : dateObj.toLocaleDateString("en-GB");
+    } catch {
       return dateString;
     }
   };

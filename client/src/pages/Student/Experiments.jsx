@@ -191,7 +191,9 @@ const Experiments = () => {
                           if (!d) return 'N/A';
                           try {
                             const dateObj = new Date(d);
-                            return isNaN(dateObj.getTime()) ? d : dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                            return isNaN(dateObj.getTime())
+                              ? d
+                              : dateObj.toLocaleDateString('en-GB');
                           } catch (e) {
                             return d;
                           }
