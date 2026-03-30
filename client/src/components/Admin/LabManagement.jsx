@@ -23,6 +23,7 @@ import {
   updateAdminLab,
   deleteAdminLab,
 } from "@/services/adminService";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 /* ───── Reusable Modal Shell ───── */
 const Modal = ({ title, children, onClose, footer }) => (
@@ -77,6 +78,8 @@ const LabManagement = () => {
   // Create/Edit lab modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingLab, setEditingLab] = useState(null);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deletingLabId, setDeletingLabId] = useState("");
   const [labForm, setLabForm] = useState({
     name: "",
     language: "",
@@ -190,6 +193,21 @@ const LabManagement = () => {
       setLabs((prev) => prev.filter((l) => l.id !== id));
     } catch (error) {
       alert(error?.response?.data?.message || "Failed to delete lab");
+    }
+  };
+
+  const requestDeleteLab = (lab) => {
+    setDeleteCandidate(lab);
+  };
+
+  const confirmDeleteLab = async () => {
+    if (!deleteCandidate) return;
+    setDeletingLabId(deleteCandidate.id);
+    try {
+      await deleteLab(deleteCandidate.id);
+      setDeleteCandidate(null);
+    } finally {
+      setDeletingLabId("");
     }
   };
 
@@ -482,8 +500,9 @@ const LabManagement = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => deleteLab(lab.id)}
-                            className="text-red-400 hover:text-red-600 transition-colors p-2 bg-red-50 rounded-lg hover:bg-red-100"
+                            onClick={() => requestDeleteLab(lab)}
+                            disabled={deletingLabId === lab.id}
+                            className="text-red-400 hover:text-red-600 transition-colors p-2 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50"
                             title="Delete Lab"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -714,6 +733,16 @@ const LabManagement = () => {
             </div>
           </Modal>
         )}
+
+        <DeleteConfirmationModal
+          isOpen={Boolean(deleteCandidate)}
+          title="Delete lab"
+          message="This will permanently delete this lab and its linked data."
+          itemName={deleteCandidate?.name || ""}
+          isProcessing={Boolean(deletingLabId)}
+          onCancel={() => setDeleteCandidate(null)}
+          onConfirm={confirmDeleteLab}
+        />
 
         {/* ════════════════════════════════════════════════
             MODAL: Assign Students (Edit Panel)

@@ -16,6 +16,7 @@ import {
   fetchAdminStudents,
   updateAdminStudent,
 } from "@/services/adminService";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 
 const currentYear = new Date().getFullYear();
 const joiningYearOptions = Array.from(
@@ -81,6 +82,8 @@ const StudentManagement = () => {
   const [selectedSection, setSelectedSection] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [deleteCandidate, setDeleteCandidate] = useState(null);
+  const [deletingStudentId, setDeletingStudentId] = useState("");
   const [studentForm, setStudentForm] = useState({
     name: "",
     email: "",
@@ -168,6 +171,21 @@ const StudentManagement = () => {
       const message =
         error?.response?.data?.message || "Failed to delete student";
       alert(message);
+    }
+  };
+
+  const requestDeleteStudent = (student) => {
+    setDeleteCandidate(student);
+  };
+
+  const confirmDeleteStudent = async () => {
+    if (!deleteCandidate) return;
+    setDeletingStudentId(deleteCandidate.id);
+    try {
+      await handleDeleteStudent(deleteCandidate.id);
+      setDeleteCandidate(null);
+    } finally {
+      setDeletingStudentId("");
     }
   };
 
@@ -409,8 +427,10 @@ const StudentManagement = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteStudent(student.id)}
-                            className="text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50"
+                            onClick={() => requestDeleteStudent(student)}
+                            disabled={deletingStudentId === student.id}
+                            className="text-red-400 hover:text-red-600 transition-colors p-1.5 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                            aria-label="Delete student"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -575,6 +595,16 @@ const StudentManagement = () => {
             </div>
           </Modal>
         )}
+
+        <DeleteConfirmationModal
+          isOpen={Boolean(deleteCandidate)}
+          title="Delete student"
+          message="This will permanently delete the student account."
+          itemName={deleteCandidate ? `${deleteCandidate.name} (${deleteCandidate.rollNo})` : ""}
+          isProcessing={Boolean(deletingStudentId)}
+          onCancel={() => setDeleteCandidate(null)}
+          onConfirm={confirmDeleteStudent}
+        />
       </div>
     </div>
   );

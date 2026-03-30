@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Building2, Search, Save, X, MapPin, Calendar, GraduationCap, Users, Phone, Globe, Shield, Mail, User, UserPlus } from 'lucide-react';
-import { addCollege, addSuperAdmin, fetchColleges } from '@/services/godService';
+import { addCollege, addSuperAdmin, deleteCollege as deleteCollegeApi, deleteSuperAdmin as deleteSuperAdminApi, fetchColleges } from '@/services/godService';
 import { useNavigate } from 'react-router-dom';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 const toFriendlyGodSetupMessage = (message) => {
   const normalized = (message || '').toLowerCase();
@@ -66,6 +67,8 @@ const UniversalAdminDashboard = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCollege, setSelectedCollege] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [collegeForm, setCollegeForm] = useState({
     name: '',
@@ -264,20 +267,69 @@ const UniversalAdminDashboard = () => {
     }
   };
 
-  const deleteCollege = (id) => {
-    const college = colleges.find(c => c.id === id);
-    if (college) {
-      setSuperAdmins(prev => prev.filter(sa => sa.assignedCollege !== college.name));
+  const deleteCollege = async (id) => {
+    setIsDeleting(true);
+    try {
+      await deleteCollegeApi(id);
+      const college = colleges.find(c => c.id === id);
+      if (college) {
+        setSuperAdmins(prev => prev.filter(sa => sa.assignedCollege !== college.name));
+      }
+      setColleges(prev => prev.filter(c => c.id !== id));
+    } catch (error) {
+      const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to delete college.';
+      alert(message);
+    } finally {
+      setIsDeleting(false);
     }
-    setColleges(prev => prev.filter(c => c.id !== id));
   };
 
-  const deleteSuperAdmin = (adminId, collegeName) => {
-    setSuperAdmins(prev => prev.filter(sa => sa.id !== adminId));
-    setColleges(prev => prev.map(college => ({
-      ...college,
-      superAdmins: college.superAdmins?.filter(sa => sa.id !== adminId) || []
-    })));
+  const deleteSuperAdmin = async (adminId) => {
+    setIsDeleting(true);
+    try {
+      await deleteSuperAdminApi(adminId);
+      setSuperAdmins(prev => prev.filter(sa => sa.id !== adminId));
+      setColleges(prev => prev.map(college => ({
+        ...college,
+        superAdmins: college.superAdmins?.filter(sa => sa.id !== adminId) || []
+      })));
+    } catch (error) {
+      const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to delete super admin.';
+      alert(message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const requestDeleteCollege = (college) => {
+    setDeleteDialog({
+      type: 'college',
+      id: college.id,
+      itemName: `${college.name} (${college.code})`,
+    });
+  };
+
+  const requestDeleteSuperAdmin = (admin, collegeName) => {
+    setDeleteDialog({
+      type: 'superadmin',
+      id: admin.id,
+      collegeName,
+      itemName: `${admin.name} (${admin.username || admin.empId})`,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteDialog) return;
+
+    if (deleteDialog.type === 'college') {
+      await deleteCollege(deleteDialog.id);
+    }
+
+    if (deleteDialog.type === 'superadmin') {
+      await deleteSuperAdmin(deleteDialog.id);
+    }
+
+    setDeleteDialog(null);
   };
 
   const filteredColleges = colleges.filter(college =>
@@ -483,7 +535,7 @@ const UniversalAdminDashboard = () => {
                       <Edit className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => deleteCollege(college.id)}
+                      onClick={() => requestDeleteCollege(college)}
                       className="text-red-400 hover:text-red-300 transition-colors p-2 bg-red-600/10 rounded-lg hover:bg-red-600/20"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -546,7 +598,7 @@ const UniversalAdminDashboard = () => {
                                     <Edit className="w-3 h-3" />
                                   </button>
                                   <button
-                                    onClick={() => deleteSuperAdmin(admin.id, college.name)}
+                                    onClick={() => requestDeleteSuperAdmin(admin, college.name)}
                                     className="text-red-400 hover:text-red-300 transition-colors p-1"
                                   >
                                     <Trash2 className="w-3 h-3" />
@@ -700,6 +752,16 @@ const UniversalAdminDashboard = () => {
             </div>
           </Modal>
         )}
+
+        <DeleteConfirmationModal
+          isOpen={Boolean(deleteDialog)}
+          title={deleteDialog?.type === 'college' ? 'Delete college' : 'Delete super admin'}
+          message={deleteDialog?.type === 'college' ? 'This will remove the college from this dashboard.' : 'This will remove the super admin from this college.'}
+          itemName={deleteDialog?.itemName || ''}
+          isProcessing={isDeleting}
+          onCancel={() => setDeleteDialog(null)}
+          onConfirm={confirmDelete}
+        />
 
         {/* Super Admin Modal */}
         {showModal && modalType === 'superadmin' && (

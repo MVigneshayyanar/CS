@@ -13,6 +13,7 @@ import {
   Code
 } from 'lucide-react';
 import { fetchAdminLab, updateAdminLab } from '@/services/adminService';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 /* ───── Reusable Modal Shell ───── */
 const Modal = ({ title, children, onClose, footer }) => (
@@ -42,6 +43,7 @@ const ExperimentManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [deleteExperimentIndex, setDeleteExperimentIndex] = useState(null);
   const [experimentForm, setExperimentForm] = useState({
     title: '', description: '', testCases: [{ input: '', expectedOutput: '' }]
   });
@@ -138,7 +140,6 @@ const ExperimentManagement = () => {
   };
 
   const handleDeleteExperiment = async (expIndex) => {
-    if (!window.confirm('Are you sure you want to delete this experiment?')) return;
     setIsSubmitting(true);
     try {
       const updatedExperiments = (lab.experiments || []).filter((_, i) => i !== expIndex);
@@ -151,6 +152,16 @@ const ExperimentManagement = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const requestDeleteExperiment = (expIndex) => {
+    setDeleteExperimentIndex(expIndex);
+  };
+
+  const confirmDeleteExperiment = async () => {
+    if (deleteExperimentIndex === null) return;
+    await handleDeleteExperiment(deleteExperimentIndex);
+    setDeleteExperimentIndex(null);
   };
 
   if (isLoading) {
@@ -274,7 +285,7 @@ const ExperimentManagement = () => {
                       <Edit className="w-5 h-5" />
                     </button>
                     <button 
-                      onClick={() => handleDeleteExperiment(index)}
+                      onClick={() => requestDeleteExperiment(index)}
                       className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                       title="Delete Experiment"
                     >
@@ -382,6 +393,16 @@ const ExperimentManagement = () => {
             </div>
           </Modal>
         )}
+
+        <DeleteConfirmationModal
+          isOpen={deleteExperimentIndex !== null}
+          title="Delete experiment"
+          message="This experiment will be permanently removed from this lab."
+          itemName={deleteExperimentIndex !== null ? lab?.experiments?.[deleteExperimentIndex]?.title || '' : ''}
+          isProcessing={isSubmitting}
+          onCancel={() => setDeleteExperimentIndex(null)}
+          onConfirm={confirmDeleteExperiment}
+        />
 
       </div>
     </div>

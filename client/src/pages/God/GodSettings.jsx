@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { changePassword, logoutUser } from '@/services/authService';
 import { addGod, deleteGodUser, fetchGodUsers } from '@/services/godService';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 
 const Field = ({ label, value }) => (
   <div>
@@ -92,6 +93,7 @@ const GodSettings = () => {
   const [creatingGod, setCreatingGod] = useState(false);
   const [loadingGodUsers, setLoadingGodUsers] = useState(false);
   const [deletingGodUserId, setDeletingGodUserId] = useState('');
+  const [pendingDeleteGodUser, setPendingDeleteGodUser] = useState(null);
   const [godCredentials, setGodCredentials] = useState(null);
   const [godForm, setGodForm] = useState({ username: '', email: '' });
   const [godUsers, setGodUsers] = useState([]);
@@ -245,9 +247,6 @@ const GodSettings = () => {
   };
 
   const handleDeleteGod = async (userId) => {
-    const confirmed = window.confirm('Delete this God account?');
-    if (!confirmed) return;
-
     setDeletingGodUserId(userId);
     setMessage({ type: '', text: '' });
     try {
@@ -262,6 +261,16 @@ const GodSettings = () => {
     } finally {
       setDeletingGodUserId('');
     }
+  };
+
+  const requestDeleteGod = (user) => {
+    setPendingDeleteGodUser(user);
+  };
+
+  const confirmDeleteGod = async () => {
+    if (!pendingDeleteGodUser) return;
+    await handleDeleteGod(pendingDeleteGodUser.id);
+    setPendingDeleteGodUser(null);
   };
 
   useEffect(() => {
@@ -627,7 +636,7 @@ const GodSettings = () => {
                             <button
                               type="button"
                               disabled={isCurrent || deletingGodUserId === user.id}
-                              onClick={() => handleDeleteGod(user.id)}
+                              onClick={() => requestDeleteGod(user)}
                               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               title={isCurrent ? 'Current logged in account cannot be deleted' : 'Delete account'}
                             >
@@ -656,6 +665,16 @@ const GodSettings = () => {
                 </button>
               </div>
             )}
+
+            <DeleteConfirmationModal
+              isOpen={Boolean(pendingDeleteGodUser)}
+              title="Delete God account"
+              message="This will permanently remove this God account from the system."
+              itemName={pendingDeleteGodUser ? `${pendingDeleteGodUser.username} (${pendingDeleteGodUser.email || 'No email'})` : ''}
+              isProcessing={Boolean(deletingGodUserId)}
+              onCancel={() => setPendingDeleteGodUser(null)}
+              onConfirm={confirmDeleteGod}
+            />
           </div>
         </div>
       </div>
