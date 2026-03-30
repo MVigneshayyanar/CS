@@ -1,6 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-const MOBILE_BREAKPOINT = 768; // px — anything below this is considered mobile
+/**
+ * Detects if the current device is a mobile/tablet device.
+ * Uses User Agent string — this does NOT change even in "Desktop Mode",
+ * so it reliably blocks mobile browsers regardless of their display setting.
+ */
+function detectMobileDevice() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+  const platform = navigator.platform || "";
+
+  // 1. Standard UA Check
+  const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|touch|silk|kindle|playbook|bb10|meego|avantgo|bada\/|blazer|compal|elaine|fennec|hiptop|ip(hone|od)|iris|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i;
+  if (mobileRegex.test(ua)) return true;
+
+  // 2. Desktop Mode on iPad/iPhone (often identifies as Macintosh but has touch points)
+  const isIOSDesktopMode = 
+    (platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+    (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
+  if (isIOSDesktopMode) return true;
+
+  // 3. General Touch Check (Combined with narrow screen or mobile-only features)
+  // Most desktops don't have multi-touch, but some laptops do. 
+  // However, combined with 'ontouchstart' it's a strong signal for mobile/tablet.
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // 4. Check for mobile-specific hardware/behavior 
+  // (e.g., most mobile devices have an orientation sensor that behaves differently)
+  const isMobileHardware = /Mobi|Android/i.test(ua) || (window.screen.width < 1024 && hasTouch);
+
+  return isMobileHardware || isIOSDesktopMode;
+}
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -173,14 +202,8 @@ const styles = `
 `;
 
 export default function MobileBlock({ children }) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  // Run detection once on mount — UA doesn't change during session
+  const [isMobile] = useState(() => detectMobileDevice());
 
   if (!isMobile) return children;
 
