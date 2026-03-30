@@ -17,6 +17,15 @@ export const fetchColleges = async () => {
   return response.data;
 };
 
+export const fetchCollegeById = async (collegeId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.get(`/god/colleges/${collegeId}`, {
+    headers,
+  });
+
+  return response.data;
+};
+
 export const addCollege = async (payload) => {
   const headers = await getAuthHeaders();
   const response = await godApi.post("/god/colleges", payload, {
@@ -26,9 +35,45 @@ export const addCollege = async (payload) => {
   return response.data;
 };
 
+export const updateCollege = async (collegeId, payload) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.put(`/god/colleges/${collegeId}`, payload, {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const deleteCollegeRecord = async (collegeId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.delete(`/god/colleges/${collegeId}`, {
+    headers,
+  });
+
+  return response.data;
+};
+
 export const addSuperAdmin = async (payload) => {
   const headers = await getAuthHeaders();
   const response = await godApi.post("/god/super-admins", payload, {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const updateSuperAdmin = async (adminId, payload) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.put(`/god/super-admins/${adminId}`, payload, {
+    headers,
+  });
+
+  return response.data;
+};
+
+export const deleteSuperAdminRecord = async (adminId) => {
+  const headers = await getAuthHeaders();
+  const response = await godApi.delete(`/god/super-admins/${adminId}`, {
     headers,
   });
 

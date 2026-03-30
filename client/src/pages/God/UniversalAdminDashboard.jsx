@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Building2, Search, Save, X, MapPin, Calendar, GraduationCap, Users, Phone, Globe, Shield, Mail, User, UserPlus } from 'lucide-react';
-import { addCollege, addSuperAdmin, fetchColleges } from '@/services/godService';
+import { addCollege, addSuperAdmin, fetchColleges, updateCollege, deleteCollegeRecord, updateSuperAdmin, deleteSuperAdminRecord } from '@/services/godService';
 import { useNavigate } from 'react-router-dom';
 
 const toFriendlyGodSetupMessage = (message) => {
@@ -152,15 +152,20 @@ const UniversalAdminDashboard = () => {
     setModalType(type);
     setEditingItem(item);
     setSelectedCollege(college);
-   
+
     if (item) {
       if (type === 'college') {
-        setCollegeForm({ ...item });
+        navigate(`/add-college?id=${item.id}`);
+        return;
       } else if (type === 'superadmin') {
         setSuperAdminForm({...item});
       }
     } else {
       resetForms();
+      if (type === 'college') {
+        navigate('/add-college');
+        return;
+      }
       if (type === 'superadmin' && college) {
         setSuperAdminForm(prev => ({...prev, assignedCollege: college.name}));
       }
@@ -178,17 +183,17 @@ const UniversalAdminDashboard = () => {
 
   const handleCollegeSubmit = async () => {
     if (editingItem) {
-      const updatedColleges = colleges.map(c =>
-        c.id === editingItem.id
-          ? {
-              ...editingItem,
-              ...collegeForm,
-            }
-          : c
-      );
-      setColleges(updatedColleges);
-      setSuperAdmins(getSuperAdminsFromColleges(updatedColleges));
-      closeModal();
+      setIsSubmitting(true);
+      try {
+        await updateCollege(editingItem.id, collegeForm);
+        await loadDashboardData();
+        closeModal();
+      } catch (error) {
+        const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to update college.';
+        alert(message);
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -214,28 +219,17 @@ const UniversalAdminDashboard = () => {
 
   const handleSuperAdminSubmit = async () => {
     if (editingItem) {
-      const updatedSuperAdmins = superAdmins.map(sa =>
-        sa.id === editingItem.id ? { ...sa, ...superAdminForm } : sa
-      );
-      setSuperAdmins(updatedSuperAdmins);
-
-      const updatedColleges = colleges.map(college => {
-        if (college.name !== superAdminForm.assignedCollege) {
-          return {
-            ...college,
-            superAdmins: (college.superAdmins || []).filter(sa => sa.id !== editingItem.id),
-          };
-        }
-
-        const existingAdmins = (college.superAdmins || []).filter(sa => sa.id !== editingItem.id);
-        return {
-          ...college,
-          superAdmins: [...existingAdmins, { ...editingItem, ...superAdminForm }],
-        };
-      });
-
-      setColleges(updatedColleges);
-      closeModal();
+      setIsSubmitting(true);
+      try {
+        await updateSuperAdmin(editingItem.id, superAdminForm);
+        await loadDashboardData();
+        closeModal();
+      } catch (error) {
+        const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || 'Failed to update super admin.';
+        alert(message);
+      } finally {
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -264,20 +258,24 @@ const UniversalAdminDashboard = () => {
     }
   };
 
-  const deleteCollege = (id) => {
-    const college = colleges.find(c => c.id === id);
-    if (college) {
-      setSuperAdmins(prev => prev.filter(sa => sa.assignedCollege !== college.name));
+  const deleteCollege = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this college? This will remove all associated data including users.')) return;
+    try {
+      await deleteCollegeRecord(id);
+      await loadDashboardData();
+    } catch (error) {
+      alert('Failed to delete college.');
     }
-    setColleges(prev => prev.filter(c => c.id !== id));
   };
 
-  const deleteSuperAdmin = (adminId, collegeName) => {
-    setSuperAdmins(prev => prev.filter(sa => sa.id !== adminId));
-    setColleges(prev => prev.map(college => ({
-      ...college,
-      superAdmins: college.superAdmins?.filter(sa => sa.id !== adminId) || []
-    })));
+  const deleteSuperAdmin = async (adminId, collegeName) => {
+    if (!window.confirm('Are you sure you want to delete this super admin access?')) return;
+    try {
+      await deleteSuperAdminRecord(adminId);
+      await loadDashboardData();
+    } catch (error) {
+      alert('Failed to delete super admin.');
+    }
   };
 
   const filteredColleges = colleges.filter(college =>
@@ -579,127 +577,7 @@ const UniversalAdminDashboard = () => {
           </div>
         )}
 
-        {/* College Modal */}
-        {showModal && modalType === 'college' && (
-          <Modal 
-            title={editingItem ? 'Edit College' : 'Add New College'} 
-            onSubmit={handleCollegeSubmit}
-            onClose={closeModal}
-            isSubmitting={isSubmitting}
-            scrollable
-          >
-            <div className="space-y-6">
-              {/* Basic Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Basic Information</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="College Name"
-                    value={collegeForm.name}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, name: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <input
-                    type="text"
-                    placeholder="College Code (e.g., MIT)"
-                    value={collegeForm.code}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, code: e.target.value.toUpperCase()}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Location (City, State)"
-                    value={collegeForm.location}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, location: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Established Year"
-                    value={collegeForm.established}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, established: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <select
-                    value={collegeForm.type}
-                    onChange={(e) =>
-                      setCollegeForm((prev) => ({
-                        ...prev,
-                        type: e.target.value,
-                        affiliation: e.target.value === 'Deemed' ? '' : prev.affiliation,
-                      }))
-                    }
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  >
-                    <option value="">Select College Type</option>
-                    <option value="Government">Government</option>
-                    <option value="Private">Private</option>
-                    <option value="Autonomous">Autonomous</option>
-                    <option value="Deemed">Deemed University</option>
-                  </select>
-                  {collegeForm.type !== 'Deemed' && (
-                    <input
-                      type="text"
-                      placeholder="Affiliation (e.g., VTU, Anna University)"
-                      value={collegeForm.affiliation}
-                      onChange={(e) => setCollegeForm(prev => ({...prev, affiliation: e.target.value}))}
-                      className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    />
-                  )}
-                </div>
-                <textarea
-                  placeholder="Full Address"
-                  value={collegeForm.address}
-                  onChange={(e) => setCollegeForm(prev => ({...prev, address: e.target.value}))}
-                  className="mt-4 p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all w-full h-20"
-                />
-              </div>
-
-              {/* Contact Information */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Contact Information</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    value={collegeForm.phone}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, phone: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={collegeForm.email}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, email: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                  <input
-                    type="url"
-                    placeholder="Website"
-                    value={collegeForm.website}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, website: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Statistics */}
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Statistics</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <input
-                    type="number"
-                    placeholder="Total Students"
-                    value={collegeForm.totalStudents}
-                    onChange={(e) => setCollegeForm(prev => ({...prev, totalStudents: e.target.value}))}
-                    className="p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  />
-                </div>
-              </div>
-            </div>
-          </Modal>
-        )}
+        {/* College Modal is now replaced by /add-college page */}
 
         {/* Super Admin Modal */}
         {showModal && modalType === 'superadmin' && (

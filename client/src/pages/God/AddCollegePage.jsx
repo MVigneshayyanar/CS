@@ -8,8 +8,8 @@ import {
   User,
   CalendarDays,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { addCollege } from '@/services/godService';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { addCollege, fetchCollegeById, updateCollege } from '@/services/godService';
 
 const toFriendlyGodSetupMessage = (message) => {
   const normalized = (message || '').toLowerCase();
@@ -26,7 +26,13 @@ const toFriendlyGodSetupMessage = (message) => {
 
 const AddCollegePage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const collegeId = searchParams.get('id');
+  const isEdit = Boolean(collegeId);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(isEdit);
+
   const [collegeForm, setCollegeForm] = useState({
     name: '',
     code: '',
@@ -46,13 +52,6 @@ const AddCollegePage = () => {
     principalName: '',
     departmentsCsv: '',
     programsCsv: '',
-    semesterSystem: 'semester',
-    timezone: 'Asia/Kolkata',
-    gradingPattern: 'percentage',
-    academicStartDate: '',
-    academicEndDate: '',
-    totalStudents: '',
-    totalFaculty: '',
     superAdminName: '',
     superAdminEmail: '',
     superAdminPhone: '',
@@ -60,29 +59,51 @@ const AddCollegePage = () => {
     status: 'active',
   });
 
+  React.useEffect(() => {
+    if (isEdit) {
+      const loadCollege = async () => {
+        try {
+          const result = await fetchCollegeById(collegeId);
+          const c = result?.data?.college;
+          if (c) {
+            // Pre-fill college data
+            setCollegeForm((prev) => ({
+              ...prev,
+              ...c,
+              departmentsCsv: (c.departments || []).join(', '),
+              programsCsv: (c.programs || []).join(', '),
+              // If there's an existing super admin, pre-fill the first one
+              superAdminName: c.superAdmins?.[0]?.name || '',
+              superAdminEmail: c.superAdmins?.[0]?.email || '',
+              superAdminPhone: c.superAdmins?.[0]?.phone || '',
+              superAdminEmpId: c.superAdmins?.[0]?.empId || '',
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching college:', error);
+          const message = toFriendlyGodSetupMessage(error?.response?.data?.message) || error.message;
+          alert(`Failed to load college details: ${message}`);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      loadCollege();
+    }
+  }, [collegeId, isEdit]);
+
   const handleSubmit = async () => {
     if (!collegeForm.name || !collegeForm.code) {
       alert('College name and code are required.');
       return;
     }
 
-    if (!collegeForm.officialDomain || !collegeForm.primaryContactEmail || !collegeForm.primaryContactPhone) {
-      alert('Official domain, primary contact email and phone are required.');
-      return;
-    }
-
-    if (!collegeForm.superAdminName || !collegeForm.superAdminEmail || !collegeForm.superAdminEmpId) {
-      alert('Initial Super Admin details are required.');
-      return;
-    }
-
     const payload = {
       ...collegeForm,
-      departments: collegeForm.departmentsCsv
+      departments: (collegeForm.departmentsCsv || '')
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean),
-      programs: collegeForm.programsCsv
+      programs: (collegeForm.programsCsv || '')
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean),
@@ -90,18 +111,32 @@ const AddCollegePage = () => {
 
     setIsSubmitting(true);
     try {
-      await addCollege(payload);
-      alert('College created successfully.');
+      if (isEdit) {
+        await updateCollege(collegeId, payload);
+        alert('College updated successfully.');
+      } else {
+        await addCollege(payload);
+        alert('College created successfully.');
+      }
       navigate('/dashboard');
     } catch (error) {
+      console.error('Error submitting college:', error);
       const message =
         toFriendlyGodSetupMessage(error?.response?.data?.message) ||
-        'Failed to create college.';
+        `Failed to ${isEdit ? 'update' : 'create'} college.`;
       alert(message);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
+        <p className="text-slate-500 text-lg">Loading college details...</p>
+      </div>
+    );
+  }
 
   const inputClassName =
     'p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500';
@@ -116,26 +151,24 @@ const AddCollegePage = () => {
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
-                Add New College
+                {isEdit ? 'Edit College' : 'Add New College'}
               </h1>
-              <p className="text-xs text-slate-400">Create a college record for god mode</p>
+              <p className="text-xs text-slate-400">
+                {isEdit ? 'Update institutional details' : 'Create a college record for god mode'}
+              </p>
             </div>
           </div>
-          {/* <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 shadow-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </button> */}
         </div>
 
         <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex items-center justify-between overflow-hidden mb-5">
           <div className="relative z-10">
-            <h2 className="text-lg font-extrabold text-white mb-1">College Setup</h2>
+            <h2 className="text-lg font-extrabold text-white mb-1">
+              {isEdit ? 'Update College Details' : 'College Setup'}
+            </h2>
             <p className="text-teal-100 text-xs max-w-sm leading-relaxed">
-              Fill out the institution details to create a new college in god mode.
+              {isEdit 
+                ? 'Modify the institution details to update the record in god mode.' 
+                : 'Fill out the institution details to create a new college.'}
             </p>
           </div>
           <div className="w-20 h-20 rounded-full bg-white/10 -mr-4" />
@@ -265,13 +298,13 @@ const AddCollegePage = () => {
                 onChange={(e) => setCollegeForm((prev) => ({ ...prev, primaryContactName: e.target.value }))}
                 className={inputClassName}
               />
-              {/* <input
+              <input
                 type="text"
                 placeholder="Principal / Nodal Officer Name"
                 value={collegeForm.principalName}
                 onChange={(e) => setCollegeForm((prev) => ({ ...prev, principalName: e.target.value }))}
                 className={inputClassName}
-              /> */}
+              />
               <input
                 type="email"
                 placeholder="Primary Contact Email"
@@ -289,7 +322,7 @@ const AddCollegePage = () => {
             </div>
           </div>
 
-          {/* <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
                 <CalendarDays className="w-3.5 h-3.5 text-teal-600" />
@@ -318,7 +351,7 @@ const AddCollegePage = () => {
                 />
               </div>
             </div>
-          </div> */}
+          </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -353,7 +386,7 @@ const AddCollegePage = () => {
                 type="text"
                 placeholder="Super Admin Employee ID"
                 value={collegeForm.superAdminEmpId}
-                onChange={(e) => setCollegeForm((prev) => ({ ...prev, superAdminEmpId: e.target.value.toUpperCase() }))}
+                onChange={(e) => setCollegeForm((prev) => ({ ...prev, superAdminEmpId: e.target.value }))}
                 className={inputClassName}
               />
             </div>
@@ -375,7 +408,7 @@ const AddCollegePage = () => {
               className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto"
             >
               <Save className="w-4 h-4 mr-2" />
-              {isSubmitting ? 'Saving...' : 'Save College'}
+              {isSubmitting ? 'Saving...' : isEdit ? 'Update College' : 'Save College'}
             </button>
             </div>
           </div>

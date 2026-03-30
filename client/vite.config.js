@@ -20,9 +20,10 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_PROXY_TARGET || 'https://backend-lab-s7e7.onrender.com',
+        target: 'http://localhost:5000' || process.env.VITE_API_PROXY_TARGET || 'https://backend-lab-s7e7.onrender.com',
         changeOrigin: true,
-        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+        secure: false,
         configure: (proxy) => {
           proxy.on('proxyReq', (proxyReq) => {
             proxyReq.removeHeader('origin')
