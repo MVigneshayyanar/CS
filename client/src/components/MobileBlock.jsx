@@ -1,6 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-const MOBILE_BREAKPOINT = 768; // px — anything below this is considered mobile
+/**
+ * Detects if the current device is a mobile/tablet device.
+ * Uses User Agent string — this does NOT change even in "Desktop Mode",
+ * so it reliably blocks mobile browsers regardless of their display setting.
+ */
+function detectMobileDevice() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+
+  // Comprehensive mobile/tablet UA regex
+  const mobileRegex =
+    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|touch|silk|kindle|playbook|bb10|meego|avantgo|bada\/|blazer|compal|elaine|fennec|hiptop|ip(hone|od)|iris|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i;
+
+  const mobilePrefix = /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw-(n|u)|c55\/|capi|ccwa|cdm-|cell|chtm|cldc|cmd-/i;
+
+  return mobileRegex.test(ua) || mobilePrefix.test(ua.substring(0, 4));
+}
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -173,14 +188,8 @@ const styles = `
 `;
 
 export default function MobileBlock({ children }) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
+  // Run detection once on mount — UA doesn't change during session
+  const [isMobile] = useState(() => detectMobileDevice());
 
   if (!isMobile) return children;
 
