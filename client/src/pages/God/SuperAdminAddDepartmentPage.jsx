@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Building2, Plus } from 'lucide-react';
-import { addDepartmentAdmin, addSuperAdminDepartment, fetchSuperAdminCollege } from '@/services/superAdminService';
+import { Building2, Check, Pencil, Plus, X } from 'lucide-react';
+import {
+  addDepartmentAdmin,
+  addSuperAdminDepartment,
+  fetchSuperAdminCollege,
+  updateSuperAdminDepartment,
+} from '@/services/superAdminService';
 
 const SuperAdminAddDepartmentPage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +24,9 @@ const SuperAdminAddDepartmentPage = () => {
     specialization: '',
   });
   const [adminDepartmentFilter, setAdminDepartmentFilter] = useState('all');
+  const [editingDepartment, setEditingDepartment] = useState('');
+  const [editingDepartmentValue, setEditingDepartmentValue] = useState('');
+  const [isUpdatingDepartment, setIsUpdatingDepartment] = useState(false);
 
   const departments = useMemo(() => college?.departments || [], [college]);
   const departmentHeads = useMemo(() => college?.departmentHeads || [], [college]);
@@ -78,6 +86,79 @@ const SuperAdminAddDepartmentPage = () => {
 
   const handleAdminFieldChange = (field, value) => {
     setAdminForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const startDepartmentEdit = (department) => {
+    setEditingDepartment(department);
+    setEditingDepartmentValue(department);
+  };
+
+  const cancelDepartmentEdit = () => {
+    setEditingDepartment('');
+    setEditingDepartmentValue('');
+  };
+
+  const handleSaveDepartmentEdit = async () => {
+    const nextName = editingDepartmentValue.trim();
+    const currentName = editingDepartment;
+
+    if (!currentName) {
+      return;
+    }
+
+    if (!nextName) {
+      alert('Department name is required.');
+      return;
+    }
+
+    if (nextName.toLowerCase() === currentName.toLowerCase()) {
+      cancelDepartmentEdit();
+      return;
+    }
+
+    setIsUpdatingDepartment(true);
+    try {
+      await updateSuperAdminDepartment(currentName, nextName);
+      setCollege((prev) => {
+        if (!prev) return prev;
+        const nextDepartments = (prev.departments || []).map((item) =>
+          item.toLowerCase() === currentName.toLowerCase() ? nextName : item,
+        );
+
+        const nextDepartmentHeads = (prev.departmentHeads || []).map((head) => {
+          if ((head.department || '').toLowerCase() !== currentName.toLowerCase()) {
+            return head;
+          }
+          return { ...head, department: nextName };
+        });
+
+        return {
+          ...prev,
+          departments: nextDepartments,
+          departmentHeads: nextDepartmentHeads,
+        };
+      });
+
+      setAdminForm((prev) => ({
+        ...prev,
+        department:
+          (prev.department || '').toLowerCase() === currentName.toLowerCase()
+            ? nextName
+            : prev.department,
+      }));
+
+      setAdminDepartmentFilter((prev) =>
+        prev.toLowerCase() === currentName.toLowerCase() ? nextName : prev,
+      );
+
+      cancelDepartmentEdit();
+      alert('Department updated successfully.');
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to update department';
+      alert(message);
+    } finally {
+      setIsUpdatingDepartment(false);
+    }
   };
 
   const resetAdminForm = () => {
@@ -200,7 +281,47 @@ const SuperAdminAddDepartmentPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {departments.map((department, index) => (
                   <div key={`${department}-${index}`} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-slate-700">
-                    {department}
+                    {editingDepartment === department ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editingDepartmentValue}
+                          onChange={(e) => setEditingDepartmentValue(e.target.value)}
+                          className="w-full p-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          disabled={isUpdatingDepartment}
+                        />
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={cancelDepartmentEdit}
+                            className="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200"
+                            disabled={isUpdatingDepartment}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSaveDepartmentEdit}
+                            className="px-2.5 py-1.5 text-xs bg-teal-600 hover:bg-teal-700 text-white rounded-lg"
+                            disabled={isUpdatingDepartment}
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <span>{department}</span>
+                        <button
+                          type="button"
+                          onClick={() => startDepartmentEdit(department)}
+                          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-teal-700 hover:bg-teal-50"
+                          title="Edit department"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

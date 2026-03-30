@@ -56,6 +56,17 @@ export const updateAdminStudent = async (id, payload) => {
   return response.data;
 };
 
+export const bulkUploadAdminStudents = async (file) => {
+  const headers = await getAuthHeaders();
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await adminApi.post("/admin/students/bulk-upload", formData, {
+    headers,
+  });
+  return response.data;
+};
+
 export const deleteAdminStudent = async (id) => {
   const headers = await getAuthHeaders();
   const response = await adminApi.delete(`/admin/students/${id}`, {

@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
+  Download,
   Edit,
   Filter,
+  FileSpreadsheet,
   Plus,
   Save,
   Search,
@@ -10,7 +12,9 @@ import {
   X,
   GraduationCap,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import {
+  bulkUploadAdminStudents,
   createAdminStudent,
   deleteAdminStudent,
   fetchAdminStudents,
@@ -84,10 +88,13 @@ const StudentManagement = () => {
   const [editingStudent, setEditingStudent] = useState(null);
   const [deleteCandidate, setDeleteCandidate] = useState(null);
   const [deletingStudentId, setDeletingStudentId] = useState("");
+  const [isBulkUploading, setIsBulkUploading] = useState(false);
+  const uploadInputRef = useRef(null);
   const [studentForm, setStudentForm] = useState({
     name: "",
     email: "",
     rollNo: "",
+    registrationNo: "",
     section: "",
     joiningYear: "",
     passoutYear: "",
@@ -98,6 +105,7 @@ const StudentManagement = () => {
       name: "",
       email: "",
       rollNo: "",
+      registrationNo: "",
       section: "",
       joiningYear: "",
       passoutYear: "",
@@ -122,6 +130,7 @@ const StudentManagement = () => {
       name: student.name || "",
       email: student.email || "",
       rollNo: student.rollNo || "",
+      registrationNo: student.registrationNo || "",
       section: student.section || "",
       joiningYear: student.joiningYear || "",
       passoutYear: student.passoutYear || "",
@@ -189,6 +198,64 @@ const StudentManagement = () => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const templateRows = [
+      {
+        name: "",
+        email: "",
+        id: "",
+        registrationNo: "",
+        section: "",
+        joiningYear: "",
+        passoutYear: "",
+      },
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(templateRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    XLSX.writeFile(workbook, "student_bulk_upload_template.xlsx");
+  };
+
+  const triggerBulkUpload = () => {
+    uploadInputRef.current?.click();
+  };
+
+  const handleBulkUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsBulkUploading(true);
+    try {
+      const result = await bulkUploadAdminStudents(file);
+      const summary = result?.data || {};
+
+      const refreshed = await fetchAdminStudents();
+      setStudents(refreshed?.data?.students || []);
+
+      const failedPreview = (summary.failedRows || [])
+        .slice(0, 5)
+        .map((row) => `Row ${row.rowNumber}: ${row.message}`)
+        .join("\n");
+
+      const summaryMessage = [
+        `Bulk upload finished.`,
+        `Created: ${summary.createdCount || 0}`,
+        `Failed: ${summary.failedCount || 0}`,
+        failedPreview ? `\nErrors:\n${failedPreview}` : "",
+      ].join("\n");
+
+      alert(summaryMessage);
+    } catch (error) {
+      const message =
+        error?.response?.data?.message || "Failed to upload student Excel file";
+      alert(message);
+    } finally {
+      event.target.value = "";
+      setIsBulkUploading(false);
+    }
+  };
+
   const batchOptions = Array.from(new Set(students.map(getBatchLabel)));
   const sectionOptions = Array.from(
     new Set(students.map(getSectionLabel)),
@@ -208,7 +275,7 @@ const StudentManagement = () => {
     return students.filter((item) => {
       const matchesSearch =
         !searchTerm ||
-        ["name", "email", "rollNo"].some((field) =>
+        ["name", "email", "rollNo", "registrationNo"].some((field) =>
           item[field]
             ?.toString()
             .toLowerCase()
@@ -261,13 +328,37 @@ const StudentManagement = () => {
               <p className="text-xs text-teal-100">Add and manage students</p>
             </div>
           </div>
-          <button
-            onClick={openCreateModal}
-            className="relative z-10 bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Student
-          </button>
+          <div className="relative z-10 flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button
+              onClick={handleDownloadTemplate}
+              className="bg-white/20 border border-white/40 text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all flex items-center justify-center text-sm font-semibold w-full sm:w-auto"
+            >
+              <Download className="w-4 h-4 mr-1.5" />
+              Download Template
+            </button>
+            <button
+              onClick={triggerBulkUpload}
+              disabled={isBulkUploading}
+              className="bg-white/20 border border-white/40 text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all flex items-center justify-center text-sm font-semibold w-full sm:w-auto disabled:opacity-70"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-1.5" />
+              {isBulkUploading ? "Uploading..." : "Upload Excel"}
+            </button>
+            <button
+              onClick={openCreateModal}
+              className="bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Student
+            </button>
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              className="hidden"
+              onChange={handleBulkUpload}
+            />
+          </div>
           <div className="absolute -right-8 -top-6 w-32 h-32 rounded-full bg-white/10" />
         </div>
 
@@ -285,7 +376,7 @@ const StudentManagement = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search by name, email, or ID..."
+                placeholder="Search by name, email, ID, registration no..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl w-full text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
@@ -364,6 +455,9 @@ const StudentManagement = () => {
                     ID
                   </th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Registration No
+                  </th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Batch
                   </th>
                   <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
@@ -378,7 +472,7 @@ const StudentManagement = () => {
                 {isLoading && (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-8 text-center text-slate-400 text-sm"
                     >
                       Loading students...
@@ -399,6 +493,9 @@ const StudentManagement = () => {
                       </td>
                       <td className="px-6 py-4 text-slate-600 font-mono text-sm">
                         {student.rollNo}
+                      </td>
+                      <td className="px-6 py-4 text-slate-600 font-mono text-sm">
+                        {student.registrationNo || "-"}
                       </td>
                       <td className="px-6 py-4">
                         {student.joiningYear || student.passoutYear ? (
@@ -441,7 +538,7 @@ const StudentManagement = () => {
                 {!isLoading && filteredStudents.length === 0 && (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-8 text-center text-slate-400 text-sm italic"
                     >
                       No students found.
@@ -513,6 +610,25 @@ const StudentManagement = () => {
                     setStudentForm((prev) => ({
                       ...prev,
                       rollNo: e.target.value,
+                    }))
+                  }
+                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Registration Number
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 2022CS0001"
+                  value={studentForm.registrationNo}
+                  onChange={(e) =>
+                    setStudentForm((prev) => ({
+                      ...prev,
+                      registrationNo: e.target.value,
                     }))
                   }
                   className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
