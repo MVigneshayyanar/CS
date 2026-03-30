@@ -13,17 +13,19 @@ import {
 } from "recharts";
 import { Calendar, X, Search } from "lucide-react";
 
-import { updateExperimentDeadline } from "@/services/facultyService";
+import { updateExperimentSchedule } from "@/services/facultyService";
 
 const StudentCompletionView = ({ experiment, students, onClose }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState("all");
-  const [showDueDateModal, setShowDueDateModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [dueDate, setDueDate] = useState(
     experiment?.deadline || experiment?.dueDate || "",
   );
+  const [availableFrom, setAvailableFrom] = useState(experiment?.availableFrom || "");
+  const [availableTo, setAvailableTo] = useState(experiment?.availableTo || "");
   const [deadlineSection, setDeadlineSection] = useState("all");
-  const [isUpdatingDeadline, setIsUpdatingDeadline] = useState(false);
+  const [isUpdatingSchedule, setIsUpdatingSchedule] = useState(false);
 
   const getStudentSection = (student) => {
     const sectionValue =
@@ -174,10 +176,10 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
     return null;
   };
 
-  const handleSetDueDate = async () => {
+  const handleSetSchedule = async () => {
     if (!experiment?.id) return;
     try {
-      setIsUpdatingDeadline(true);
+      setIsUpdatingSchedule(true);
       const separatorIndex = experiment.id.lastIndexOf("-");
       if (separatorIndex <= 0) {
         throw new Error("Invalid experiment id format");
@@ -188,21 +190,25 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
       if (Number.isNaN(experimentIndex)) {
         throw new Error("Invalid experiment index");
       }
-      await updateExperimentDeadline(
+      await updateExperimentSchedule(
         labId,
         experimentIndex,
-        dueDate,
-        deadlineSection === "all" ? undefined : deadlineSection,
+        {
+          deadline: dueDate,
+          availableFrom,
+          availableTo,
+          section: deadlineSection === "all" ? undefined : deadlineSection,
+        }
       );
-      alert("Due date updated successfully!");
-      setShowDueDateModal(false);
+      alert("Experiment schedule updated successfully!");
+      setShowScheduleModal(false);
     } catch (error) {
       alert(
-        "Failed to update due date: " +
+        "Failed to update schedule: " +
           (error.response?.data?.message || error.message),
       );
     } finally {
-      setIsUpdatingDeadline(false);
+      setIsUpdatingSchedule(false);
     }
   };
 
@@ -235,11 +241,11 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowDueDateModal(true)}
+              onClick={() => setShowScheduleModal(true)}
               className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all"
             >
               <Calendar className="w-3.5 h-3.5" />
-              Set Due Date
+              Set Schedule
             </button>
             <button
               onClick={onClose}
@@ -419,52 +425,86 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
         </div>
       </div>
 
-      {/* Due Date Modal */}
-      {showDueDateModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-60">
-          <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-96 shadow-2xl">
-            <h3 className="text-xl font-semibold text-white mb-4">
-              Set Due Date
+      {/* Schedule Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60]">
+          <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-[450px] shadow-2xl overflow-auto max-h-[90vh]">
+            <h3 className="text-xl font-semibold text-white mb-6">
+              Set Experiment Schedule
             </h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-neutral-300 mb-2">
-                Section
-              </label>
-              <select
-                value={deadlineSection}
-                onChange={(e) => setDeadlineSection(e.target.value)}
-                className="w-full px-3 py-2 mb-3 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-              >
-                <option value="all">All Sections</option>
-                {sectionOptions.map((sec) => (
-                  <option key={sec} value={sec}>
-                    {sec}
-                  </option>
-                ))}
-              </select>
-              <label className="block text-sm font-medium text-neutral-300 mb-2">
-                Due Date
-              </label>
-              <input
-                type="datetime-local"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
-              />
+            
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Section Scope
+                </label>
+                <select
+                  value={deadlineSection}
+                  onChange={(e) => setDeadlineSection(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                >
+                  <option value="all">All Sections</option>
+                  {sectionOptions.map((sec) => (
+                    <option key={sec} value={sec}>
+                      {sec}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-neutral-300 mb-2">
+                    Available From
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={availableFrom}
+                    onChange={(e) => setAvailableFrom(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                  />
+                  <p className="text-[10px] text-neutral-500 mt-1">Students can only access after this</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-neutral-300 mb-2">
+                    Available To (End)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={availableTo}
+                    onChange={(e) => setAvailableTo(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                  />
+                  <p className="text-[10px] text-neutral-500 mt-1">Marked as late after this</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Soft Deadline (Optional)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                />
+              </div>
             </div>
-            <div className="flex gap-3 justify-end">
+
+            <div className="flex gap-3 justify-end mt-8">
               <button
-                onClick={() => setShowDueDateModal(false)}
-                className="px-4 py-2 bg-neutral-600/50 text-white rounded-lg hover:bg-neutral-600 transition-colors duration-200"
+                onClick={() => setShowScheduleModal(false)}
+                className="px-5 py-2.5 bg-neutral-600/50 text-white text-sm font-bold rounded-lg hover:bg-neutral-600 transition-all"
               >
                 Cancel
               </button>
               <button
-                onClick={handleSetDueDate}
-                disabled={isUpdatingDeadline}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50"
+                onClick={handleSetSchedule}
+                disabled={isUpdatingSchedule}
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50"
               >
-                {isUpdatingDeadline ? "Saving..." : "Set Due Date"}
+                {isUpdatingSchedule ? "Saving..." : "Save Schedule"}
               </button>
             </div>
           </div>

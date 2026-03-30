@@ -28,22 +28,31 @@ const Experiments = () => {
         const result = await fetchStudentLabs();
         const labs = result?.data?.labs || [];
         const allExperiments = labs.flatMap((lab) =>
-          (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => ({
-            id: `${lab.id}-${index}`,
-            labId: lab.id, // Added for precise filtering
-            lab: lab.name,
-            labKey: lab.id, // Primary key
-            labAlias: lab.language || lab.name,
-            sno: index + 1,
-            title: exp.title || `Experiment ${index + 1}`,
-            domain: exp.domain || lab.originalName || lab.fullName || lab.name || "General",
-            description: exp.description || "No description available",
-            status: exp.status || (exp.progress >= 100 ? "completed" : "pending"),
-            progress: exp.progress || 0,
-            dateDue: exp.deadline || lab.created_at,
-            difficulty: exp.difficulty || "Intermediate",
-            estimatedTime: exp.estimatedTime || "3 hours",
-          }))
+          (Array.isArray(lab.experiments) ? lab.experiments : []).map((exp, index) => {
+            const now = new Date();
+            const availableTo = exp.availableTo ? new Date(exp.availableTo) : null;
+            const isActuallyExpired = availableTo && now > availableTo;
+            
+            return {
+              id: `${lab.id}-${index}`,
+              labId: lab.id,
+              lab: lab.name,
+              labKey: lab.id,
+              labAlias: lab.language || lab.name,
+              sno: index + 1,
+              title: exp.title || `Experiment ${index + 1}`,
+              domain: exp.domain || lab.originalName || lab.fullName || lab.name || "General",
+              description: exp.description || "No description available",
+              status: exp.status || (exp.progress >= 100 ? "completed" : (isActuallyExpired ? "expired" : "pending")),
+              progress: exp.progress || 0,
+              dateDue: exp.deadline || lab.created_at,
+              availableFrom: exp.availableFrom,
+              availableTo: exp.availableTo,
+              isExpired: isActuallyExpired,
+              difficulty: exp.difficulty || "Intermediate",
+              estimatedTime: exp.estimatedTime || "3 hours",
+            };
+          })
         );
 
         setExperiments(allExperiments);
@@ -161,8 +170,14 @@ const Experiments = () => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${experiment.status === 'completed' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-amber-500 bg-amber-50 border-amber-100'}`}>
-                          {experiment.status}
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${
+                          experiment.status === 'completed' 
+                            ? 'text-emerald-500 bg-emerald-50 border-emerald-100' 
+                            : experiment.status === 'expired' 
+                                ? 'text-rose-500 bg-rose-50 border-rose-100' 
+                                : 'text-amber-500 bg-amber-50 border-amber-100'
+                        }`}>
+                          {experiment.status === 'expired' ? 'Expired (Late Submission)' : experiment.status}
                         </span>
                         <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{experiment.domain}</span>
                       </div>
@@ -230,14 +245,18 @@ const Experiments = () => {
                 <div className="relative z-10">
                   <h3 className="text-lg font-black tracking-tight mb-6">Execution Status</h3>
                   <div className="flex flex-col gap-3">
-                    {['all', 'pending', 'completed'].map(status => (
+                    {['all', 'pending', 'expired', 'completed'].map(status => (
                       <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${statusFilter === status ? 'bg-teal-500 shadow-lg shadow-teal-500/20' : 'bg-white/5 hover:bg-white/10'}`}
                       >
                         <span className="text-xs font-black uppercase tracking-widest capitalize">{status}</span>
-                        <div className={`w-2 h-2 rounded-full ${status === 'completed' ? 'bg-emerald-400' : status === 'pending' ? 'bg-amber-400' : 'bg-white/40'}`} />
+                        <div className={`w-2 h-2 rounded-full ${
+                          status === 'completed' ? 'bg-emerald-400' : 
+                          status === 'pending' ? 'bg-amber-400' : 
+                          status === 'expired' ? 'bg-rose-400' : 'bg-white/40'
+                        }`} />
                       </button>
                     ))}
                   </div>

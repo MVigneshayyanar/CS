@@ -24,11 +24,12 @@ export const fetchFacultyLabs = async () => {
   return response.data;
 };
 
-export const updateExperimentDeadline = async (labId, experimentIndex, deadline, section) => {
+export const updateExperimentSchedule = async (labId, experimentIndex, schedule) => {
+  const { deadline, availableFrom, availableTo, section } = schedule;
   const headers = await getAuthHeaders();
   const response = await facultyApi.put(
-    "/faculty/experiment-deadline",
-    { labId, experimentIndex, deadline, section },
+    "/faculty/experiment-schedule",
+    { labId, experimentIndex, deadline, availableFrom, availableTo, section },
     { headers }
   );
   return response.data;
