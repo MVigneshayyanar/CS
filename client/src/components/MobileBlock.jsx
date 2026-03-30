@@ -7,14 +7,28 @@ import { useState } from "react";
  */
 function detectMobileDevice() {
   const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+  const platform = navigator.platform || "";
 
-  // Comprehensive mobile/tablet UA regex
-  const mobileRegex =
-    /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|touch|silk|kindle|playbook|bb10|meego|avantgo|bada\/|blazer|compal|elaine|fennec|hiptop|ip(hone|od)|iris|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i;
+  // 1. Standard UA Check
+  const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|touch|silk|kindle|playbook|bb10|meego|avantgo|bada\/|blazer|compal|elaine|fennec|hiptop|ip(hone|od)|iris|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i;
+  if (mobileRegex.test(ua)) return true;
 
-  const mobilePrefix = /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw-(n|u)|c55\/|capi|ccwa|cdm-|cell|chtm|cldc|cmd-/i;
+  // 2. Desktop Mode on iPad/iPhone (often identifies as Macintosh but has touch points)
+  const isIOSDesktopMode = 
+    (platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+    (ua.includes('Macintosh') && navigator.maxTouchPoints > 1);
+  if (isIOSDesktopMode) return true;
 
-  return mobileRegex.test(ua) || mobilePrefix.test(ua.substring(0, 4));
+  // 3. General Touch Check (Combined with narrow screen or mobile-only features)
+  // Most desktops don't have multi-touch, but some laptops do. 
+  // However, combined with 'ontouchstart' it's a strong signal for mobile/tablet.
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // 4. Check for mobile-specific hardware/behavior 
+  // (e.g., most mobile devices have an orientation sensor that behaves differently)
+  const isMobileHardware = /Mobi|Android/i.test(ua) || (window.screen.width < 1024 && hasTouch);
+
+  return isMobileHardware || isIOSDesktopMode;
 }
 
 const styles = `
