@@ -21,11 +21,35 @@ export default function LabCard({ lab }) {
     "from-cyan-400 to-blue-500"
   ];
   const gradient = gradients[lab.name.charCodeAt(0) % gradients.length];
+
+  const resolveDueDateValue = (labData) => {
+    const labLevelDueDate =
+      labData?.deadline ||
+      labData?.dueDate ||
+      labData?.dateDue ||
+      labData?.nextDeadline;
+
+    if (labLevelDueDate) return labLevelDueDate;
+
+    const experimentDeadlines = (Array.isArray(labData?.experiments)
+      ? labData.experiments
+      : []
+    )
+      .map((exp) => exp?.deadline || exp?.dueDate || exp?.dateDue)
+      .filter(Boolean)
+      .map((value) => ({ raw: value, date: new Date(value) }))
+      .filter(({ date }) => !Number.isNaN(date.getTime()))
+      .sort((a, b) => a.date - b.date);
+
+    return experimentDeadlines[0]?.raw || null;
+  };
+
+  const rawDueDate = resolveDueDateValue(lab);
   const dueDate = (() => {
-    if (!lab?.date) return "N/A";
-    const dateObj = new Date(lab.date);
+    if (!rawDueDate) return "N/A";
+    const dateObj = new Date(rawDueDate);
     return Number.isNaN(dateObj.getTime())
-      ? String(lab.date)
+      ? String(rawDueDate)
       : dateObj.toLocaleDateString("en-GB");
   })();
 
