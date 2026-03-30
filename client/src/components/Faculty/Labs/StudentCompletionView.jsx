@@ -15,7 +15,7 @@ import { Calendar, X, Search } from "lucide-react";
 
 import { updateExperimentSchedule } from "@/services/facultyService";
 
-const StudentCompletionView = ({ experiment, students, onClose }) => {
+const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSection, setSelectedSection] = useState("all");
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -23,9 +23,17 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
     experiment?.deadline || experiment?.dueDate || "",
   );
   const [availableFrom, setAvailableFrom] = useState(experiment?.availableFrom || "");
+  const [isUpdatingSchedule, setIsUpdatingSchedule] = useState(false);
   const [availableTo, setAvailableTo] = useState(experiment?.availableTo || "");
   const [deadlineSection, setDeadlineSection] = useState("all");
-  const [isUpdatingSchedule, setIsUpdatingSchedule] = useState(false);
+
+  React.useEffect(() => {
+    if (experiment) {
+      setDueDate(experiment.deadline || experiment.dueDate || "");
+      setAvailableFrom(experiment.availableFrom || "");
+      setAvailableTo(experiment.availableTo || "");
+    }
+  }, [experiment]);
 
   const getStudentSection = (student) => {
     const sectionValue =
@@ -200,7 +208,7 @@ const StudentCompletionView = ({ experiment, students, onClose }) => {
           section: deadlineSection === "all" ? undefined : deadlineSection,
         }
       );
-      alert("Experiment schedule updated successfully!");
+      if (onRefresh) onRefresh();
       setShowScheduleModal(false);
     } catch (error) {
       alert(

@@ -110,7 +110,7 @@ const ExperimentView = () => {
                 language: lab.language || lab.name || 'Python',
                 question: experiments[i].description || experiments[i].question || 'Complete the experiment as described.',
                 testCases: Array.isArray(experiments[i].testCases) ? experiments[i].testCases : [],
-                deadline: experiments[i].deadline || lab.created_at || new Date().toISOString(),
+                deadline: experiments[i].deadline || experiments[i].availableTo || lab.created_at || new Date().toISOString(),
               };
               foundLanguage = lab.language || lab.name || 'python';
               setLabId(lab.id);
@@ -666,7 +666,7 @@ const ExperimentView = () => {
                             language: lab.language || lab.name || 'Python',
                             question: experiments[i].description || experiments[i].question || 'Complete the experiment as described.',
                             testCases: Array.isArray(experiments[i].testCases) ? experiments[i].testCases : [],
-                            deadline: experiments[i].deadline || lab.created_at || new Date().toISOString(),
+                            deadline: experiments[i].deadline || experiments[i].availableTo || lab.created_at || new Date().toISOString(),
                           });
                           break;
                         }

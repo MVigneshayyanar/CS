@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Star, ChevronRight } from "lucide-react";
+import { CheckCircle2, Star, ChevronRight, Calendar } from "lucide-react";
 
 const ExperimentCard = ({
   experimentName,
@@ -7,6 +7,7 @@ const ExperimentCard = ({
   completedBy,
   totalStudents,
   avgScore,
+  dueDate,
   onClick,
 }) => {
   const pct =
@@ -49,6 +50,12 @@ const ExperimentCard = ({
             <Star className="w-3 h-3" />
             Avg: {avgScore}%
           </span>
+          {dueDate && (
+            <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 border border-slate-100">
+              <Calendar className="w-3 h-3" />
+              Due: {new Date(dueDate).toLocaleDateString("en-GB")}
+            </span>
+          )}
         </div>
         {/* Progress */}
         <div className="flex items-center gap-2.5">

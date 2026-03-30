@@ -42,24 +42,37 @@ const FacultyLabManagement = () => {
         experiments: [],
     });
 
+    const loadLabs = async () => {
+        try {
+            const result = await fetchFacultyLabs();
+            setLabsPayload(
+                result?.data || { subjects: [], classes: [], experiments: [] },
+            );
+        } catch (error) {
+            alert(
+                error?.response?.data?.message ||
+                "Failed to load faculty labs from backend",
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadLabs = async () => {
-            try {
-                const result = await fetchFacultyLabs();
-                setLabsPayload(
-                    result?.data || { subjects: [], classes: [], experiments: [] },
-                );
-            } catch (error) {
-                alert(
-                    error?.response?.data?.message ||
-                    "Failed to load faculty labs from backend",
-                );
-            } finally {
-                setIsLoading(false);
-            }
-        };
         loadLabs();
     }, []);
+
+    const handleRefresh = () => {
+        loadLabs();
+        // If we have a selected experiment, update it too
+        if (selectedExperiment) {
+            fetchFacultyLabs().then(result => {
+                const updatedExps = result?.data?.experiments || [];
+                const matched = updatedExps.find(e => e.id === selectedExperiment.id);
+                if (matched) setSelectedExperiment(matched);
+            });
+        }
+    };
 
     const subjects = labsPayload.subjects || [];
 
@@ -424,6 +437,7 @@ const FacultyLabManagement = () => {
                                         completedBy={experiment.completedCount || 0}
                                         totalStudents={experiment.totalStudents}
                                         avgScore={experiment.avgScore}
+                                        dueDate={experiment.deadline || experiment.dueDate}
                                         onClick={() => handleExperimentClick(experiment)}
                                     />
                                 ))}
@@ -461,6 +475,7 @@ const FacultyLabManagement = () => {
                         experiment={selectedExperiment}
                         students={selectedClass?.students || []}
                         onClose={() => setShowStudentCompletion(false)}
+                        onRefresh={handleRefresh}
                     />
                 )}
             </div>

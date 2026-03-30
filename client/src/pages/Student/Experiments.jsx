@@ -45,7 +45,7 @@ const Experiments = () => {
               description: exp.description || "No description available",
               status: exp.status || (exp.progress >= 100 ? "completed" : (isActuallyExpired ? "expired" : "pending")),
               progress: exp.progress || 0,
-              dateDue: exp.deadline || lab.created_at,
+              dateDue: exp.deadline || exp.availableTo || lab.created_at,
               availableFrom: exp.availableFrom,
               availableTo: exp.availableTo,
               isExpired: isActuallyExpired,
@@ -187,16 +187,7 @@ const Experiments = () => {
                       <p className="text-xs text-slate-400 font-medium line-clamp-1">{experiment.description}</p>
                     </div>
 
-                    <div className="hidden md:flex items-center gap-10 px-8 border-x border-slate-50">
-                      <div className="flex flex-col text-center">
-                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Time</span>
-                        <span className="text-xs font-black text-slate-600 uppercase tracking-tighter">{experiment.estimatedTime}</span>
-                      </div>
-                      <div className="flex flex-col text-center">
-                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mb-1">Impact</span>
-                        <span className="text-xs font-black text-slate-600 uppercase tracking-tighter">{experiment.difficulty}</span>
-                      </div>
-                    </div>
+                    
 
                     <div className="flex flex-col items-end shrink-0">
                       <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-2">
