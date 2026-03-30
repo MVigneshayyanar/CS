@@ -35,6 +35,17 @@ export const addSuperAdminDepartment = async (name) => {
   return response.data;
 };
 
+export const updateSuperAdminDepartment = async (currentDepartmentName, name) => {
+  const headers = await getAuthHeaders();
+  const encodedDepartment = encodeURIComponent(currentDepartmentName);
+  const response = await superAdminApi.put(
+    `/super-admin/departments/${encodedDepartment}`,
+    { name },
+    { headers },
+  );
+  return response.data;
+};
+
 export const createDepartmentHead = async (payload) => {
   const headers = await getAuthHeaders();
   const response = await superAdminApi.post("/super-admin/department-heads", payload, {
