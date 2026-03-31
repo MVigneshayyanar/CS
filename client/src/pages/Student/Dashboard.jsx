@@ -11,7 +11,7 @@ const Dashboard = () => {
   const [progressData, setProgressData] = useState([]);
   const [stats, setStats] = useState([]);
   const [assignedTasks, setAssignedTasks] = useState([]);
-  const [incompleteTasks, setIncompleteTasks] = useState([]);
+  const [upcomingTasks, setUpcomingTasks] = useState([]);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,7 +23,7 @@ const Dashboard = () => {
         setProgressData(data.progressData || []);
         setStats(data.stats || []);
         setAssignedTasks(data.assignedTasks || []);
-        setIncompleteTasks(data.incompleteTasks || []);
+        setUpcomingTasks(data.upcomingTasks || []);
         setUser(data.user);
       } catch (error) {
         const message =
@@ -75,7 +75,7 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
             {/* Left Sidebar */}
-            <ProfilePanel stats={stats} user={user} />
+            <ProfilePanel stats={stats} user={user} upcomingTasks={upcomingTasks} />
 
             {/* Main Content */}
             <div className="flex flex-col gap-5">
@@ -84,7 +84,7 @@ const Dashboard = () => {
               <ProgressSection progressData={progressData} />
               <AssignmentsSection
                 assignedTasks={assignedTasks}
-                incompleteTasks={incompleteTasks}
+                upcomingTasks={upcomingTasks}
               />
             </div>
           </div>
