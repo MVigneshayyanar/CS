@@ -13,7 +13,11 @@ export default function Labs() {
     const loadLabs = async () => {
       try {
         const result = await fetchStudentLabs();
-        setLabs(result?.data?.labs || []);
+        const apiLabs = result?.data?.labs || [];
+        const visibleLabs = apiLabs.filter(
+          (lab) => Array.isArray(lab.experiments) && lab.experiments.length > 0,
+        );
+        setLabs(visibleLabs);
       } catch (error) {
         const message = error?.response?.data?.message || "Failed to load labs from backend";
         alert(message);
@@ -83,7 +87,7 @@ export default function Labs() {
               </div>
               <h4 className="text-xl font-bold text-slate-800 mb-2">No Labs Found</h4>
               <p className="text-slate-400 max-w-xs mx-auto text-sm leading-relaxed">
-                You haven't been assigned to any labs yet. Check back later or contact your instructor.
+                Labs and experiments will appear here only after your faculty schedules them in Lab Management.
               </p>
             </div>
           ) : (
