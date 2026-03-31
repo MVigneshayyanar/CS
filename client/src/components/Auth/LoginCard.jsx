@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import logo from "@/assets/logo.svg";
+
+import { useTheme } from "next-themes";
+import iconJpeg from "@/assets/icon.jpeg";
+import logoLight from "../../assets/logo.png";
+import logoDark from "../../assets/logow.png";
+
 import { loginByPortal } from "@/services/authService";
 
 const LoginCard = ({ onLogin }) => {
+  const { resolvedTheme } = useTheme();
   const [userType, setUserType] = useState("Student");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +67,7 @@ const LoginCard = ({ onLogin }) => {
     <div className="text-white rounded-2xl p-8 w-[420px] max-w-[92vw] shadow-lg" style={{ background: '#132820', border: '1px solid rgba(42,140,120,0.22)' }}>
       <form onSubmit={handleLogin}>
         <div className="flex justify-center mb-6">
-          <img src={logo} alt="Lab Management Logo" className="h-12 w-auto" />
+          <img src={resolvedTheme === 'light' ? logoLight : logoDark} alt="Lab Management Logo" className="h-12 w-auto" />
         </div>
 
         <div className="flex justify-center mb-6">

@@ -126,31 +126,31 @@ const ReportsSection = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-theme bg-alt px-4 py-3">
-            <div className="flex items-center gap-2 text-body text-xs font-semibold uppercase tracking-wide">
-              <FolderKanban className="w-4 h-4" />
-              Total Programs
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="rounded-2xl border border-theme bg-alt px-6 py-5 text-center flex flex-col items-center justify-center">
+            <div className="flex items-center gap-2 text-body text-[10px] font-black uppercase tracking-widest mb-1.5 opacity-70">
+              <FolderKanban className="w-3.5 h-3.5" />
+              No of Labs
             </div>
-            <p className="text-2xl font-extrabold text-heading mt-2">
+            <p className="text-4xl font-black text-heading font-mono tracking-tighter">
               {summary.totalPrograms}
             </p>
           </div>
-          <div className="rounded-xl border border-[#dff2ed] bg-[#f0f7f5] px-4 py-3">
-            <div className="flex items-center gap-2 text-[#134d42] text-xs font-semibold uppercase tracking-wide">
-              <FileCheck2 className="w-4 h-4" />
+          <div className="rounded-2xl border border-[#dff2ed] bg-[#f0f7f5] px-6 py-5 text-center flex flex-col items-center justify-center shadow-sm shadow-teal-500/5">
+            <div className="flex items-center gap-2 text-[#134d42] text-[10px] font-black uppercase tracking-widest mb-1.5">
+              <FileCheck2 className="w-3.5 h-3.5" />
               Completed
             </div>
-            <p className="text-2xl font-extrabold text-teal-800 mt-2">
+            <p className="text-4xl font-black text-[#1a6b5c] font-mono tracking-tighter">
               {summary.completedPrograms}
             </p>
           </div>
-          <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3">
-            <div className="flex items-center gap-2 text-rose-700 text-xs font-semibold uppercase tracking-wide">
-              <FileX2 className="w-4 h-4" />
+          <div className="rounded-2xl border border-rose-100 bg-rose-50 px-6 py-5 text-center flex flex-col items-center justify-center shadow-sm shadow-rose-500/5">
+            <div className="flex items-center gap-2 text-rose-700 text-[10px] font-black uppercase tracking-widest mb-1.5">
+              <FileX2 className="w-3.5 h-3.5" />
               Not Completed
             </div>
-            <p className="text-2xl font-extrabold text-rose-800 mt-2">
+            <p className="text-4xl font-black text-rose-800 font-mono tracking-tighter">
               {summary.notCompletedPrograms}
             </p>
           </div>
@@ -168,60 +168,66 @@ const ReportsSection = ({
             className="bg-card rounded-2xl border border-theme-light shadow-sm p-5"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              {/* <div>
+              <div>
                 <h4 className="text-sm font-extrabold text-heading">
                   {sectionItem.section}
                 </h4>
-                <p className="text-xs text-body mt-1">
-                  Programs grouped by section
-                </p>
-              </div> */}
-              <div className="flex items-center gap-2 text-xs font-semibold">
-                <span className="px-3 py-1 rounded-full bg-[#f0f7f5] text-[#134d42]">
-                  Completed: {sectionItem.completed}
-                </span>
-                <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-700">
-                  Not Completed: {sectionItem.notCompleted}
-                </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="px-3 py-1 rounded-full bg-[#f0f7f5] text-[#134d42] text-[10px] font-bold">
+                    Completed: {sectionItem.completed}
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-[10px] font-bold">
+                    Pending: {sectionItem.notCompleted}
+                  </span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => onDownloadCompleted(sectionItem.programs)}
+                disabled={isGeneratingPDF}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-alt border border-theme-light hover:bg-[#f0f7f5] text-[#1a6b5c] text-[11px] font-bold rounded-lg transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download Lab Report
+              </button>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
-                  <tr className="text-left text-body border-b border-theme">
-                    <th className="pb-2 font-semibold">Program</th>
-                    <th className="pb-2 font-semibold">Status</th>
-                    <th className="pb-2 font-semibold">Progress</th>
-                    <th className="pb-2 font-semibold">Completed On</th>
-                    <th className="pb-2 font-semibold">Deadline</th>
+                  <tr className="text-left text-muted opacity-80 border-b border-theme uppercase tracking-widest font-black text-[10px]">
+                    <th className="pb-4 font-black min-w-[200px]">Program</th>
+                    <th className="pb-4 font-black text-center min-w-[120px]">Status</th>
+                    <th className="pb-4 font-black text-center min-w-[100px]">Progress</th>
+                    <th className="pb-4 font-black text-center min-w-[120px]">Completed On</th>
+                    <th className="pb-4 font-black text-right pr-2 min-w-[120px]">Deadline</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-theme-light/30">
                   {sectionItem.programs.map((program) => (
                     <tr
                       key={program.id}
-                      className="border-b border-theme-light last:border-0"
+                      className="hover:bg-[#f0f7f5]/20 transition-colors"
                     >
-                      <td className="py-3 text-heading font-medium">
+                      <td className="py-4 text-heading font-black pr-8">
                         {program.programName}
                       </td>
-                      <td className="py-3">
+                      <td className="py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClasses[program.status]}`}
+                          className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter border ${statusClasses[program.status]}`}
                         >
                           {program.status === "completed"
                             ? "Completed"
                             : "Not Completed"}
                         </span>
                       </td>
-                      <td className="py-3 text-heading">
-                        {program.progress}%
+                      <td className="py-4 text-center">
+                        <span className="font-mono font-black text-[#1a6b5c]">{program.progress}%</span>
                       </td>
-                      <td className="py-3 text-body">
+                      <td className="py-4 text-center text-body font-bold">
                         {getCompletionDate(program)}
                       </td>
-                      <td className="py-3 text-body">
+                      <td className="py-4 text-right pr-2 text-body font-bold">
                         {getDeadlineDate(program)}
                       </td>
                     </tr>

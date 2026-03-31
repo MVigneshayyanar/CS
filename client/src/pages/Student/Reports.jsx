@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Bell, FileText, Search, Download, AlertCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { FileText, Download } from "lucide-react";
 import ReportsSection from "../../components/Student/ReportsSection";
-import ProfilePanel from "./ProfilePanel";
+import SectionHeader from "../../components/Student/SectionHeader";
 import {
   fetchStudentDashboard,
   fetchStudentReports,
@@ -245,8 +245,11 @@ const Reports = () => {
     loadReports();
   }, []);
 
-  const handleDownloadCompleted = async () => {
-    const completedPrograms = reportData?.completedPrograms || [];
+  const handleDownloadCompleted = async (specificPrograms = null) => {
+    const completedPrograms = specificPrograms 
+      ? specificPrograms.filter(p => p.status === 'completed')
+      : (reportData?.completedPrograms || []);
+
     if (!completedPrograms.length) {
       alert("No completed programs available to download.");
       return;
@@ -503,38 +506,18 @@ const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-page">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-heading leading-tight">
-                Reports
-              </h1>
-              <p className="text-xs text-muted">
-                Section-wise completed and not completed programs
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-card border border-theme rounded-xl px-4 py-2 shadow-sm">
-              <Search className="w-4 h-4 text-muted" />
-              <input
-                className="text-sm text-body outline-none bg-transparent w-44 placeholder:text-muted"
-                placeholder="Search report here..."
-              />
-            </div>
-            <div className="w-9 h-9 bg-card border border-theme rounded-xl flex items-center justify-center shadow-sm">
-              <Bell className="w-4 h-4 text-body" />
-            </div>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+           <SectionHeader
+              icon={FileText}
+              title="Academic Reports"
+              subtitle="Review your detailed laboratory performance and download completion certificates."
+            />
         </div>
 
-        <div className="grid grid-cols-[260px_1fr] gap-5 items-start">
-          <ProfilePanel stats={stats} />
+        <div className="flex flex-col gap-5">
           <ReportsSection
             reportData={reportData}
             onDownloadCompleted={handleDownloadCompleted}

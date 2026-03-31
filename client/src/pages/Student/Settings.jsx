@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   User,
   Lock,
-  Palette,
   Mail,
   Eye,
   EyeOff,
@@ -11,36 +10,34 @@ import {
   GraduationCap,
   Shield,
   Hash,
-  Bell,
 } from "lucide-react";
 import { changePassword } from "@/services/authService";
 import { fetchStudentDashboard } from "@/services/studentService";
-
-/* ─── tiny reusable pieces ─── */
+import SectionHeader from "../../components/Student/SectionHeader";
 
 const Field = ({ label, value, icon: Icon }) => (
   <div>
-    <label className="block text-[9.5px] font-extrabold text-muted uppercase tracking-widest mb-1.5">
+    <label className="block text-[10px] font-black text-muted uppercase tracking-[0.15em] mb-2 opacity-60">
       {label}
     </label>
-    <div className="flex items-center gap-2 px-3 py-2 bg-alt border border-theme-light rounded-xl text-body text-xs font-semibold">
-      {Icon && <Icon className="w-3 h-3 text-muted flex-shrink-0" />}
+    <div className="flex items-center gap-3 px-4 py-3 bg-alt/50 border border-theme-light rounded-xl text-heading text-xs font-bold transition-all hover:border-[#1a6b5c]">
+      {Icon && <Icon className="w-3.5 h-3.5 text-[#1a6b5c]/70 flex-shrink-0" />}
       {value}
     </div>
   </div>
 );
 
 const SectionCard = ({ icon: Icon, title, badge, children }) => (
-  <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-5">
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
-          <Icon className="w-3.5 h-3.5 text-[#1a6b5c]" />
+  <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-6">
+    <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-[#f0f7f5] rounded-xl flex items-center justify-center">
+          <Icon className="w-5 h-5 text-[#1a6b5c]" />
         </div>
-        <h3 className="text-sm font-extrabold text-heading">{title}</h3>
+        <h3 className="text-sm font-black text-heading uppercase tracking-tight">{title}</h3>
       </div>
       {badge && (
-        <span className="text-[10px] font-bold bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full">
+        <span className="text-[10px] font-black bg-[#f0f7f5] text-[#134d42] px-3 py-1.5 rounded-full uppercase tracking-widest">
           {badge}
         </span>
       )}
@@ -59,7 +56,7 @@ const PwField = ({
   hint,
 }) => (
   <div>
-    <label className="block text-[9.5px] font-extrabold text-muted uppercase tracking-widest mb-1.5">
+    <label className="block text-[10px] font-black text-muted uppercase tracking-[0.15em] mb-2 opacity-60">
       {label}
     </label>
     <div className="relative">
@@ -69,39 +66,25 @@ const PwField = ({
         onChange={onChange}
         placeholder={placeholder}
         required
-        className="w-full px-3 py-2.5 pr-10 bg-alt border border-theme rounded-xl text-xs text-heading focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-[#3aa892] transition-all"
+        className="w-full px-4 py-3 pr-12 bg-alt/50 border border-theme-light rounded-xl text-xs font-bold text-heading focus:outline-none focus:ring-2 focus:ring-teal-100 focus:border-[#1a6b5c] transition-all"
       />
       <button
         type="button"
         onClick={onToggle}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-body transition-colors"
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-[#1a6b5c] transition-colors"
       >
         {show ? (
-          <EyeOff className="w-3.5 h-3.5" />
+          <EyeOff className="w-4 h-4" />
         ) : (
-          <Eye className="w-3.5 h-3.5" />
+          <Eye className="w-4 h-4" />
         )}
       </button>
     </div>
     {hint && (
-      <p className="text-[10px] text-muted mt-1 font-medium">{hint}</p>
+      <p className="text-[9px] text-muted mt-1.5 font-bold uppercase tracking-wider opacity-60">{hint}</p>
     )}
   </div>
 );
-
-const Toggle = ({ checked, onChange }) => (
-  <button
-    type="button"
-    onClick={() => onChange(!checked)}
-    className={`relative w-9 h-5 rounded-full transition-all duration-200 flex-shrink-0 ${checked ? "bg-[#2a8c78]" : "bg-alt"}`}
-  >
-    <span
-      className={`absolute top-0.5 w-4 h-4 rounded-full bg-card shadow transition-all duration-200 ${checked ? "left-4" : "left-0.5"}`}
-    />
-  </button>
-);
-
-/* ─── main component ─── */
 
 const Settings = () => {
   const [activeSection, setActiveSection] = useState("profile");
@@ -118,15 +101,15 @@ const Settings = () => {
     name: "Student",
     email: "—",
     phone: "—",
-    department: "Academic Portal",
+    department: "Computer Science",
     semester: "—",
     batch: "—",
     section: "—",
     rollNumber: "—",
     yearOfStudy: "—",
-    program: "Degree Program",
+    program: "B.Tech",
     labCount: 0,
-    taskCount: 0,
+    pendingCount: 0,
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -142,12 +125,8 @@ const Settings = () => {
         if (result?.data?.user) {
           const u = result.data.user;
           const stats = result.data.stats || [];
-          const labs =
-            stats.find((s) => s.label.toLowerCase().includes("total"))?.value ||
-            0;
-          const tasks =
-            stats.find((s) => s.label.toLowerCase().includes("pending"))
-              ?.value || 0;
+          const labs = stats.find((s) => s.label.toLowerCase() === "labs")?.value || 0;
+          const tasks = stats.find((s) => s.label.toLowerCase() === "pending")?.value || 0;
 
           setAcademicData({
             studentId: u.username || "—",
@@ -162,7 +141,7 @@ const Settings = () => {
             yearOfStudy: "3rd Year",
             program: "Bachelor of Technology",
             labCount: labs,
-            taskCount: tasks,
+            pendingCount: tasks,
           });
         }
       } catch (err) {
@@ -171,8 +150,6 @@ const Settings = () => {
     };
     loadData();
   }, []);
-
-  const userId = sessionStorage.getItem("userId");
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
@@ -226,335 +203,208 @@ const Settings = () => {
 
   const strengthColors = [
     "bg-alt",
-    "bg-red-400",
+    "bg-rose-400",
     "bg-amber-400",
     "bg-[#3aa892]",
     "bg-[#1a6b5c]",
   ];
 
   return (
-    <div className="min-h-screen bg-page">
-      <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
-        {/* ── Top bar ── */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
-              <SettingsIcon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-extrabold text-heading leading-tight">
-                My Account
-              </h1>
-              <p className="text-xs text-muted">
-                Manage your profile and preferences
-              </p>
-            </div>
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-card border border-theme rounded-xl text-xs font-bold text-body hover:bg-alt transition-all shadow-sm">
-            <Bell className="w-3.5 h-3.5" />
-            Notifications
-          </button>
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-20">
+        
+        {/* Header */}
+        <div className="mb-10">
+          <SectionHeader
+            icon={SettingsIcon}
+            title="Profile Settings"
+            subtitle="Secure your account and manage your university-certified academic credentials."
+          />
         </div>
 
-        {/* ── Alert ── */}
+        {/* Message Alert */}
         {message.text && (
           <div
-            className={`mb-5 flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold border ${
+            className={`mb-8 flex items-center justify-between px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest border animate-in slide-in-from-top-4 duration-300 ${
               message.type === "success"
-                ? "bg-[#f0f7f5] text-[#134d42] border-[#c2e6de]"
-                : "bg-red-50 text-red-600 border-red-200"
+                ? "bg-[#f0f7f5] text-[#134d42] border-[#1a6b5c]/30 shadow-lg shadow-teal-900/5"
+                : "bg-rose-50 text-rose-600 border-rose-200 shadow-lg shadow-rose-900/5"
             }`}
           >
-            {message.text}
+            <div className="flex items-center gap-3">
+               <Shield className="w-4 h-4" />
+               {message.text}
+            </div>
             <button
               onClick={() => setMessage({ type: "", text: "" })}
-              className="ml-auto text-lg leading-none opacity-40 hover:opacity-80"
+              className="text-lg leading-none opacity-40 hover:opacity-100 transition-opacity"
             >
               ×
             </button>
           </div>
         )}
 
-        <div className="flex gap-5 items-start">
-          {/* ══ LEFT SIDEBAR ══ */}
-          <div className="w-56 flex-shrink-0 flex flex-col gap-4 sticky top-8">
-            {/* Profile card with teal banner */}
-            <div className="bg-card rounded-2xl border border-theme-light shadow-sm overflow-hidden">
-              {/* Banner */}
-              <div className="relative bg-[#1a6b5c] h-16 overflow-hidden">
-                <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-card opacity-10" />
-                <div className="absolute -right-1 top-6 w-14 h-14 rounded-full bg-card opacity-10" />
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-10 items-start">
+          
+          {/* NAV COLUMN */}
+          <div className="space-y-6 lg:sticky lg:top-8">
+            {/* Identity Card */}
+            <div className="bg-card rounded-3xl border border-theme-light shadow-sm overflow-hidden group">
+              <div className="h-20 bg-[#1a6b5c] relative overflow-hidden">
+                <SettingsIcon className="absolute -right-4 -top-4 w-20 h-20 text-white opacity-10 group-hover:rotate-45 transition-transform duration-1000" />
               </div>
-              {/* Body */}
-              <div className="px-5 pb-5 text-center">
-                <div className="relative inline-block -mt-7 mb-2.5">
-                  <div
-                    className="w-14 h-14 rounded-full bg-gradient-to-br from-[#3aa892] to-[#134d42] border-3 border-white flex items-center justify-center text-white text-lg font-extrabold shadow-lg"
-                    style={{ border: "3px solid white" }}
-                  >
-                    {academicData.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+              <div className="px-6 pb-8 text-center -mt-10 relative z-10">
+                <div className="inline-block p-1 bg-card rounded-full shadow-xl mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1a6b5c] to-[#134d42] flex items-center justify-center text-white text-xl font-black">
+                    {academicData.name.split(" ").map((n) => n[0]).join("")}
                   </div>
-                  <div className="absolute bottom-0.5 right-0.5 w-3 h-3 bg-[#2a8c78] border-2 border-white rounded-full" />
                 </div>
-                <p className="text-sm font-extrabold text-heading">
-                  {academicData.name}
-                </p>
-                <p className="text-[11px] text-[#1a6b5c] font-bold mt-0.5">
-                  {academicData.studentId}
-                </p>
-                <p className="text-[10.5px] text-muted mt-0.5">
-                  {academicData.department}
-                </p>
-                <span className="inline-block mt-2 text-[10px] font-extrabold bg-[#f0f7f5] text-[#134d42] px-3 py-1 rounded-full">
-                  Active Student
-                </span>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  <div className="bg-alt rounded-xl py-2.5 text-center">
-                    <div className="text-lg font-extrabold text-[#1a6b5c]">
-                      {academicData.labCount}
-                    </div>
-                    <div className="text-[10px] text-muted font-semibold">
-                      Labs
-                    </div>
-                  </div>
-                  <div className="bg-alt rounded-xl py-2.5 text-center">
-                    <div className="text-lg font-extrabold text-amber-500">
-                      {academicData.taskCount}
-                    </div>
-                    <div className="text-[10px] text-muted font-semibold">
-                      Tasks
-                    </div>
-                  </div>
+                <h4 className="text-base font-black text-heading tracking-tight">{academicData.name}</h4>
+                <p className="text-[10px] font-black text-[#1a6b5c] uppercase tracking-[0.2em] mt-1">{academicData.studentId}</p>
+                <div className="mt-6 flex gap-2">
+                   <div className="flex-1 bg-alt py-3 rounded-2xl">
+                      <p className="text-sm font-black text-[#1a6b5c]">{academicData.labCount}</p>
+                      <p className="text-[8px] font-black text-muted uppercase tracking-widest mt-0.5">Labs</p>
+                   </div>
+                   <div className="flex-1 bg-alt py-3 rounded-2xl">
+                      <p className="text-sm font-black text-rose-500">{academicData.pendingCount}</p>
+                      <p className="text-[8px] font-black text-muted uppercase tracking-widest mt-0.5">Pending</p>
+                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Nav */}
-            <nav className="bg-card rounded-2xl border border-theme-light shadow-sm p-2.5">
-              <ul className="space-y-1">
+            {/* Side Navigation */}
+            <nav className="bg-card rounded-2xl border border-theme-light shadow-sm p-3">
+              <div className="flex flex-col gap-1.5">
                 {navItems.map(({ id, label, icon: Icon }) => {
                   const active = activeSection === id;
                   return (
-                    <li key={id}>
-                      <button
-                        onClick={() => {
-                          setActiveSection(id);
-                          setMessage({ type: "", text: "" });
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-all duration-150 ${
-                          active ? "bg-[#f0f7f5]" : "hover:bg-alt"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <div
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center ${active ? "bg-[#dff2ed]" : "bg-alt"}`}
-                          >
-                            <Icon
-                              className={`w-3.5 h-3.5 ${active ? "text-[#1a6b5c]" : "text-muted"}`}
-                            />
-                          </div>
-                          <span
-                            className={`text-[11.5px] font-bold ${active ? "text-[#134d42]" : "text-body"}`}
-                          >
-                            {label}
-                          </span>
+                    <button
+                      key={id}
+                      onClick={() => {
+                        setActiveSection(id);
+                        setMessage({ type: "", text: "" });
+                      }}
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+                        active ? "bg-[#f0f7f5] border border-[#dff2ed]" : "hover:bg-alt/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${active ? "bg-[#1a6b5c] text-white" : "bg-alt text-muted"}`}>
+                          <Icon className="w-4 h-4" />
                         </div>
-                        <ChevronRight
-                          className={`w-3 h-3 flex-shrink-0 ${active ? "text-[#3aa892]" : "text-muted"}`}
-                        />
-                      </button>
-                    </li>
+                        <span className={`text-[11px] font-black uppercase tracking-widest ${active ? "text-[#1a6b5c]" : "text-muted"}`}>{label}</span>
+                      </div>
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${active ? "text-[#1a6b5c] translate-x-1" : "text-muted opacity-0 group-hover:opacity-100"}`} />
+                    </button>
                   );
                 })}
-              </ul>
+              </div>
             </nav>
           </div>
 
-          {/* ══ MAIN CONTENT ══ */}
-          <div className="flex-1 min-w-0 flex flex-col gap-4">
-            {/* Teal Banner */}
-            <div className="relative bg-[#1a6b5c] rounded-2xl px-6 py-5 flex items-center justify-between overflow-hidden">
-              <div className="relative z-10">
-                <h2 className="text-lg font-extrabold text-white mb-1">
-                  {activeSection === "profile" && "Academic Profile"}
-                  {activeSection === "password" && "Change Password"}
-                  {activeSection === "learning" && "Learning Preferences"}
-                </h2>
-                <p className="text-teal-100 text-xs max-w-sm leading-relaxed">
-                  {activeSection === "profile" &&
-                    "Your university-managed information and academic details all in one place."}
-                  {activeSection === "password" &&
-                    "Keep your account secure by updating your password regularly."}
-                </p>
-              </div>
-              {/* Hex deco */}
-              <div className="flex gap-2 opacity-90 pointer-events-none select-none">
-                <div className="flex flex-col gap-2">
-                  <div
-                    style={{
-                      width: 44,
-                      height: 52,
-                      background: "rgba(255,255,255,.15)",
-                      clipPath:
-                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 28,
-                      height: 34,
-                      background: "rgba(255,215,0,.3)",
-                      clipPath:
-                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                      alignSelf: "flex-end",
-                    }}
-                  />
-                </div>
-                <div className="flex flex-col gap-2 mt-3">
-                  <div
-                    style={{
-                      width: 28,
-                      height: 34,
-                      background: "rgba(255,215,0,.3)",
-                      clipPath:
-                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 44,
-                      height: 52,
-                      background: "rgba(255,255,255,.15)",
-                      clipPath:
-                        "polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* ── PROFILE SECTION ── */}
-            {activeSection === "profile" && (
-              <>
-                <SectionCard icon={User} title="Personal Details">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Full Name" value={academicData.name} />
-                    <Field
-                      label="Student ID"
-                      value={academicData.studentId}
-                      icon={Hash}
-                    />
-                    <Field
-                      label="Roll Number"
-                      value={academicData.rollNumber}
-                    />
-                    <Field
-                      label="Email Address"
-                      value={academicData.email}
-                      icon={Mail}
-                    />
-                  </div>
-                </SectionCard>
-
-                <SectionCard icon={GraduationCap} title="Academic Information">
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Department" value={academicData.department} />
-                    <Field label="Batch" value={academicData.batch} />
-                  </div>
-                </SectionCard>
-
-                <div className="flex items-start gap-3 px-4 py-3.5 bg-amber-50 border border-amber-200 rounded-2xl">
-                  <Shield className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-amber-800 font-medium leading-relaxed">
-                    <strong>Note:</strong> Academic information is maintained by
-                    the university. To update any details, please contact the
-                    academic office or your department coordinator.
+          {/* MAIN CONTENT COLUMN */}
+          <div className="space-y-6">
+             {/* Dynamic Heading Banner */}
+             <div className="bg-[#1a6b5c] rounded-3xl p-8 shadow-xl shadow-teal-950/20 text-white relative overflow-hidden group">
+                <GraduationCap className="absolute -bottom-6 -right-6 w-32 h-32 opacity-10 group-hover:scale-110 transition-transform duration-1000" />
+                <div className="relative z-10">
+                  <h2 className="text-2xl font-black tracking-tight mb-2">
+                    {activeSection === "profile" ? "Academic Information" : "Security Protocol"}
+                  </h2>
+                  <p className="text-teal-50/70 text-xs font-bold uppercase tracking-widest max-w-sm leading-relaxed">
+                    {activeSection === "profile" 
+                      ? "Verifed university credentials and program enrollment data." 
+                      : "Manage your authentication factors and account protection settings."}
                   </p>
                 </div>
-              </>
-            )}
+             </div>
 
-            {/* ── PASSWORD SECTION ── */}
-            {activeSection === "password" && (
-              <SectionCard icon={Lock} title="Update Your Password">
-                <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    <PwField
-                      label="Current Password"
-                      show={showPw.current}
-                      onToggle={() =>
-                        setShowPw((p) => ({ ...p, current: !p.current }))
-                      }
-                      value={passwordData.currentPassword}
-                      onChange={(e) =>
-                        setPasswordData((p) => ({
-                          ...p,
-                          currentPassword: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter your current password"
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <PwField
-                          label="New Password"
-                          show={showPw.new}
-                          onToggle={() =>
-                            setShowPw((p) => ({ ...p, new: !p.new }))
-                          }
-                          value={passwordData.newPassword}
-                          onChange={(e) =>
-                            setPasswordData((p) => ({
-                              ...p,
-                              newPassword: e.target.value,
-                            }))
-                          }
-                          placeholder="Enter new password"
-                          hint="At least 8 characters"
-                        />
-                        {/* Strength bar */}
-                        {passwordData.newPassword && (
-                          <div className="flex gap-1 mt-2">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div
-                                key={i}
-                                className={`h-1 flex-1 rounded-full transition-all ${i <= pwStrength ? strengthColors[pwStrength] : "bg-alt"}`}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <PwField
-                        label="Confirm New Password"
-                        show={showPw.confirm}
-                        onToggle={() =>
-                          setShowPw((p) => ({ ...p, confirm: !p.confirm }))
-                        }
-                        value={passwordData.confirmPassword}
-                        onChange={(e) =>
-                          setPasswordData((p) => ({
-                            ...p,
-                            confirmPassword: e.target.value,
-                          }))
-                        }
-                        placeholder="Confirm new password"
-                      />
-                    </div>
+             {activeSection === "profile" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+                <SectionCard icon={User} title="Certified Identity" badge="Verified">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Field label="Full Legal Name" value={academicData.name} />
+                    <Field label="University Identification" value={academicData.studentId} icon={Hash} />
+                    <Field label="Academic Roll No" value={academicData.rollNumber} />
+                    <Field label="Contact Email" value={academicData.email} icon={Mail} />
                   </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#1a6b5c] text-white text-xs font-extrabold rounded-xl hover:bg-[#134d42] disabled:opacity-50 transition-all shadow-sm shadow-[#2a8c78]/20"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    {loading ? "Updating..." : "Update Password"}
-                  </button>
-                </form>
-              </SectionCard>
-            )}
+                </SectionCard>
+
+                <SectionCard icon={GraduationCap} title="Program Details">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Field label="Enrolled Department" value={academicData.department} />
+                    <Field label="Admission Batch" value={academicData.batch} />
+                  </div>
+                </SectionCard>
+
+                <div className="bg-amber-50/50 border border-amber-200/50 rounded-2xl p-5 flex gap-4">
+                  <Shield className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[10px] font-bold text-amber-900/60 uppercase tracking-wide leading-relaxed">
+                    <span className="text-amber-600 font-black">Security Note:</span> Academic data is synchronized with the University ERP. Changes require official verification through the Registrar Office.
+                  </p>
+                </div>
+              </div>
+             )}
+
+             {activeSection === "password" && (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                  <SectionCard icon={Lock} title="Authentication Override">
+                    <form onSubmit={handlePasswordChange} className="space-y-8">
+                      <PwField
+                        label="Primary Password Verification"
+                        show={showPw.current}
+                        onToggle={() => setShowPw(p => ({ ...p, current: !p.current }))}
+                        value={passwordData.currentPassword}
+                        onChange={e => setPasswordData(p => ({ ...p, currentPassword: e.target.value }))}
+                        placeholder="Current system password"
+                      />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                          <PwField
+                            label="New Credential"
+                            show={showPw.new}
+                            onToggle={() => setShowPw(p => ({ ...p, new: !p.new }))}
+                            value={passwordData.newPassword}
+                            onChange={e => setPasswordData(p => ({ ...p, newPassword: e.target.value }))}
+                            placeholder="Minimum 8 characters"
+                            hint="Upper, lower, number required"
+                          />
+                          {passwordData.newPassword && (
+                            <div className="flex gap-1.5 mt-3">
+                              {[1, 2, 3, 4].map(i => (
+                                <div
+                                  key={i}
+                                  className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= pwStrength ? strengthColors[pwStrength] : "bg-alt"}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <PwField
+                          label="Retry Credential"
+                          show={showPw.confirm}
+                          onToggle={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))}
+                          value={passwordData.confirmPassword}
+                          onChange={e => setPasswordData(p => ({ ...p, confirmPassword: e.target.value }))}
+                          placeholder="Re-type new password"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex items-center gap-3 px-8 py-4 bg-[#1a6b5c] text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-[#134d42] disabled:opacity-50 transition-all shadow-xl shadow-teal-900/10"
+                      >
+                        {loading ? "Synchronizing..." : "Commit Changes"}
+                        {!loading && <ChevronRight className="w-4 h-4" />}
+                      </button>
+                    </form>
+                  </SectionCard>
+                </div>
+             )}
           </div>
         </div>
       </div>

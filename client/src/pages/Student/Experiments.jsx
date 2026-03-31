@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Beaker, Search, ArrowLeft, Code, Filter, BookOpen, Clock, Calendar, ChevronRight } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { fetchStudentLabs } from "@/services/studentService";
-import StatsSection from "../../components/Student/StatsSection";
-import StatCard from "../../components/Student/StatCard";
+import SectionHeader from "../../components/Student/SectionHeader";
 
 const Experiments = () => {
   const [experiments, setExperiments] = useState([]);
@@ -93,126 +92,113 @@ const Experiments = () => {
   }, [searchTerm, statusFilter, labFilter, experiments]);
 
   const completedCount = filteredExperiments.filter(e => e.status === "completed").length;
-  const pendingCount = filteredExperiments.length - completedCount;
   const avgProgress = filteredExperiments.length > 0 ? Math.round((completedCount / filteredExperiments.length) * 100) : 0;
 
+  const currentLabName = labFilter !== "all" ? (experiments.find(e => e.labId === labFilter)?.lab || "Specific Lab") : "All Experiments";
+
   return (
-    <div className="min-h-screen bg-page">
-      <div className="max-w-[1600px] mx-auto px-6 pt-10 pb-20">
-        <div className="flex flex-col lg:flex-row gap-10 items-start">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
+      <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+          <SectionHeader
+            icon={Beaker}
+            title={currentLabName}
+            subtitle="Analyze and implement core concepts through interactive laboratory tasks."
+          />
+          <button
+            onClick={() => navigate("/labs")}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-card rounded-xl border border-theme-light shadow-sm hover:border-[#1a6b5c] transition-all text-[11px] font-black text-muted uppercase tracking-widest group shrink-0 self-start sm:self-center"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#1a6b5c] group-hover:-translate-x-1 transition-transform" />
+            Back to Portal
+          </button>
+        </div>
 
-          {/* LEFT COLUMN: Main List */}
-          <div className="flex-1 w-full order-2 lg:order-1">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#2a8c78] flex items-center justify-center shadow-lg shadow-[#2a8c78]/20">
-                  <Beaker className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-black text-heading tracking-tight leading-none mb-1.5 grayscale-0">
-                    {labFilter !== "all" ? (experiments.find(e => e.labId === labFilter)?.lab || "Specific Lab") : "All Experiments"}
-                  </h1>
-                  <div className="text-xs text-muted font-bold uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1 h-1 rounded-full bg-[#2a8c78]" />
-                    Exploring the core concepts of computer science
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Toolbar Inside List */}
-            <div className="bg-card p-2 rounded-[2rem] border border-theme-light shadow-sm mb-10 flex flex-col sm:flex-row gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+          {/* Main List Column */}
+          <div className="space-y-6">
+            {/* Search & Toolbar */}
+            <div className="bg-card p-2 rounded-2xl border border-theme-light shadow-sm flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                 <input
                   type="text"
-                  placeholder="Filter by title, domain or keywords..."
+                  placeholder="Seach by title, domain or keywords..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-transparent text-sm font-bold text-heading placeholder-slate-300 focus:outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-transparent text-xs font-bold text-heading placeholder:text-muted/40 outline-none"
                 />
               </div>
-              <div className="sm:w-px sm:h-8 bg-alt self-center hidden sm:block" />
-              <div className="bg-alt px-6 py-3 rounded-2xl flex items-center gap-3">
-                <span className="text-[10px] font-black text-muted uppercase tracking-widest">Found</span>
-                <span className="text-sm font-black text-[#1a6b5c]">{filteredExperiments.length}</span>
+              <div className="sm:w-px sm:h-8 bg-alt self-center hidden sm:block opacity-50" />
+              <div className="px-4 py-3 rounded-xl flex items-center gap-2">
+                <span className="text-[10px] font-black text-muted uppercase tracking-widest">Total Found</span>
+                <span className="text-xs font-black text-[#1a6b5c] font-mono">{filteredExperiments.length}</span>
               </div>
             </div>
 
-            {/* List */}
+            {/* List Items */}
             {loading ? (
-              <div className="space-y-6 animate-pulse">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="bg-card rounded-[2.5rem] h-32 border border-theme-light" />
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-card rounded-2xl h-24 border border-theme-light animate-pulse" />
                 ))}
               </div>
             ) : filteredExperiments.length === 0 ? (
-              <div className="bg-card rounded-[3rem] border border-theme-light shadow-sm p-24 text-center">
-                <div className="w-20 h-20 bg-alt rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Beaker className="w-10 h-10 text-muted" />
+              <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-12 text-center">
+                <div className="w-16 h-16 bg-alt rounded-full flex items-center justify-center mx-auto mb-5">
+                  <Beaker className="w-8 h-8 text-muted" />
                 </div>
-                <h4 className="text-xl font-bold text-heading mb-2">
-                  {searchTerm ? `No results for "${searchTerm}"` : "No Experiments Available"}
-                </h4>
-                <p className="text-muted max-w-xs mx-auto text-sm">
-                  {searchTerm
-                    ? "Try using different keywords or clearing your filters."
-                    : "Experiments will appear after faculty schedules them in Lab Management."}
+                <h4 className="text-lg font-black text-heading mb-1.5">No Tasks Recorded</h4>
+                <p className="text-muted max-w-xs mx-auto text-xs leading-relaxed uppercase tracking-wider opacity-60">
+                  Experiments will be listed here once assigned by faculty.
                 </p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {filteredExperiments.map((experiment) => (
                   <div
                     key={experiment.id}
                     onClick={() => navigate(`/labs/experiments/view?id=${experiment.id}`)}
-                    className="group bg-card rounded-[2.5rem] p-6 border border-theme-light shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 cursor-pointer flex items-center gap-8"
+                    className="group bg-card rounded-2xl p-5 border border-theme-light shadow-sm hover:border-[#1a6b5c] transition-all duration-300 cursor-pointer flex items-center gap-6"
                   >
-                    <div className="w-16 h-16 rounded-3xl bg-alt border border-theme-light flex items-center justify-center shrink-0 group-hover:bg-[#f0f7f5] group-hover:border-[#dff2ed] transition-colors">
-                      <div className="text-xl font-black text-muted group-hover:text-[#1a6b5c] transition-colors">
+                    <div className="w-12 h-12 rounded-xl bg-[#f0f7f5] border border-[#dff2ed] flex items-center justify-center shrink-0 group-hover:bg-[#dff2ed] transition-colors shadow-sm">
+                      <div className="text-base font-black text-[#1a6b5c]">
                         {experiment.sno < 10 ? `0${experiment.sno}` : experiment.sno}
                       </div>
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${
+                      <div className="flex items-center gap-2.5 mb-1.5">
+                        <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${
                           experiment.status === 'completed' 
-                            ? 'text-[#2a8c78] bg-[#f0f7f5] border-[#dff2ed]' 
+                            ? 'text-teal-700 bg-teal-50 border-teal-100' 
                             : experiment.status === 'expired' 
-                                ? 'text-rose-500 bg-rose-50 border-rose-100' 
-                                : 'text-amber-500 bg-amber-50 border-amber-100'
+                                ? 'text-rose-600 bg-rose-50 border-rose-100' 
+                                : 'text-amber-600 bg-amber-50 border-amber-100'
                         }`}>
-                          {experiment.status === 'expired' ? 'Expired (Late Submission)' : experiment.status}
+                          {experiment.status}
                         </span>
-                        <span className="text-[9px] font-bold text-muted uppercase tracking-widest">{experiment.domain}</span>
+                        <span className="text-[9px] font-bold text-muted uppercase tracking-widest opacity-60">{experiment.domain}</span>
                       </div>
-                      <h3 className="text-lg font-black text-heading tracking-tight group-hover:text-[#1a6b5c] transition-colors mb-1 truncate">
+                      <h3 className="text-sm font-black text-heading tracking-tight group-hover:text-[#1a6b5c] transition-colors truncate">
                         {experiment.title}
                       </h3>
-                      <p className="text-xs text-muted font-medium line-clamp-1">{experiment.description}</p>
+                      <p className="text-[10px] text-muted font-bold opacity-50 line-clamp-1 mt-0.5">{experiment.description}</p>
                     </div>
 
-                    
-
                     <div className="flex flex-col items-end shrink-0">
-                      <div className="flex items-center gap-1.5 text-muted font-bold text-[10px] uppercase tracking-widest mb-2">
-                        <Calendar className="w-3.5 h-3.5 text-[#2a8c78]" />
+                      <div className="flex items-center gap-1 text-[9px] font-black text-muted uppercase tracking-widest mb-1.5 group-hover:text-[#1a6b5c] transition-colors">
+                        <Calendar className="w-3.5 h-3.5 opacity-60" />
                         {(() => {
                           const d = experiment.dateDue || experiment.deadline;
                           if (!d) return 'N/A';
-                          try {
-                            const dateObj = new Date(d);
-                            return isNaN(dateObj.getTime())
-                              ? d
-                              : dateObj.toLocaleDateString('en-GB');
-                          } catch (e) {
-                            return d;
-                          }
+                          const dateObj = new Date(d);
+                          return isNaN(dateObj.getTime()) ? d : dateObj.toLocaleDateString('en-GB');
                         })()}
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-alt group-hover:bg-[#2a8c78] flex items-center justify-center transition-all duration-300">
-                        <ChevronRight className="w-5 h-5 text-muted group-hover:text-white" />
+                      <div className="w-8 h-8 rounded-lg bg-alt group-hover:bg-[#1a6b5c] flex items-center justify-center transition-all duration-300">
+                        <ChevronRight className="w-4 h-4 text-muted group-hover:text-white" />
                       </div>
                     </div>
                   </div>
@@ -221,60 +207,55 @@ const Experiments = () => {
             )}
           </div>
 
-          {/* RIGHT COLUMN: Sidebar Stats & Filters */}
-          <div className="w-full lg:w-80 order-1 lg:order-2 shrink-0 lg:sticky lg:top-10">
-            <div className="space-y-8">
+          {/* Right Sidebar Column */}
+          <div className="space-y-6 lg:sticky lg:top-8">
+            {/* Status Filters */}
+            <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-6">
+              <h3 className="text-xs font-black text-heading uppercase tracking-[0.15em] mb-5 flex items-center gap-2">
+                 <Filter className="w-3.5 h-3.5 text-[#1a6b5c]" /> Progress Filter
+              </h3>
+              <div className="flex flex-col gap-2">
+                {['all', 'pending', 'expired', 'completed'].map(status => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`flex items-center justify-between p-3 rounded-xl transition-all duration-300 text-left group ${statusFilter === status ? 'bg-[#f0f7f5] border border-[#dff2ed]' : 'bg-alt/50 border border-transparent hover:border-[#1a6b5c]'}`}
+                  >
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${statusFilter === status ? 'text-[#1a6b5c]' : 'text-muted'}`}>{status}</span>
+                    <div className={`w-2 h-2 rounded-full shadow-sm ${
+                      status === 'completed' ? 'bg-[#1a6b5c]' : 
+                      status === 'pending' ? 'bg-amber-400' : 
+                      status === 'expired' ? 'bg-rose-400' : 'bg-slate-300'
+                    }`} />
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {/* Back Button */}
-              <button
-                onClick={() => navigate("/labs")}
-                className="w-full flex items-center justify-center gap-3 bg-card p-5 rounded-[2rem] border border-theme-light shadow-sm hover:shadow-lg hover:border-[#5c9088] transition-all duration-300 text-xs font-black text-body uppercase tracking-widest group"
-              >
-                <ArrowLeft className="w-4 h-4 text-[#2a8c78] group-hover:-translate-x-1 transition-transform" />
-                Back to Lab Portal
-              </button>
-
-              {/* Status Filter Card */}
-              <div className="rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden" style={{ background: 'var(--sidebar-bg)' }}>
-                <div className="absolute top-0 right-0 p-8 opacity-10">
-                  <Filter className="w-24 h-24" />
+            {/* Performance Sidebar stats */}
+            <div className="bg-[#1a6b5c] rounded-2xl p-6 shadow-xl shadow-teal-900/10 text-white relative overflow-hidden group">
+              <BookOpen className="absolute -bottom-4 -right-4 w-24 h-24 opacity-10 group-hover:scale-110 transition-transform duration-700" />
+              <div className="relative z-10">
+                <p className="text-[9px] font-black uppercase tracking-widest text-teal-50/60 mb-1">Overall Lab Progress</p>
+                <h4 className="text-4xl font-black font-mono tracking-tighter mb-4">{avgProgress}%</h4>
+                
+                <div className="flex flex-col gap-2 opacity-90">
+                   <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-teal-300" /> Completed</span>
+                      <span>{completedCount}</span>
+                   </div>
+                   <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-amber-300" /> Pending</span>
+                      <span>{filteredExperiments.length - completedCount}</span>
+                   </div>
                 </div>
-                <div className="relative z-10">
-                  <h3 className="text-lg font-black tracking-tight mb-6">Execution Status</h3>
-                  <div className="flex flex-col gap-3">
-                    {['all', 'pending', 'expired', 'completed'].map(status => (
-                      <button
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${statusFilter === status ? 'shadow-lg' : 'bg-white/5 hover:bg-white/10'}`}
-                        style={statusFilter === status ? { background: 'var(--sidebar-active)' } : {}}
-                      >
-                        <span className="text-xs font-black uppercase tracking-widest">{status}</span>
-                        <div className={`w-2 h-2 rounded-full ${
-                          status === 'completed' ? 'bg-[#3aa892]' : 
-                          status === 'pending' ? 'bg-amber-400' : 
-                          status === 'expired' ? 'bg-rose-400' : 'bg-white/40'
-                        }`} />
-                      </button>
-                    ))}
-                  </div>
+
+                <div className="mt-6 w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                   <div className="bg-white h-full rounded-full transition-all duration-1000" style={{ width: `${avgProgress}%` }} />
                 </div>
               </div>
-
-              {/* Stats Section */}
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard label="Total" value={filteredExperiments.length} color="teal" icon={Beaker} />
-                <StatCard label="Resolved" value={completedCount} color="emerald" icon={Code} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <StatCard label="Pending" value={filteredExperiments.length - completedCount} color="amber" icon={Clock} />
-                <StatCard label="Velocity" value={`${avgProgress}%`} color="cyan" icon={Filter} />
-              </div>
-
             </div>
           </div>
-
         </div>
       </div>
     </div>

@@ -1,4 +1,9 @@
 import React, { useState } from 'react';
+
+import { useTheme } from "next-themes";
+import iconJpeg from "../../assets/icon.jpeg";
+import logoLight from "../../assets/logo.png";
+import logoDark from "../../assets/logow.png";
 import { useSidebar } from '../../context/SidebarContext';
 import {
   Users, 
@@ -14,6 +19,7 @@ import ThemeToggle from '../ThemeToggle';
 import LogoutConfirmation from '../LogoutConfirmation';
 
 const AdminSidebar = ({ onLogout }) => {
+  const { resolvedTheme } = useTheme();
   const { isCollapsed, toggleSidebar: setIsCollapsed } = useSidebar();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
@@ -55,21 +61,27 @@ const AdminSidebar = ({ onLogout }) => {
       aria-expanded={!isCollapsed}
     >
       {/* Header */}
-      <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center mx-auto' : 'justify-between px-6'}`}>
+      <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center mx-auto' : 'justify-center w-full'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center mx-auto' : 'gap-3'}`}>
-          <div 
-            className="rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10"
-            style={{ background: 'var(--gradient-logo)' }}
-          >
-            <div className="h-full w-full rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--sidebar-logo-bg)' }}>
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-          </div>
-          {!isCollapsed && (
-            <span className="text-xl font-bold tracking-tight text-white animate-in fade-in slide-in-from-left-2 duration-500">
-              Admin Panel
-            </span>
-          )}
+          {isCollapsed ? (
+              <div 
+                className={`rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10 sm:h-12 sm:w-12`}
+                style={{ background: 'var(--gradient-logo)' }}
+              >
+                <div 
+                  className="h-full w-full rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ background: '#ffffff' }}
+                >
+                  <img src={iconJpeg} alt="Logo Icon" className="h-full w-full object-contain p-1" />
+                </div>
+              </div>
+            ) : (
+              <img 
+                src={resolvedTheme === 'light' ? logoLight : logoDark} 
+                alt="CodeSphere" 
+                className="h-9 w-auto object-contain animate-in fade-in slide-in-from-left-2 duration-500" 
+              />
+            )}
         </div>
       </div>
 

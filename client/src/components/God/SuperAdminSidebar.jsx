@@ -1,7 +1,11 @@
 import { NavLink, useLocation } from "react-router-dom";
+
+import { useTheme } from "next-themes";
+import iconJpeg from "../../assets/icon.jpeg";
+import logoLight from "../../assets/logo.png";
+import logoDark from "../../assets/logow.png";
 import { useEffect, useState } from "react";
 import { useSidebar } from "../../context/SidebarContext";
-import brandLogo from "../../assets/logo.svg";
 import ThemeToggle from "../ThemeToggle";
 import LogoutConfirmation from "../LogoutConfirmation";
 
@@ -38,6 +42,7 @@ const navItems = [
 
 export default function SuperAdminSidebar({ onLogout }) {
   const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
+  const { resolvedTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
@@ -76,23 +81,29 @@ export default function SuperAdminSidebar({ onLogout }) {
         aria-label="Super Admin Navigation"
         aria-expanded={!collapsed}
       >
-        <div className={`relative flex h-24 items-center ${collapsed ? "justify-center" : "justify-between px-6"}`}>
+        <div className={`relative flex h-24 items-center ${collapsed ? "justify-center" : "justify-center w-full"}`}>
           <NavLink
             to="/dashboard"
             className="flex items-center gap-3 rounded-md focus:outline-none"
           >
-            <div
-              className={`rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? "h-12 w-12" : "h-10 w-10"}`}
-              style={{ background: 'var(--gradient-logo)' }}
-            >
-              <div className="h-full w-full rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--sidebar-logo-bg)' }}>
-                <img src={brandLogo} alt="Logo" className="h-6 w-6 object-contain" />
+            {collapsed ? (
+              <div 
+                className={`rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10 sm:h-12 sm:w-12`}
+                style={{ background: 'var(--gradient-logo)' }}
+              >
+                <div 
+                  className="h-full w-full rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ background: '#ffffff' }}
+                >
+                  <img src={iconJpeg} alt="Logo Icon" className="h-full w-full object-contain p-1" />
+                </div>
               </div>
-            </div>
-            {!collapsed && (
-              <span className="text-xl font-bold tracking-tight text-white animate-in fade-in slide-in-from-left-2 duration-500">
-                CodeSphere
-              </span>
+            ) : (
+              <img 
+                src={resolvedTheme === 'light' ? logoLight : logoDark} 
+                alt="CodeSphere" 
+                className="h-9 w-auto object-contain animate-in fade-in slide-in-from-left-2 duration-500" 
+              />
             )}
           </NavLink>
         </div>
