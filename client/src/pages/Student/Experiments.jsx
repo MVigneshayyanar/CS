@@ -151,8 +151,14 @@ const Experiments = () => {
                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Beaker className="w-10 h-10 text-slate-200" />
                 </div>
-                <h4 className="text-xl font-bold text-slate-800 mb-2">No results for "{searchTerm}"</h4>
-                <p className="text-slate-400 max-w-xs mx-auto text-sm">Try using different keywords or clearing your filters.</p>
+                <h4 className="text-xl font-bold text-slate-800 mb-2">
+                  {searchTerm ? `No results for "${searchTerm}"` : "No Experiments Available"}
+                </h4>
+                <p className="text-slate-400 max-w-xs mx-auto text-sm">
+                  {searchTerm
+                    ? "Try using different keywords or clearing your filters."
+                    : "Experiments will appear after faculty schedules them in Lab Management."}
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -242,7 +248,7 @@ const Experiments = () => {
                         onClick={() => setStatusFilter(status)}
                         className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${statusFilter === status ? 'bg-teal-500 shadow-lg shadow-teal-500/20' : 'bg-white/5 hover:bg-white/10'}`}
                       >
-                        <span className="text-xs font-black uppercase tracking-widest capitalize">{status}</span>
+                        <span className="text-xs font-black uppercase tracking-widest">{status}</span>
                         <div className={`w-2 h-2 rounded-full ${
                           status === 'completed' ? 'bg-emerald-400' : 
                           status === 'pending' ? 'bg-amber-400' : 
