@@ -1,104 +1,258 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-:root {
-  font-family: 'Roboto', sans-serif;
-/* Hide all scrollbars but allow scrolling with mouse wheel */
-html, body, * {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-}
-
-html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar {
-  display: none;
-}
-}
 @import "tailwindcss";
 
+@theme {
+  --color-teal-50: #f0f7f5;
+  --color-teal-100: #dff2ed;
+  --color-teal-200: #c2e6de;
+  --color-teal-300: #9dd4c8;
+  --color-teal-400: #73bfaa;
+  --color-teal-500: #2a8c78;
+  --color-teal-600: #1a6b5c;
+  --color-teal-700: #134d42;
+  --color-teal-800: #0f3f36;
+  --color-teal-900: #0a2621;
+  --color-teal-950: #051310;
+}
+
+/* ── LIGHT THEME (default for next-themes class="light") ── */
+html.light {
+  --sidebar-bg: #134d42;
+  --sidebar-logo-bg: #0f3f36;
+  --sidebar-active: #1a6b5c;
+  --sidebar-active-shadow: rgba(26, 107, 92, 0.3);
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-text: rgba(255, 255, 255, 0.78);
+  --sidebar-text-active: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+
+  --bg-page: #f5f7f5;
+  --bg-card: #ffffff;
+  --bg-alt: #eef2ee;
+  --bg-input: #ffffff;
+  --bg-hover: #f0f4f0;
+  --bg-modal: #ffffff;
+  --bg-modal-overlay: rgba(0, 0, 0, 0.3);
+
+  --text-heading: #1a1a1a;
+  --text-body: #555555;
+  --text-muted: #888888;
+  --text-inverse: #ffffff;
+
+  --border-color: #e0e6e0;
+  --border-light: #e8ece8;
+
+  --accent: #f4a623;
+  --teal: #1a6b5c;
+  --teal-light: #2a8c78;
+  --teal-dark: #134d42;
+
+  --btn-primary-bg: #1a6b5c;
+  --btn-primary-hover: #2a8c78;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #f5f7f5;
+  --btn-secondary-hover: #e8ece8;
+  --btn-secondary-text: #1a1a1a;
+
+  --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  --card-shadow-hover: 0 10px 36px rgba(26, 107, 92, 0.13);
+  --card-border-top: #1a6b5c;
+
+  --badge-bg: #f0f7f5;
+  --badge-text: #1a6b5c;
+
+  --topbar-bg: rgba(255, 255, 255, 0.85);
+  --topbar-border: #e0e6e0;
+
+  --gradient-logo: linear-gradient(135deg, #1a6b5c, #2a8c78, #f4a623);
+  --gradient-accent: linear-gradient(135deg, #1a6b5c, #2a8c78);
+
+  --stat-teal: #1a6b5c;
+  --stat-emerald: #1a6b5c;
+  --stat-amber: #f59e0b;
+  --stat-cyan: #06b6d4;
+
+  --toggle-bg: rgba(26, 107, 92, 0.15);
+  --toggle-border: rgba(26, 107, 92, 0.3);
+  --toggle-active-bg: #1a6b5c;
+
+  --search-bg: #ffffff;
+  --search-border: #e0e6e0;
+  --search-text: #555555;
+  --search-placeholder: #888888;
+
+  --spinner-color: #1a6b5c;
+
+  --skeleton-bg: #e8ece8;
+  --skeleton-shimmer: #f5f7f5;
+
+  --login-bg: #0c1e1a;
+  --loading-bg: #0c1e1a;
+
+  --logout-modal-bg: #134d42;
+  --logout-modal-border: rgba(42, 140, 120, 0.3);
+
+  /* Code editor colors stay dark regardless */
+  --editor-bg: #1A1A2E;
+  --editor-border: #2D2D44;
+  --editor-toolbar: #16162A;
+  --editor-panel: #2A2A3E;
+  --editor-panel-hover: #33334D;
+  --editor-panel-border: #3D3D5C;
+}
+
+/* ── DARK THEME ── */
+html.dark,
+:root {
+  --sidebar-bg: #071210;
+  --sidebar-logo-bg: #0a1814;
+  --sidebar-active: #2a8c78;
+  --sidebar-active-shadow: rgba(42, 140, 120, 0.3);
+  --sidebar-hover: rgba(42, 140, 120, 0.12);
+  --sidebar-text: rgba(141, 184, 176, 0.78);
+  --sidebar-text-active: #dff2ed;
+  --sidebar-border: rgba(42, 140, 120, 0.15);
+
+  --bg-page: #0c1e1a;
+  --bg-card: #132820;
+  --bg-alt: #0f2420;
+  --bg-input: #132820;
+  --bg-hover: #1a3830;
+  --bg-modal: #132820;
+  --bg-modal-overlay: rgba(0, 0, 0, 0.5);
+
+  --text-heading: #dff2ed;
+  --text-body: #8db8b0;
+  --text-muted: #5c9088;
+  --text-inverse: #ffffff;
+
+  --border-color: rgba(42, 140, 120, 0.22);
+  --border-light: rgba(42, 140, 120, 0.12);
+
+  --accent: #f4a623;
+  --teal: #2a8c78;
+  --teal-light: #3aa892;
+  --teal-dark: #1a6b5c;
+
+  --btn-primary-bg: #2a8c78;
+  --btn-primary-hover: #3aa892;
+  --btn-primary-text: #ffffff;
+  --btn-secondary-bg: #0f2420;
+  --btn-secondary-hover: #1a3830;
+  --btn-secondary-text: #8db8b0;
+
+  --card-shadow: 0 2px 24px rgba(0, 0, 0, 0.38);
+  --card-shadow-hover: 0 12px 44px rgba(42, 140, 120, 0.2);
+  --card-border-top: #2a8c78;
+
+  --badge-bg: #0f2420;
+  --badge-text: #3aa892;
+
+  --topbar-bg: rgba(12, 30, 26, 0.85);
+  --topbar-border: rgba(42, 140, 120, 0.15);
+
+  --gradient-logo: linear-gradient(135deg, #2a8c78, #3aa892, #f4a623);
+  --gradient-accent: linear-gradient(135deg, #2a8c78, #3aa892);
+
+  --stat-teal: #2a8c78;
+  --stat-emerald: #1a6b5c;
+  --stat-amber: #f59e0b;
+  --stat-cyan: #06b6d4;
+
+  --toggle-bg: rgba(42, 140, 120, 0.32);
+  --toggle-border: rgba(42, 140, 120, 0.45);
+  --toggle-active-bg: #2a8c78;
+
+  --search-bg: #132820;
+  --search-border: rgba(42, 140, 120, 0.22);
+  --search-text: #8db8b0;
+  --search-placeholder: #5c9088;
+
+  --spinner-color: #2a8c78;
+
+  --skeleton-bg: #0f2420;
+  --skeleton-shimmer: #1a3830;
+
+  --login-bg: #071210;
+  --loading-bg: #071210;
+
+  --logout-modal-bg: #132820;
+  --logout-modal-border: rgba(42, 140, 120, 0.22);
+
+  /* Code editor */
+  --editor-bg: #0c1e1a;
+  --editor-border: rgba(42, 140, 120, 0.18);
+  --editor-toolbar: #071210;
+  --editor-panel: #132820;
+  --editor-panel-hover: #1a3830;
+  --editor-panel-border: rgba(42, 140, 120, 0.25);
+
+  font-family: 'Roboto', sans-serif;
+}
+
+/* ── RESET & BASE ── */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
 
 @layer base {
   body {
-    background-color: #000000;
-    color: #ffffff; /* text-white optional for visibility */
-    transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bg-page);
+    color: var(--text-body);
+    transition: background-color 0.38s ease, color 0.38s ease;
   }
 }
 
 .theme-transition {
-  transition: all 0.3s ease !important;
+  transition: all 0.38s ease !important;
 }
 
-html.light {
-  filter: invert(1) hue-rotate(180deg) contrast(0.9);
-}
+/* ── TAILWIND OVERRIDES WITH CSS VARS ── */
 
-html.light body {
-  background-color: #111; /* inverts to very light grey */
-  color: #000; /* inverts to white */
-}
-
-/* Keep images, videos, and code editors as they were */
-html.light img,
-html.light video,
-html.light .monaco-editor,
-html.light [data-no-invert] {
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-} 
-/* 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Utility classes for the new theme */
+@layer utilities {
+  .bg-page {
+    background-color: var(--bg-page);
   }
-  a:hover {
-    color: #747bff;
+  .bg-card {
+    background-color: var(--bg-card);
   }
-  button {
-    background-color: #f9f9f9;
+  .bg-alt {
+    background-color: var(--bg-alt);
   }
-} */
+  .text-heading {
+    color: var(--text-heading);
+  }
+  .text-body {
+    color: var(--text-body);
+  }
+  .text-muted {
+    color: var(--text-muted);
+  }
+  .border-theme {
+    border-color: var(--border-color);
+  }
+  .border-theme-light {
+    border-color: var(--border-light);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}

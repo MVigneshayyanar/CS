@@ -1,12 +1,12 @@
 import React from "react";
 
 const colorMap = {
-  teal: { stroke: "#0d9488", bar: "#0d9488", chip: "bg-teal-50 text-teal-700" },
+  teal: { stroke: "#0d9488", bar: "#0d9488", chip: "bg-[#f0f7f5] text-[#134d42]" },
   blue: { stroke: "#3b82f6", bar: "#3b82f6", chip: "bg-blue-50 text-blue-700" },
   emerald: {
-    stroke: "#10b981",
-    bar: "#10b981",
-    chip: "bg-emerald-50 text-emerald-700",
+    stroke: "#1a6b5c",
+    bar: "#1a6b5c",
+    chip: "bg-[#f0f7f5] text-[#134d42]",
   },
   amber: {
     stroke: "#f59e0b",
@@ -28,7 +28,7 @@ const ProgressCircle = ({ percentage, label, color = "teal" }) => {
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="flex items-center gap-4 bg-slate-50 border border-slate-100 rounded-2xl p-4 hover:border-teal-200 transition-all">
+    <div className="flex items-center gap-4 bg-alt border border-theme-light rounded-2xl p-4 hover:border-[#c2e6de] transition-all">
       {/* SVG Ring */}
       <div className="relative flex-shrink-0">
         <svg width="72" height="72" style={{ transform: "rotate(-90deg)" }}>
@@ -54,19 +54,19 @@ const ProgressCircle = ({ percentage, label, color = "teal" }) => {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm font-extrabold text-slate-800 leading-none">
+          <span className="text-sm font-extrabold text-heading leading-none">
             {percentage}%
           </span>
-          <span className="text-[9px] text-slate-400 mt-0.5">done</span>
+          <span className="text-[9px] text-muted mt-0.5">done</span>
         </div>
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-slate-700 mb-2 leading-snug">
+        <p className="text-xs font-bold text-heading mb-2 leading-snug">
           {label}
         </p>
-        <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden mb-2">
+        <div className="w-full bg-alt rounded-full h-1.5 overflow-hidden mb-2">
           <div
             className="h-1.5 rounded-full transition-all duration-1000"
             style={{ width: `${percentage}%`, background: c.bar }}

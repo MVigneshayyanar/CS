@@ -130,10 +130,10 @@ const AssignDepartmentHeadPage = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden bg-[#f0f4f8]">
+    <div className="h-[calc(100vh-3rem)] overflow-hidden bg-page">
       <div className="h-full max-w-7xl mx-auto px-4 sm:px-6 pt-8 md:pt-6 pb-4 sm:pb-6">
         <div className="mb-5">
-          <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-5">
+          <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-5">
             <div className="relative z-10 flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <UserCog className="w-5 h-5 text-white" />
@@ -146,7 +146,7 @@ const AssignDepartmentHeadPage = () => {
             {/* <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="relative z-10 bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
+              className="relative z-10 bg-card text-[#134d42] px-4 py-2 rounded-xl hover:bg-[#f0f7f5] transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
             >
               <ArrowLeft className="w-4 h-4 mr-1.5" />
               Back to Dashboard
@@ -155,25 +155,25 @@ const AssignDepartmentHeadPage = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm overflow-hidden">
+        <div className="bg-card border border-theme rounded-2xl p-5 sm:p-6 shadow-sm overflow-hidden">
           {isLoading ? (
-            <div className="flex items-center gap-3 text-slate-400 py-10 justify-center">
-              <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center gap-3 text-muted py-10 justify-center">
+              <div className="w-5 h-5 border-2 border-[#2a8c78] border-t-transparent rounded-full animate-spin" />
               Loading form...
             </div>
           ) : (
             <div className="space-y-6">
-              {isSubmitting && <div className="text-sm text-teal-600">Saving department head to database...</div>}
+              {isSubmitting && <div className="text-sm text-[#1a6b5c]">Saving department head to database...</div>}
 
               <div>
-                <h3 className="text-base font-bold text-slate-900 mb-3">Personal Information</h3>
+                <h3 className="text-base font-bold text-heading mb-3">Personal Information</h3>
                 <div className="grid md:grid-cols-2 gap-3">
                   <input
                     type="text"
                     placeholder="Full Name (e.g., Dr. Priya Nair)"
                     value={adminForm.name}
                     onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                   <input
@@ -181,7 +181,7 @@ const AssignDepartmentHeadPage = () => {
                     placeholder="Email Address"
                     value={adminForm.email}
                     onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                   <input
@@ -189,7 +189,7 @@ const AssignDepartmentHeadPage = () => {
                     placeholder="Phone Number"
                     value={adminForm.phone}
                     onChange={(e) => setAdminForm({ ...adminForm, phone: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                   <input
@@ -197,14 +197,14 @@ const AssignDepartmentHeadPage = () => {
                     placeholder="Employee ID (e.g., MIT-CSE-001)"
                     value={adminForm.empId}
                     onChange={(e) => setAdminForm({ ...adminForm, empId: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-slate-900 mb-3">Professional Information</h3>
+                <h3 className="text-base font-bold text-heading mb-3">Professional Information</h3>
                 <div className="grid md:grid-cols-2 gap-3">
                   <div className="md:col-span-2 flex gap-2">
                     <input
@@ -212,12 +212,12 @@ const AssignDepartmentHeadPage = () => {
                       placeholder="Add new department (e.g., Biotechnology)"
                       value={newDepartmentName}
                       onChange={(e) => setNewDepartmentName(e.target.value)}
-                      className="flex-1 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="flex-1 p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     />
                     <button
                       type="button"
                       onClick={addDepartmentOption}
-                      className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl border border-slate-200"
+                      className="px-4 py-2 text-sm bg-alt hover:bg-alt text-heading rounded-xl border border-theme"
                     >
                       Add Department
                     </button>
@@ -227,21 +227,21 @@ const AssignDepartmentHeadPage = () => {
                     <button
                       type="button"
                       onClick={() => setIsDepartmentMenuOpen((prev) => !prev)}
-                      className="w-full p-3 pr-10 text-sm bg-white border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/40 shadow-sm text-left"
+                      className="w-full p-3 pr-10 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]/40 shadow-sm text-left"
                     >
                       {adminForm.department || 'Select Department'}
                     </button>
-                    <ChevronDown className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform ${isDepartmentMenuOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted transition-transform ${isDepartmentMenuOpen ? 'rotate-180' : ''}`} />
 
                     {isDepartmentMenuOpen && (
-                      <div className="absolute z-20 mt-2 w-full max-h-44 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg">
+                      <div className="absolute z-20 mt-2 w-full max-h-44 overflow-y-auto bg-card border border-theme rounded-xl shadow-lg">
                         <button
                           type="button"
                           onClick={() => {
                             setAdminForm({ ...adminForm, department: '' });
                             setIsDepartmentMenuOpen(false);
                           }}
-                          className="w-full px-3 py-2.5 text-sm text-left text-slate-500 hover:bg-slate-50"
+                          className="w-full px-3 py-2.5 text-sm text-left text-body hover:bg-alt"
                         >
                           Select Department
                         </button>
@@ -253,7 +253,7 @@ const AssignDepartmentHeadPage = () => {
                               setAdminForm({ ...adminForm, department: dept.name });
                               setIsDepartmentMenuOpen(false);
                             }}
-                            className={`w-full px-3 py-2.5 text-sm text-left hover:bg-teal-50 ${adminForm.department === dept.name ? 'bg-teal-50 text-teal-700 font-semibold' : 'text-slate-700'}`}
+                            className={`w-full px-3 py-2.5 text-sm text-left hover:bg-[#f0f7f5] ${adminForm.department === dept.name ? 'bg-[#f0f7f5] text-[#134d42] font-semibold' : 'text-heading'}`}
                           >
                             {dept.name}
                           </button>
@@ -267,7 +267,7 @@ const AssignDepartmentHeadPage = () => {
                     placeholder="Qualification (e.g., Ph.D in Computer Science)"
                     value={adminForm.qualification}
                     onChange={(e) => setAdminForm({ ...adminForm, qualification: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                   <input
@@ -275,7 +275,7 @@ const AssignDepartmentHeadPage = () => {
                     placeholder="Experience (e.g., 15 years)"
                     value={adminForm.experience}
                     onChange={(e) => setAdminForm({ ...adminForm, experience: e.target.value })}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                     required
                   />
                 </div>
@@ -284,16 +284,16 @@ const AssignDepartmentHeadPage = () => {
                   placeholder="Specialization (e.g., Artificial Intelligence & Machine Learning)"
                   value={adminForm.specialization}
                   onChange={(e) => setAdminForm({ ...adminForm, specialization: e.target.value })}
-                  className="mt-3 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 w-full h-20"
+                  className="mt-3 p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] w-full h-20"
                   required
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+              <div className="flex justify-end gap-2 pt-2 border-t border-theme">
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
-                  className="px-5 py-2 text-sm text-slate-600 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200 transition-colors"
+                  className="px-5 py-2 text-sm text-body bg-alt border border-theme rounded-xl hover:bg-alt transition-colors"
                 >
                   Cancel
                 </button>
@@ -301,7 +301,7 @@ const AssignDepartmentHeadPage = () => {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-5 py-2 text-sm bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all flex items-center shadow-md disabled:opacity-70"
+                  className="px-5 py-2 text-sm bg-[#1a6b5c] text-white rounded-xl hover:bg-[#134d42] transition-all flex items-center shadow-md disabled:opacity-70"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {isSubmitting ? 'Saving...' : 'Assign Department Head'}

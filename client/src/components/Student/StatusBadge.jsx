@@ -4,7 +4,7 @@ const StatusBadge = ({ status }) => {
   switch (status) {
     case "completed":
       return (
-        <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium">
+        <span className="px-2 py-1 bg-[#dff2ed] text-teal-800 rounded-full text-xs font-medium">
           Completed
         </span>
       );

@@ -53,9 +53,9 @@ const AdminDashboard = () => {
       value: isLoading ? '—' : counts.faculty,
       subtitle: 'Active faculty members',
       icon: UserCheck,
-      gradient: 'from-emerald-500 to-emerald-600',
-      bgLight: 'bg-emerald-50',
-      textColor: 'text-emerald-600',
+      gradient: 'from-[#2a8c78] to-[#1a6b5c]',
+      bgLight: 'bg-[#f0f7f5]',
+      textColor: 'text-[#1a6b5c]',
     },
     {
       title: 'Labs',
@@ -70,16 +70,16 @@ const AdminDashboard = () => {
 
   const quickActions = [
     { label: 'Add Student', description: 'Register a new student', path: '/students', icon: Users, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Add Faculty', description: 'Add a new faculty member', path: '/faculty', icon: UserCheck, color: 'text-emerald-600 bg-emerald-50' },
+    { label: 'Add Faculty', description: 'Add a new faculty member', path: '/faculty', icon: UserCheck, color: 'text-[#1a6b5c] bg-[#f0f7f5]' },
     { label: 'Create Lab', description: 'Set up a programming lab', path: '/labs', icon: FlaskConical, color: 'text-purple-600 bg-purple-50' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 md:pt-8 pb-10 sm:pb-12">
 
         {/* Hero Header Banner — matching God dashboard */}
-        <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
+        <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
           <div className="relative z-10 flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
@@ -101,7 +101,7 @@ const AdminDashboard = () => {
         {/* Stats Grid — compact like God dashboard */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div key={index} className="bg-card border border-theme rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <div className={`p-2.5 rounded-xl bg-gradient-to-r ${stat.gradient}`}>
                   <stat.icon className="w-5 h-5 text-white" />
@@ -111,9 +111,9 @@ const AdminDashboard = () => {
                   Live
                 </div>
               </div>
-              <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-1">{stat.title}</p>
-              <p className="text-2xl font-extrabold text-slate-800">{stat.value}</p>
-              <p className="text-xs text-slate-500 mt-1">{stat.subtitle}</p>
+              <p className="text-[11px] text-muted font-bold uppercase tracking-wider mb-1">{stat.title}</p>
+              <p className="text-2xl font-extrabold text-heading">{stat.value}</p>
+              <p className="text-xs text-body mt-1">{stat.subtitle}</p>
             </div>
           ))}
         </div>
@@ -121,58 +121,58 @@ const AdminDashboard = () => {
         {/* Quick Actions + Recent Activity */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Quick Actions */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Quick Actions</h3>
+          <div className="bg-card border border-theme rounded-2xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-heading mb-4 uppercase tracking-wider">Quick Actions</h3>
             <div className="space-y-3">
               {quickActions.map((action, index) => (
                 <button
                   key={index}
                   onClick={() => navigate(action.path)}
-                  className="w-full text-left flex items-center gap-4 p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-all group"
+                  className="w-full text-left flex items-center gap-4 p-3.5 bg-alt hover:bg-alt border border-theme-light rounded-xl transition-all group"
                 >
                   <div className={`p-2.5 rounded-xl ${action.color}`}>
                     <action.icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-slate-800 text-sm">{action.label}</div>
-                    <div className="text-xs text-slate-500">{action.description}</div>
+                    <div className="font-semibold text-heading text-sm">{action.label}</div>
+                    <div className="text-xs text-body">{action.description}</div>
                   </div>
-                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transition-colors" />
+                  <ArrowUpRight className="w-4 h-4 text-muted group-hover:text-[#2a8c78] transition-colors" />
                 </button>
               ))}
             </div>
           </div>
 
           {/* Recent Members */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wider">Recent Members</h3>
+          <div className="bg-card border border-theme rounded-2xl p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-heading mb-4 uppercase tracking-wider">Recent Members</h3>
             <div className="space-y-2">
               {isLoading ? (
-                <p className="text-sm text-slate-400 py-4 text-center">Loading...</p>
+                <p className="text-sm text-muted py-4 text-center">Loading...</p>
               ) : (
                 <>
                   {recentStudents.slice(0, 3).map((student, index) => (
-                    <div key={`s-${index}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div key={`s-${index}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-alt transition-colors">
                       <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm text-slate-700 font-medium truncate">{student.name}</div>
-                        <div className="text-xs text-slate-400">{student.rollNo} · Student</div>
+                        <div className="text-sm text-heading font-medium truncate">{student.name}</div>
+                        <div className="text-xs text-muted">{student.rollNo} · Student</div>
                       </div>
                       <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Student</span>
                     </div>
                   ))}
                   {recentFaculty.slice(0, 2).map((member, index) => (
-                    <div key={`f-${index}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0" />
+                    <div key={`f-${index}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-alt transition-colors">
+                      <div className="w-2 h-2 bg-[#2a8c78] rounded-full flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm text-slate-700 font-medium truncate">{member.name}</div>
-                        <div className="text-xs text-slate-400">{member.empId} · Faculty</div>
+                        <div className="text-sm text-heading font-medium truncate">{member.name}</div>
+                        <div className="text-xs text-muted">{member.empId} · Faculty</div>
                       </div>
-                      <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Faculty</span>
+                      <span className="text-[10px] bg-[#f0f7f5] text-[#1a6b5c] px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Faculty</span>
                     </div>
                   ))}
                   {recentStudents.length === 0 && recentFaculty.length === 0 && (
-                    <p className="text-sm text-slate-400 py-4 text-center italic">No members yet</p>
+                    <p className="text-sm text-muted py-4 text-center italic">No members yet</p>
                   )}
                 </>
               )}

@@ -132,35 +132,35 @@ const AddCollegePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f0f4f8] flex items-center justify-center">
-        <p className="text-slate-500 text-lg">Loading college details...</p>
+      <div className="min-h-screen bg-page flex items-center justify-center">
+        <p className="text-body text-lg">Loading college details...</p>
       </div>
     );
   }
 
   const inputClassName =
-    'p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500';
+    'p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78]';
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 md:pt-8 pb-10 sm:pb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+            <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
               <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-xl font-extrabold text-heading leading-tight">
                 {isEdit ? 'Edit College' : 'Add New College'}
               </h1>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 {isEdit ? 'Update institutional details' : 'Create a college record for god mode'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex items-center justify-between overflow-hidden mb-5">
+        <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex items-center justify-between overflow-hidden mb-5">
           <div className="relative z-10">
             <h2 className="text-lg font-extrabold text-white mb-1">
               {isEdit ? 'Update College Details' : 'College Setup'}
@@ -175,12 +175,12 @@ const AddCollegePage = () => {
         </div>
 
         <div className="space-y-5">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+          <div className="bg-card border border-theme rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-                <MapPin className="w-3.5 h-3.5 text-teal-600" />
+              <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+                <MapPin className="w-3.5 h-3.5 text-[#1a6b5c]" />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-800">Basic Information</h3>
+              <h3 className="text-sm font-extrabold text-heading">Basic Information</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <input
@@ -256,16 +256,16 @@ const AddCollegePage = () => {
               placeholder="Full Address"
               value={collegeForm.address}
               onChange={(e) => setCollegeForm((prev) => ({ ...prev, address: e.target.value }))}
-              className="mt-4 p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all w-full h-20"
+              className="mt-4 p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all w-full h-20"
             />
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+          <div className="bg-card border border-theme rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-                <Phone className="w-3.5 h-3.5 text-teal-600" />
+              <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+                <Phone className="w-3.5 h-3.5 text-[#1a6b5c]" />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-800">Contact Information</h3>
+              <h3 className="text-sm font-extrabold text-heading">Contact Information</h3>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
               <input
@@ -322,16 +322,16 @@ const AddCollegePage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+          <div className="bg-card border border-theme rounded-2xl shadow-sm p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-                <CalendarDays className="w-3.5 h-3.5 text-teal-600" />
+              <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+                <CalendarDays className="w-3.5 h-3.5 text-[#1a6b5c]" />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-800">Academic Calendar</h3>
+              <h3 className="text-sm font-extrabold text-heading">Academic Calendar</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-2">Start Date</label>
+                <label className="block text-[11px] font-bold text-body mb-2">Start Date</label>
                 <input
                   type="date"
                   value={collegeForm.academicStartDate}
@@ -341,7 +341,7 @@ const AddCollegePage = () => {
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-2">End Date</label>
+                <label className="block text-[11px] font-bold text-body mb-2">End Date</label>
                 <input
                   type="date"
                   value={collegeForm.academicEndDate}
@@ -353,12 +353,12 @@ const AddCollegePage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6">
+          <div className="bg-card border border-theme rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-teal-600" />
+              <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-[#1a6b5c]" />
               </div>
-              <h3 className="text-sm font-extrabold text-slate-800">Initial Super Admin Access</h3>
+              <h3 className="text-sm font-extrabold text-heading">Initial Super Admin Access</h3>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <input
@@ -392,12 +392,12 @@ const AddCollegePage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-5">
+          <div className="bg-card border border-theme rounded-2xl shadow-sm p-4 sm:p-5">
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
             <button
               type="button"
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-2 text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 w-full sm:w-auto"
+              className="px-6 py-2 text-body bg-alt border border-theme rounded-lg hover:bg-alt w-full sm:w-auto"
             >
               Cancel
             </button>
@@ -405,7 +405,7 @@ const AddCollegePage = () => {
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto"
+              className="px-6 py-2 bg-[#1a6b5c] text-white rounded-lg hover:bg-[#134d42] transition-all flex items-center justify-center shadow-sm w-full sm:w-auto"
             >
               <Save className="w-4 h-4 mr-2" />
               {isSubmitting ? 'Saving...' : isEdit ? 'Update College' : 'Save College'}

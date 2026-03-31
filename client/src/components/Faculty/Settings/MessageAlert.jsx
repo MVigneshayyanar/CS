@@ -5,7 +5,7 @@ const MessageAlert = ({ message }) => {
   
   return (
     <div className={`mb-8 p-4 rounded-lg ${
-      message.type === 'success' ? 'bg-emerald-900/50 text-emerald-300 border border-emerald-700/50' :
+      message.type === 'success' ? 'bg-teal-900/50 text-[#5c9088] border border-[#134d42]/50' :
       'bg-red-900/50 text-red-300 border border-red-700/50'
     } backdrop-blur-sm`}>
       {message.text}

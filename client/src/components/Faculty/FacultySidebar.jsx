@@ -4,71 +4,27 @@ import { useSidebar } from "../../context/SidebarContext";
 import brandLogo from "../../assets/logo.svg";
 
 const IconDash = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-    />
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
   </svg>
 );
 
 const IconLabs = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-    />
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
   </svg>
 );
 
 const IconSettings = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-5 w-5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 15a3 3 0 100-6 3 3 0 000 6z"
-    />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"
-    />
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
   </svg>
 );
 
 const IconLogout = () => (
-  <svg
-    viewBox="0 0 24 24"
-    className="h-5 w-5 flex-shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-    />
+  <svg viewBox="0 0 24 24" className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
   </svg>
 );
 
@@ -82,8 +38,7 @@ import ThemeToggle from "../ThemeToggle";
 import LogoutConfirmation from "../LogoutConfirmation";
 
 export default function FacultySidebar({ onLogout }) {
-  const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } =
-    useSidebar();
+  const { isCollapsed: collapsed, toggleSidebar: toggleCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const location = useLocation();
@@ -99,53 +54,40 @@ export default function FacultySidebar({ onLogout }) {
       <>
         <button
           onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed left-3 top-3 z-50 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
-        aria-label="Open menu"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          className="h-5 w-5 text-slate-600"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+          className="md:hidden fixed left-3 top-3 z-50 rounded-xl p-2 shadow-sm"
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+          aria-label="Open menu"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
+          <svg viewBox="0 0 24 24" className="h-5 w-5" style={{ color: 'var(--text-body)' }} fill="none" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
       <aside
         className={[
           "fixed top-4 bottom-4 left-4 z-40 flex flex-col",
-          "bg-[#18181b] text-white",
+          "text-white",
           "rounded-[2.5rem] transition-[width,transform] duration-500 ease-in-out",
           "shadow-2xl overflow-hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-[calc(100%+20px)]",
           "md:translate-x-0",
           collapsed ? "md:w-20" : "md:w-64",
         ].join(" ")}
+        style={{ background: 'var(--sidebar-bg)' }}
         aria-label="Faculty Navigation"
         aria-expanded={!collapsed}
       >
-        <div
-          className={`relative flex h-24 items-center ${collapsed ? "justify-center" : "justify-between px-6"}`}
-        >
+        <div className={`relative flex h-24 items-center ${collapsed ? "justify-center" : "justify-between px-6"}`}>
           <NavLink
             to="/dashboard"
             className={`flex items-center rounded-md focus:outline-none ${collapsed ? 'justify-center mx-auto' : 'gap-3'}`}
           >
             <div
-              className={`rounded-full bg-gradient-to-tr from-orange-400 via-pink-500 to-indigo-500 flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? "h-12 w-12" : "h-10 w-10"}`}
+              className={`rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? "h-12 w-12" : "h-10 w-10"}`}
+              style={{ background: 'var(--gradient-logo)' }}
             >
-              <div className="h-full w-full rounded-full bg-[#18181b] flex items-center justify-center overflow-hidden">
-                <img
-                  src={brandLogo}
-                  alt="Logo"
-                  className="h-6 w-6 object-contain"
-                />
+              <div className="h-full w-full rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--sidebar-logo-bg)' }}>
+                <img src={brandLogo} alt="Logo" className="h-6 w-6 object-contain" />
               </div>
             </div>
             {!collapsed && (
@@ -168,10 +110,17 @@ export default function FacultySidebar({ onLogout }) {
                     "group relative flex items-center rounded-3xl py-3.5 text-sm font-medium transition-all duration-300",
                     collapsed ? "justify-center px-0" : "px-4 gap-4",
                     isActive
-                      ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
-                      : "text-white/60 hover:text-white hover:bg-white/5",
+                      ? "text-white shadow-lg"
+                      : "hover:bg-white/5",
                   ].join(" ")
                 }
+                style={({ isActive }) => isActive ? {
+                  background: 'var(--sidebar-active)',
+                  boxShadow: `0 8px 25px var(--sidebar-active-shadow)`,
+                  color: 'var(--sidebar-text-active)',
+                } : {
+                  color: 'var(--sidebar-text)',
+                }}
               >
                 <div className="flex-shrink-0">
                   <Icon />
@@ -184,9 +133,10 @@ export default function FacultySidebar({ onLogout }) {
                 {collapsed && (
                   <span
                     className="absolute left-full top-1/2 -translate-y-1/2 ml-4
-                               whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2 text-xs text-white
+                               whitespace-nowrap rounded-xl px-4 py-2 text-xs text-white
                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none
                                shadow-xl z-[60]"
+                    style={{ background: 'var(--sidebar-bg)' }}
                   >
                     {label}
                   </span>
@@ -197,7 +147,7 @@ export default function FacultySidebar({ onLogout }) {
         </div>
 
 
-        <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{ paddingBottom: !collapsed ? '56px' : undefined }}>
+        <div className="p-4 flex flex-col gap-2 relative" style={{ borderTop: '1px solid var(--sidebar-border)', paddingBottom: !collapsed ? '56px' : undefined }}>
           <ThemeToggle collapsed={collapsed} />
 
           <button
@@ -223,7 +173,6 @@ export default function FacultySidebar({ onLogout }) {
               </span>
             )}
           </button>
-          {/* Shrink button absolutely at bottom center when expanded, below logout */}
           <div className={`w-full ${collapsed ? 'flex justify-center' : ''}`} style={{ position: !collapsed ? 'absolute' : 'static', left: 0, right: 0, bottom: 16, display: !collapsed ? 'flex' : undefined, justifyContent: !collapsed ? 'center' : undefined, pointerEvents: 'auto' }}>
             <button
               onClick={toggleCollapsed}

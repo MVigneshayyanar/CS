@@ -15,10 +15,10 @@ const colorCycle = [
     chip: "bg-violet-50 text-violet-700",
   },
   {
-    iconBg: "bg-teal-50",
-    iconColor: "text-teal-500",
-    bar: "bg-teal-500",
-    chip: "bg-teal-50 text-teal-700",
+    iconBg: "bg-[#f0f7f5]",
+    iconColor: "text-[#2a8c78]",
+    bar: "bg-[#2a8c78]",
+    chip: "bg-[#f0f7f5] text-[#134d42]",
   },
   {
     iconBg: "bg-amber-50",
@@ -88,8 +88,8 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold border-2 transition-all ${
               filter === f
-                ? "bg-teal-50 border-teal-400 text-teal-700"
-                : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
+                ? "bg-[#f0f7f5] border-[#3aa892] text-[#134d42]"
+                : "bg-alt border-theme text-body hover:border-theme"
             }`}
           >
             {f}
@@ -98,7 +98,7 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-slate-400 text-center py-6">
+        <p className="text-sm text-muted text-center py-6">
           No classes found
         </p>
       ) : (
@@ -111,7 +111,7 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
               <div
                 key={cls.id || i}
                 onClick={() => onClassSelect && onClassSelect(cls)}
-                className="bg-slate-50 border border-slate-100 rounded-2xl p-4 cursor-pointer hover:border-teal-300 hover:bg-teal-50/30 transition-all group"
+                className="bg-alt border border-theme-light rounded-2xl p-4 cursor-pointer hover:border-[#5c9088] hover:bg-[#f0f7f5]/30 transition-all group"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div
@@ -120,16 +120,16 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
                     <BookOpen className={`w-4 h-4 ${c.iconColor}`} />
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-2 py-1 rounded-full ${(cls.status || "Active") === "Active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}
+                    className={`text-[10px] font-bold px-2 py-1 rounded-full ${(cls.status || "Active") === "Active" ? "bg-[#f0f7f5] text-[#134d42]" : "bg-alt text-body"}`}
                   >
                     {cls.status || "Active"}
                   </span>
                 </div>
 
-                <p className="text-sm font-extrabold text-slate-900 mb-0.5">
+                <p className="text-sm font-extrabold text-heading mb-0.5">
                   {cls.name}
                 </p>
-                <p className="text-[11px] text-slate-500 font-medium mb-3">
+                <p className="text-[11px] text-body font-medium mb-3">
                   {cls.subject}
                   {cls.students != null && (
                     <span className="ml-2 inline-flex items-center gap-1">
@@ -139,7 +139,7 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
                   )}
                 </p>
 
-                <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden mb-2">
+                <div className="h-1.5 bg-alt rounded-full overflow-hidden mb-2">
                   <div
                     className={`h-1.5 rounded-full transition-all duration-700 ${c.bar}`}
                     style={{ width: `${Math.max(0, Math.min(100, pct))}%` }}
@@ -147,10 +147,10 @@ const ClassManagementGrid = ({ onClassSelect, classesData = [] }) => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 font-semibold">
+                  <span className="text-[10px] text-muted font-semibold">
                     {pct}% Complete
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 transition-colors" />
+                  <ChevronRight className="w-3.5 h-3.5 text-muted group-hover:text-[#2a8c78] transition-colors" />
                 </div>
               </div>
             );

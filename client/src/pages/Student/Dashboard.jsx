@@ -38,38 +38,38 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
         {/* Top Bar */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+            <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-xl font-extrabold text-heading leading-tight">
                 Dashboard
               </h1>
-              <p className="text-xs text-slate-400">Track your lab progress</p>
+              <p className="text-xs text-muted">Track your lab progress</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
-              <Search className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center gap-2 bg-card border border-theme rounded-xl px-4 py-2 shadow-sm">
+              <Search className="w-4 h-4 text-muted" />
               <input
-                className="text-sm text-slate-500 outline-none bg-transparent w-44 placeholder:text-slate-400"
+                className="text-sm text-body outline-none bg-transparent w-44 placeholder:text-muted"
                 placeholder="Search anything here..."
               />
             </div>
-            <div className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
-              <Bell className="w-4 h-4 text-slate-500" />
+            <div className="w-9 h-9 bg-card border border-theme rounded-xl flex items-center justify-center shadow-sm">
+              <Bell className="w-4 h-4 text-body" />
             </div>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
-            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-3 text-muted py-20 justify-center">
+            <div className="w-5 h-5 border-2 border-[#2a8c78] border-t-transparent rounded-full animate-spin" />
             Loading dashboard...
           </div>
         ) : (

@@ -2,7 +2,7 @@ import React from "react";
 import { FileText, Clock, ChevronRight } from "lucide-react";
 
 const dotColors = [
-  "bg-teal-500",
+  "bg-[#2a8c78]",
   "bg-blue-500",
   "bg-amber-400",
   "bg-violet-500",
@@ -11,7 +11,7 @@ const dotColors = [
 const badgeMap = {
   high: "bg-red-50 text-red-600",
   medium: "bg-amber-50 text-amber-700",
-  low: "bg-slate-100 text-slate-500",
+  low: "bg-alt text-body",
 };
 
 const buildRecentText = (act) => {
@@ -59,24 +59,24 @@ const ActivitySidebar = ({
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex-1">
+      <div className="bg-white rounded-2xl border border-theme-light shadow-sm p-4 flex-1">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-              <FileText className="w-3.5 h-3.5 text-teal-600" />
+            <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+              <FileText className="w-3.5 h-3.5 text-[#1a6b5c]" />
             </div>
-            <span className="text-xs font-extrabold text-slate-800">
+            <span className="text-xs font-extrabold text-heading">
               Recent Activity
             </span>
           </div>
-          <button className="text-[10px] font-bold text-teal-600 hover:underline flex items-center gap-1">
+          <button className="text-[10px] font-bold text-[#1a6b5c] hover:underline flex items-center gap-1">
             View all <ChevronRight className="w-3 h-3" />
           </button>
         </div>
 
         <div className="space-y-0">
           {recentActivities.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-4">
+            <p className="text-xs text-muted text-center py-4">
               No recent activity
             </p>
           ) : (
@@ -89,10 +89,10 @@ const ActivitySidebar = ({
                   className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${dotColors[i % dotColors.length]}`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-700 leading-snug">
+                  <p className="text-xs font-semibold text-heading leading-snug">
                     {act.description}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                  <p className="text-[10px] text-muted mt-0.5 font-medium">
                     {act.class} · {act.time}
                   </p>
                 </div>
@@ -103,31 +103,31 @@ const ActivitySidebar = ({
       </div>
 
       {showPendingActions && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+        <div className="bg-white rounded-2xl border border-theme-light shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center">
               <Clock className="w-3.5 h-3.5 text-amber-500" />
             </div>
-            <span className="text-xs font-extrabold text-slate-800">
+            <span className="text-xs font-extrabold text-heading">
               Pending Actions
             </span>
           </div>
 
           <div className="space-y-2">
             {pendingActions.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-3">
+              <p className="text-xs text-muted text-center py-3">
                 All caught up!
               </p>
             ) : (
               pendingActions.map((action, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl border border-slate-100"
+                  className="flex items-center gap-2.5 p-2.5 bg-alt rounded-xl border border-theme-light"
                 >
-                  <div className="w-7 h-7 bg-white rounded-lg border border-slate-200 flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-3 h-3 text-slate-400" />
+                  <div className="w-7 h-7 bg-white rounded-lg border border-theme flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-3 h-3 text-muted" />
                   </div>
-                  <p className="flex-1 text-[11px] font-semibold text-slate-600 leading-tight">
+                  <p className="flex-1 text-[11px] font-semibold text-body leading-tight">
                     {action.description}
                   </p>
                   <span

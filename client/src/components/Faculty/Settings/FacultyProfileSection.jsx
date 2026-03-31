@@ -24,9 +24,9 @@ const FacultyProfileSection = () => {
     loadProfile();
   }, []);
 
-  if (loading) return <div className="p-10 text-center text-neutral-400">Loading profile...</div>;
+  if (loading) return <div className="p-10 text-center text-muted">Loading profile...</div>;
   if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
-  if (!facultyData) return <div className="p-10 text-center text-neutral-400">No profile data found</div>;
+  if (!facultyData) return <div className="p-10 text-center text-muted">No profile data found</div>;
 
   return (
     <div className="space-y-6">
@@ -34,62 +34,62 @@ const FacultyProfileSection = () => {
         <h3 className="text-xl font-semibold text-white mb-4">My Faculty Profile</h3>
         
         <div className="space-y-6">
-          <div className="bg-neutral-800/30 rounded-lg p-6 border border-neutral-700/50">
+          <div className="bg-neutral-800/30 rounded-lg p-6 border border-theme">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center">
               <User />
-              <span className="ml-2 text-emerald-400">Personal Information</span>
+              <span className="ml-2 text-[#3aa892]">Personal Information</span>
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Full Name</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-muted mb-2">Full Name</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted">
                   {facultyData.name}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Username</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300 flex items-center">
+                <label className="block text-sm font-medium text-muted mb-2">Username</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted flex items-center">
                   <Hash />
                   <span className="ml-2">{facultyData.username}</span>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Email Address</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300 flex items-center">
+                <label className="block text-sm font-medium text-muted mb-2">Email Address</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted flex items-center">
                   <Mail />
                   <span className="ml-2">{facultyData.email || 'Not provided'}</span>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Role</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-muted mb-2">Role</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted">
                   {facultyData.role}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-neutral-800/30 rounded-lg p-6 border border-neutral-700/50">
+          <div className="bg-neutral-800/30 rounded-lg p-6 border border-theme">
             <h4 className="text-lg font-medium text-white mb-4 flex items-center">
               <GraduationCap />
-              <span className="ml-2 text-emerald-400">Academic Information</span>
+              <span className="ml-2 text-[#3aa892]">Academic Information</span>
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Department</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-muted mb-2">Department</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted">
                   {facultyData.department || 'Computer Science'}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Designation</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300">
+                <label className="block text-sm font-medium text-muted mb-2">Designation</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted">
                   {facultyData.designation || 'Faculty'}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-400 mb-2">Joining Date</label>
-                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-neutral-700/50 rounded-lg text-neutral-300 flex items-center">
+                <label className="block text-sm font-medium text-muted mb-2">Joining Date</label>
+                <div className="w-full px-4 py-3 bg-neutral-900/50 border border-theme rounded-lg text-muted flex items-center">
                   <Calendar />
                   <span className="ml-2">
                     {facultyData.joinedAt ? new Date(facultyData.joinedAt).toLocaleDateString() : 'N/A'}

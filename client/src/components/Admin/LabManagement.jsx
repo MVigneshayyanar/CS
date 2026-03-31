@@ -28,21 +28,21 @@ import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 /* ───── Reusable Modal Shell ───── */
 const Modal = ({ title, children, onClose, footer }) => (
   <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-3xl shadow-xl max-h-[85vh] overflow-y-auto">
+    <div className="bg-card border border-theme rounded-2xl p-5 w-full max-w-3xl shadow-xl max-h-[85vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6 gap-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl sm:text-2xl font-bold text-heading">
           {title}
         </h2>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+          className="text-muted hover:text-heading transition-colors p-1"
         >
           <X className="w-6 h-6" />
         </button>
       </div>
       {children}
       {footer && (
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200 mt-6">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-theme mt-6">
           {footer}
         </div>
       )}
@@ -361,10 +361,10 @@ const LabManagement = () => {
 
   /* ──────────────── RENDER ──────────────── */
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 md:pt-8 pb-10 sm:pb-12">
         {/* ── Hero Header ── */}
-        <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
+        <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
           <div className="relative z-10 flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <FlaskConical className="w-5 h-5 text-white" />
@@ -380,7 +380,7 @@ const LabManagement = () => {
           </div>
           <button
             onClick={() => openCreateModal()}
-            className="relative z-10 bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
+            className="relative z-10 bg-card text-[#134d42] px-4 py-2 rounded-xl hover:bg-[#f0f7f5] transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-1.5" />
             Create Lab
@@ -389,31 +389,31 @@ const LabManagement = () => {
         </div>
 
         {/* ── Search ── */}
-        <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div className="mb-6 bg-card border border-theme rounded-2xl p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3">
-            <p className="text-sm font-bold text-slate-700">Find Labs</p>
-            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+            <p className="text-sm font-bold text-heading">Find Labs</p>
+            <span className="text-xs font-semibold text-body bg-alt px-2.5 py-1 rounded-full">
               {filteredLabs.length} result{filteredLabs.length === 1 ? "" : "s"}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-3">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by lab name or faculty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl w-full text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                className="pl-12 pr-4 py-3 bg-alt border border-theme rounded-xl w-full text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
               />
             </div>
             <div className="flex items-stretch gap-2">
               <div className="relative flex-1">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 w-4 h-4" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1a6b5c] w-4 h-4" />
                 <select
                   value={selectedLabBatch}
                   onChange={(e) => setSelectedLabBatch(e.target.value)}
-                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl w-full text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-[#f0f7f5] to-[#f0f7f5] border border-[#c2e6de] rounded-xl w-full text-heading font-semibold focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                 >
                   <option value="all">Filter: All Batches</option>
                   {labBatchOptions.map((batch) => (
@@ -422,13 +422,13 @@ const LabManagement = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4 pointer-events-none" />
               </div>
               {selectedLabBatch !== "all" && (
                 <button
                   type="button"
                   onClick={() => setSelectedLabBatch("all")}
-                  className="px-3 py-3 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition-colors"
+                  className="px-3 py-3 text-xs font-bold text-[#134d42] bg-[#f0f7f5] border border-[#c2e6de] rounded-xl hover:bg-[#dff2ed] transition-colors"
                 >
                   Clear
                 </button>
@@ -440,7 +440,7 @@ const LabManagement = () => {
         {/* ── Lab Cards ── */}
         <div className="grid gap-6">
           {isLoading && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-8 text-slate-400 text-sm text-center shadow-sm">
+            <div className="bg-card border border-theme rounded-2xl p-8 text-muted text-sm text-center shadow-sm">
               Loading labs...
             </div>
           )}
@@ -448,11 +448,11 @@ const LabManagement = () => {
           {!isLoading &&
             groupedLabEntries.map(([batchLabel, batchLabs]) => (
               <div key={batchLabel} className="grid gap-4">
-                <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
-                  <p className="text-sm font-bold text-slate-700">
+                <div className="flex items-center justify-between bg-card border border-theme rounded-xl px-4 py-3 shadow-sm">
+                  <p className="text-sm font-bold text-heading">
                     Batch {batchLabel}
                   </p>
-                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                  <span className="text-xs font-semibold text-body bg-alt px-2.5 py-1 rounded-full">
                     {batchLabs.length} lab{batchLabs.length === 1 ? "" : "s"}
                   </span>
                 </div>
@@ -466,15 +466,15 @@ const LabManagement = () => {
                   return (
                     <div
                       key={lab.id}
-                      className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
+                      className="bg-card border border-theme rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow"
                     >
                       {/* Lab Header */}
                       <div className="flex flex-col lg:flex-row justify-between items-start gap-4 mb-5">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-slate-900 mb-1">
+                          <h3 className="text-xl font-bold text-heading mb-1">
                             {lab.name}
                           </h3>
-                          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-body">
                             <span>
                               Faculty:{" "}
                               {facultyList
@@ -486,7 +486,7 @@ const LabManagement = () => {
                                 })
                                 .join(", ") || "—"}
                             </span>
-                            <span className="bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            <span className="bg-[#f0f7f5] text-[#134d42] px-2.5 py-0.5 rounded-full text-xs font-medium">
                               {getLabBatchLabel(lab).replace("-", " – ")}
                             </span>
                           </div>
@@ -513,8 +513,8 @@ const LabManagement = () => {
                       {/* Two Sub-Cards: Assign Students & Experiments */}
                       <div className="grid md:grid-cols-2 gap-4">
                         {/* ── Assign Students Card ── */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col">
-                          <h4 className="font-semibold text-slate-700 mb-3 flex items-center text-sm">
+                        <div className="bg-alt border border-theme rounded-xl p-4 flex flex-col">
+                          <h4 className="font-semibold text-heading mb-3 flex items-center text-sm">
                             <Users className="w-4 h-4 mr-2" />
                             Assign Students ({(lab.students || []).length})
                           </h4>
@@ -525,14 +525,14 @@ const LabManagement = () => {
                                   lab.students.map((std, i) => (
                                     <span
                                       key={i}
-                                      className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full text-xs font-semibold"
+                                      className="bg-alt text-body px-2.5 py-1 rounded-full text-xs font-semibold"
                                     >
                                       {typeof std === "object" ? std.name : std}
                                     </span>
                                   ))}
                               </div>
                             ) : (
-                              <p className="text-xs text-slate-400 italic">
+                              <p className="text-xs text-muted italic">
                                 No students assigned yet
                               </p>
                             )}
@@ -550,20 +550,20 @@ const LabManagement = () => {
                         </div>
 
                         {/* ── Experiments Card ── */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+                        <div className="bg-alt border border-theme rounded-xl p-4 flex flex-col justify-between">
                           <div>
-                            <h4 className="font-semibold text-slate-700 mb-2 flex items-center text-sm">
+                            <h4 className="font-semibold text-heading mb-2 flex items-center text-sm">
                               <FlaskConical className="w-4 h-4 mr-2" />
                               Experiments
                             </h4>
-                            <p className="text-xs text-slate-500 mb-4">
+                            <p className="text-xs text-body mb-4">
                               Manage problem statements and test cases for this
                               laboratory.
                             </p>
                           </div>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                            <span className="text-[10px] font-bold text-[#1a6b5c] bg-[#f0f7f5] px-2 py-0.5 rounded-full border border-[#dff2ed]">
                               {(lab.experiments || []).length} ADDED
                             </span>
                             <button
@@ -585,9 +585,9 @@ const LabManagement = () => {
             ))}
 
           {!isLoading && filteredLabs.length === 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-sm">
-              <FlaskConical className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500 text-sm">No labs found.</p>
+            <div className="bg-card border border-theme rounded-2xl p-12 text-center shadow-sm">
+              <FlaskConical className="w-12 h-12 text-muted mx-auto mb-3" />
+              <p className="text-body text-sm">No labs found.</p>
             </div>
           )}
         </div>
@@ -610,7 +610,7 @@ const LabManagement = () => {
                     setShowCreateModal(false);
                     setEditingLab(null);
                   }}
-                  className="px-6 py-2 text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors w-full sm:w-auto"
+                  className="px-6 py-2 text-body bg-alt border border-theme rounded-lg hover:bg-alt transition-colors w-full sm:w-auto"
                 >
                   Cancel
                 </button>
@@ -618,7 +618,7 @@ const LabManagement = () => {
                   type="button"
                   onClick={handleCreateSubmit}
                   disabled={isSubmitting}
-                  className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60"
+                  className="px-6 py-2 bg-[#1a6b5c] text-white rounded-lg hover:bg-[#134d42] transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {isSubmitting ? "Saving..." : "Save"}
@@ -630,7 +630,7 @@ const LabManagement = () => {
               {/* Lab name & Language */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Laboratory Name
                   </label>
                   <input
@@ -640,12 +640,12 @@ const LabManagement = () => {
                     onChange={(e) =>
                       setLabForm({ ...labForm, name: e.target.value })
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all font-medium"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Programming Language
                   </label>
                   <select
@@ -653,7 +653,7 @@ const LabManagement = () => {
                     onChange={(e) =>
                       setLabForm({ ...labForm, language: e.target.value })
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all font-medium"
                     required
                   >
                     <option value="">Select Language</option>
@@ -667,35 +667,35 @@ const LabManagement = () => {
 
               {/* Faculty multi-select */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   Faculty ({labForm.faculty.length} selected)
                 </label>
-                <div className="border border-slate-200 rounded-xl p-3 max-h-40 overflow-y-auto bg-slate-50 space-y-1">
+                <div className="border border-theme rounded-xl p-3 max-h-40 overflow-y-auto bg-alt space-y-1">
                   {faculty.length === 0 && (
-                    <p className="text-xs text-slate-400 italic p-2">
+                    <p className="text-xs text-muted italic p-2">
                       No faculty available
                     </p>
                   )}
                   {faculty.map((f) => (
                     <label
                       key={f.id}
-                      className="flex items-center gap-3 cursor-pointer hover:bg-white p-2.5 rounded-lg transition-colors"
+                      className="flex items-center gap-3 cursor-pointer hover:bg-card p-2.5 rounded-lg transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={labForm.faculty.includes(f.empId)}
                         onChange={() => toggleFaculty(f.empId)}
-                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
+                        className="rounded border-theme text-[#1a6b5c] focus:ring-[#2a8c78] h-4 w-4"
                       />
                       <div>
-                        <span className="text-sm font-medium text-slate-700">
+                        <span className="text-sm font-medium text-heading">
                           {f.name}
                         </span>
-                        <span className="text-[10px] text-slate-400 ml-2 font-mono">
+                        <span className="text-[10px] text-muted ml-2 font-mono">
                           ({f.empId})
                         </span>
                         {f.department && (
-                          <span className="text-xs text-slate-400 ml-2">
+                          <span className="text-xs text-muted ml-2">
                             · {f.department}
                           </span>
                         )}
@@ -707,7 +707,7 @@ const LabManagement = () => {
 
               {/* Batch selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   Select Student Batch
                 </label>
                 <select
@@ -715,7 +715,7 @@ const LabManagement = () => {
                   onChange={(e) =>
                     setLabForm({ ...labForm, batch: e.target.value })
                   }
-                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all font-medium"
+                  className="w-full p-4 bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all font-medium"
                   required
                 >
                   <option value="">Select Batch</option>
@@ -725,7 +725,7 @@ const LabManagement = () => {
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-[10px] text-slate-400 italic">
+                <p className="mt-2 text-[10px] text-muted italic">
                   Selecting a batch will automatically map all matching students
                   to this laboratory.
                 </p>
@@ -762,7 +762,7 @@ const LabManagement = () => {
                     setShowStudentPanel(false);
                     setAssigningLab(null);
                   }}
-                  className="px-6 py-2 text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                  className="px-6 py-2 text-body bg-alt border border-theme rounded-lg hover:bg-alt transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
                   Exit
@@ -771,7 +771,7 @@ const LabManagement = () => {
                   type="button"
                   onClick={saveStudentAssignment}
                   disabled={isSubmitting}
-                  className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60 gap-2"
+                  className="px-6 py-2 bg-[#1a6b5c] text-white rounded-lg hover:bg-[#134d42] transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60 gap-2"
                 >
                   <Save className="w-4 h-4" />
                   {isSubmitting ? "Saving..." : "Save"}
@@ -781,15 +781,15 @@ const LabManagement = () => {
           >
             <div className="space-y-4">
               {/* Filter bar */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
-                <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-alt border border-theme rounded-xl p-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-body">
                   <Filter className="w-4 h-4" />
                   Filter by Batch:
                 </div>
                 <select
                   value={studentFilterYear}
                   onChange={(e) => setStudentFilterYear(e.target.value)}
-                  className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="px-3 py-2 bg-card border border-theme rounded-lg text-sm text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                 >
                   <option value="all">All Batches</option>
                   {uniqueBatches.map((b) => (
@@ -800,13 +800,13 @@ const LabManagement = () => {
                 </select>
 
                 <div className="sm:ml-auto flex items-center gap-3">
-                  <span className="text-xs text-slate-500 font-semibold">
+                  <span className="text-xs text-body font-semibold">
                     {selectedStudents.length} selected
                   </span>
                   <button
                     type="button"
                     onClick={selectAllFiltered}
-                    className="flex items-center gap-1.5 text-xs font-bold text-teal-600 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-bold text-[#1a6b5c] bg-[#f0f7f5] hover:bg-[#dff2ed] px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <CheckSquare className="w-3.5 h-3.5" />
                     {getFilteredStudents().length > 0 &&
@@ -824,20 +824,20 @@ const LabManagement = () => {
               </div>
 
               {/* Student list */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[45vh] overflow-y-auto">
+              <div className="border border-theme rounded-xl overflow-hidden max-h-[45vh] overflow-y-auto">
                 {getFilteredStudents().length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-sm italic">
+                  <div className="p-8 text-center text-muted text-sm italic">
                     No students match this filter.
                   </div>
                 ) : (
                   <table className="w-full">
                     <thead className="sticky top-0 z-10">
-                      <tr className="bg-slate-50 border-b border-slate-200">
+                      <tr className="bg-alt border-b border-theme">
                         <th className="w-10 px-5 py-3"></th>
-                        <th className="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                           Name
                         </th>
-                        <th className="px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="px-5 py-3 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                           Roll No
                         </th>
                       </tr>
@@ -851,7 +851,7 @@ const LabManagement = () => {
                           <tr
                             key={student.id}
                             onClick={() => toggleStudent(student)}
-                            className={`hover:bg-slate-50 transition-colors cursor-pointer ${isSelected ? "bg-teal-50/50" : ""}`}
+                            className={`hover:bg-alt transition-colors cursor-pointer ${isSelected ? "bg-[#f0f7f5]/50" : ""}`}
                           >
                             <td className="px-5 py-3">
                               <input
@@ -861,14 +861,14 @@ const LabManagement = () => {
                                 className="accent-teal-600"
                               />
                             </td>
-                            <td className="px-5 py-3 text-sm font-semibold text-slate-700">
+                            <td className="px-5 py-3 text-sm font-semibold text-heading">
                               {student.name}
                             </td>
-                            <td className="px-5 py-3 text-sm text-slate-600 font-mono">
+                            <td className="px-5 py-3 text-sm text-body font-mono">
                               {student.rollNo}
                             </td>
                             <td className="px-5 py-3">
-                              <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-teal-100 italic">
+                              <span className="bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-[#dff2ed] italic">
                                 {student.joiningYear && student.passoutYear
                                   ? `${student.joiningYear}–${student.passoutYear}`
                                   : "N/A"}

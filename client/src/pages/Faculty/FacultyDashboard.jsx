@@ -29,18 +29,18 @@ const SectionCard = ({
   onAction,
   children,
 }) => (
-  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+  <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-5">
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-          <Icon className="w-3.5 h-3.5 text-teal-600" />
+        <div className="w-7 h-7 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+          <Icon className="w-3.5 h-3.5 text-[#1a6b5c]" />
         </div>
-        <h3 className="text-sm font-extrabold text-slate-800">{title}</h3>
+        <h3 className="text-sm font-extrabold text-heading">{title}</h3>
       </div>
       <div className="flex items-center gap-2">
         {badge && (
           <span
-            className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${badgeBg || "bg-teal-50"} ${badgeColor || "text-teal-700"}`}
+            className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${badgeBg || "bg-[#f0f7f5]"} ${badgeColor || "text-[#134d42]"}`}
           >
             {badge}
           </span>
@@ -48,7 +48,7 @@ const SectionCard = ({
         {action && (
           <button
             onClick={onAction}
-            className="text-[10px] font-bold text-teal-600 hover:underline"
+            className="text-[10px] font-bold text-[#1a6b5c] hover:underline"
           >
             {action}
           </button>
@@ -104,10 +104,10 @@ const FacultyDashboard = () => {
     {
       title: "Total Students",
       value: `${dashboardData?.quickStats?.totalStudents ?? 0}`,
-      icon: <Users className="w-5 h-5 text-emerald-500" />,
-      iconBg: "bg-emerald-50",
-      numColor: "text-emerald-600",
-      barColor: "bg-emerald-400",
+      icon: <Users className="w-5 h-5 text-[#2a8c78]" />,
+      iconBg: "bg-[#f0f7f5]",
+      numColor: "text-[#1a6b5c]",
+      barColor: "bg-[#3aa892]",
       barWidth: "100%",
     },
     {
@@ -188,16 +188,16 @@ const FacultyDashboard = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveView("dashboard")}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all text-slate-600 text-sm font-semibold shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-theme rounded-xl hover:bg-alt transition-all text-body text-sm font-semibold shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </button>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900">
+            <h1 className="text-xl font-extrabold text-heading">
               {selectedClass?.name}
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {selectedClass?.subject} · {selectedClass?.students} Students
             </p>
           </div>
@@ -207,7 +207,7 @@ const FacultyDashboard = () => {
             <CheckSquare className="w-3.5 h-3.5" />
             Grade Assignments
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-700 transition-all shadow-sm">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[#1a6b5c] text-white text-xs font-bold rounded-xl hover:bg-[#134d42] transition-all shadow-sm">
             <Plus className="w-3.5 h-3.5" />
             New Experiment
           </button>
@@ -215,14 +215,14 @@ const FacultyDashboard = () => {
       </div>
 
       {/* Placeholder content */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-sm">
-        <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <BookOpen className="w-7 h-7 text-slate-400" />
+      <div className="bg-card border border-theme-light rounded-2xl p-10 text-center shadow-sm">
+        <div className="w-14 h-14 bg-alt rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <BookOpen className="w-7 h-7 text-muted" />
         </div>
-        <h3 className="text-base font-extrabold text-slate-700 mb-2">
+        <h3 className="text-base font-extrabold text-heading mb-2">
           Class Detail View
         </h3>
-        <p className="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
+        <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
           Student lists, individual progress tracking, detailed analytics, and
           class-specific tools will appear here.
         </p>
@@ -232,47 +232,47 @@ const FacultyDashboard = () => {
 
   /* ══════════ RENDER ══════════ */
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+            <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-xl font-extrabold text-heading leading-tight">
                 Faculty Dashboard
               </h1>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted">
                 Track your class progress
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
-              <Search className="w-4 h-4 text-slate-400" />
+            <div className="flex items-center gap-2 bg-card border border-theme rounded-xl px-4 py-2 shadow-sm">
+              <Search className="w-4 h-4 text-muted" />
               <input
-                className="text-sm text-slate-500 outline-none bg-transparent w-44 placeholder:text-slate-400"
+                className="text-sm text-body outline-none bg-transparent w-44 placeholder:text-muted"
                 placeholder="Search anything here..."
               />
             </div>
-            <div className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
-              <Bell className="w-4 h-4 text-slate-500" />
+            <div className="w-9 h-9 bg-card border border-theme rounded-xl flex items-center justify-center shadow-sm">
+              <Bell className="w-4 h-4 text-body" />
             </div>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
-            <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-3 text-muted py-20 justify-center">
+            <div className="w-5 h-5 border-2 border-[#2a8c78] border-t-transparent rounded-full animate-spin" />
             Loading dashboard...
           </div>
         ) : (
           <>
             {/* ── Welcome Banner (dashboard view only) ── */}
             {activeView === "dashboard" && (
-              <div className="relative bg-teal-600 rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
+              <div className="relative bg-[#1a6b5c] rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
                 <div className="relative z-10">
                   <h2 className="text-lg font-extrabold text-white mb-1">
                     Good Morning, {dashboardData?.user?.name || username}!

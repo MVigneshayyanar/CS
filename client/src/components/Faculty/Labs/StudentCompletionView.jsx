@@ -149,7 +149,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
   );
 
   const chartData = [
-    { name: "Completed", value: completedStudents.length, color: "#10b981" },
+    { name: "Completed", value: completedStudents.length, color: "#1a6b5c" },
     {
       name: "Not Completed",
       value: notCompletedStudents.length,
@@ -173,11 +173,11 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload?.length) {
       return (
-        <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-xs">
-          <p className="font-bold text-slate-800">
+        <div className="bg-card border border-theme-light rounded-xl shadow-lg p-3 text-xs">
+          <p className="font-bold text-heading">
             {payload[0].payload.fullName}
           </p>
-          <p className="text-teal-600 mt-0.5">Score: {payload[0].value}%</p>
+          <p className="text-[#1a6b5c] mt-0.5">Score: {payload[0].value}%</p>
         </div>
       );
     }
@@ -234,15 +234,15 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-[90vw] max-w-4xl max-h-[88vh] flex flex-col">
+      <div className="bg-card rounded-2xl border border-theme-light shadow-2xl w-[90vw] max-w-4xl max-h-[88vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-theme-light">
           <div>
-            <h2 className="text-sm font-extrabold text-slate-900">
+            <h2 className="text-sm font-extrabold text-heading">
               Exp {experiment?.number}: {experiment?.name} — Student Status
             </h2>
             {dueDate && (
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-muted mt-0.5">
                 Due: {formatDate(dueDate)}
               </p>
             )}
@@ -257,9 +257,9 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
             </button>
             <button
               onClick={onClose}
-              className="w-8 h-8 bg-slate-100 rounded-xl flex items-center justify-center hover:bg-slate-200 transition-colors"
+              className="w-8 h-8 bg-alt rounded-xl flex items-center justify-center hover:bg-alt transition-colors"
             >
-              <X className="w-4 h-4 text-slate-500" />
+              <X className="w-4 h-4 text-body" />
             </button>
           </div>
         </div>
@@ -268,27 +268,27 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
         <div className="px-6 py-3 border-b border-slate-50">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_180px] gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search students by name or ID..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-alt border border-theme rounded-xl text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-[#3aa892] transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  <X className="w-3.5 h-3.5 text-slate-400" />
+                  <X className="w-3.5 h-3.5 text-muted" />
                 </button>
               )}
             </div>
             <select
               value={selectedSection}
               onChange={(e) => setSelectedSection(e.target.value)}
-              className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-400 transition-all"
+              className="px-3 py-2.5 bg-alt border border-theme rounded-xl text-sm text-heading focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-[#3aa892] transition-all"
             >
               <option value="all">All Sections</option>
               {sectionOptions.map((sec) => (
@@ -304,8 +304,8 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
         <div className="flex-1 overflow-auto p-6">
           {/* Charts */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
-              <h3 className="text-xs font-extrabold text-slate-700 mb-3">
+            <div className="bg-alt rounded-2xl border border-theme-light p-4">
+              <h3 className="text-xs font-extrabold text-heading mb-3">
                 Completion Status
               </h3>
               <ResponsiveContainer width="100%" height={180}>
@@ -327,8 +327,8 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
-              <h3 className="text-xs font-extrabold text-slate-700 mb-3">
+            <div className="bg-alt rounded-2xl border border-theme-light p-4">
+              <h3 className="text-xs font-extrabold text-heading mb-3">
                 Leaderboard
               </h3>
               <ResponsiveContainer width="100%" height={180}>
@@ -346,7 +346,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Completed Students */}
             <div>
-              <h3 className="text-lg font-semibold mb-4 text-emerald-400">
+              <h3 className="text-lg font-semibold mb-4 text-[#3aa892]">
                 Completed Students ({filteredCompletedStudents.length})
               </h3>
               <div className="space-y-3">
@@ -355,22 +355,22 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                   filteredCompletedStudents.map((student, index) => (
                     <div
                       key={student?.id || index}
-                      className="bg-emerald-900/20 border border-emerald-700/30 rounded-xl p-4 backdrop-blur-sm"
+                      className="bg-teal-900/20 border border-[#134d42]/30 rounded-xl p-4 backdrop-blur-sm"
                     >
                       <div className="flex justify-between items-center">
                         <div>
                           <h4 className="font-semibold text-white">
                             {student?.name || "Unknown"}
                           </h4>
-                          <p className="text-sm text-neutral-400">
+                          <p className="text-sm text-muted">
                             {student?.id || "No ID"}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-semibold text-emerald-400">
+                          <div className="text-lg font-semibold text-[#3aa892]">
                             {student?.score || 0}%
                           </div>
-                          <div className="text-xs text-neutral-500">
+                          <div className="text-xs text-body">
                             Submitted: {student?.submissionDate || "Unknown"}
                           </div>
                         </div>
@@ -378,7 +378,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-neutral-400 py-8">
+                  <div className="text-center text-muted py-8">
                     {searchQuery
                       ? `No completed students found starting with "${searchQuery}"`
                       : "No completed students"}
@@ -405,7 +405,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                           <h4 className="font-semibold text-white">
                             {student?.name || "Unknown"}
                           </h4>
-                          <p className="text-sm text-neutral-400">
+                          <p className="text-sm text-muted">
                             {student?.id || "No ID"}
                           </p>
                         </div>
@@ -413,7 +413,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                           <div className="text-lg font-semibold text-red-400">
                             {student?.daysOverdue || 0} days overdue
                           </div>
-                          <div className="text-xs text-neutral-500">
+                          <div className="text-xs text-body">
                             Status: Pending
                           </div>
                         </div>
@@ -421,7 +421,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-neutral-400 py-8">
+                  <div className="text-center text-muted py-8">
                     {searchQuery
                       ? `No incomplete students found starting with "${searchQuery}"`
                       : "No incomplete students"}
@@ -436,14 +436,14 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
       {/* Schedule Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60]">
-          <div className="bg-neutral-800/95 backdrop-blur-sm border border-neutral-700/50 rounded-xl p-6 w-[450px] shadow-2xl overflow-auto max-h-[90vh]">
+          <div className="bg-neutral-800/95 backdrop-blur-sm border border-theme rounded-xl p-6 w-[450px] shadow-2xl overflow-auto max-h-[90vh]">
             <h3 className="text-xl font-semibold text-white mb-6">
               Set Experiment Schedule
             </h3>
             
             <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Section Scope
                 </label>
                 <select
@@ -462,7 +462,7 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     Available From
                   </label>
                   <input
@@ -471,10 +471,10 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                     onChange={(e) => setAvailableFrom(e.target.value)}
                     className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                   />
-                  <p className="text-[10px] text-neutral-500 mt-1">Students can only access after this</p>
+                  <p className="text-[10px] text-body mt-1">Students can only access after this</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  <label className="block text-sm font-medium text-muted mb-2">
                     Available To (End)
                   </label>
                   <input
@@ -483,12 +483,12 @@ const StudentCompletionView = ({ experiment, students, onClose, onRefresh }) => 
                     onChange={(e) => setAvailableTo(e.target.value)}
                     className="w-full px-3 py-2.5 bg-neutral-700/50 border border-neutral-600/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
                   />
-                  <p className="text-[10px] text-neutral-500 mt-1">Marked as late after this</p>
+                  <p className="text-[10px] text-body mt-1">Marked as late after this</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-muted mb-2">
                   Soft Deadline (Optional)
                 </label>
                 <input

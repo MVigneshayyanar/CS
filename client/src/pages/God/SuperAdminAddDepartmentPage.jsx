@@ -227,10 +227,10 @@ const SuperAdminAddDepartmentPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 md:pt-8 pb-10 sm:pb-12">
         <div className="mb-8">
-          <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-5">
+          <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-5">
             <div className="relative z-10 flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-white" />
@@ -244,20 +244,20 @@ const SuperAdminAddDepartmentPage = () => {
             <div className="absolute -right-8 -top-6 w-32 h-32 rounded-full bg-white/10" />
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm mb-5">
+          <div className="bg-card border border-theme rounded-2xl p-4 sm:p-5 shadow-sm mb-5">
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Department name (e.g., Computer Science Engineering)"
                 value={newDepartment}
                 onChange={(e) => setNewDepartment(e.target.value)}
-                className="flex-1 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="flex-1 p-3 text-sm bg-card border border-theme rounded-xl text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
               />
               <button
                 type="button"
                 onClick={handleAddDepartment}
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all text-sm font-semibold flex items-center justify-center disabled:opacity-70"
+                className="px-4 py-2 bg-[#1a6b5c] text-white rounded-xl hover:bg-[#134d42] transition-all text-sm font-semibold flex items-center justify-center disabled:opacity-70"
               >
                 <Plus className="w-4 h-4 mr-1.5" />
                 {isSubmitting ? 'Adding...' : 'Add Department'}
@@ -265,36 +265,36 @@ const SuperAdminAddDepartmentPage = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
+          <div className="bg-card border border-theme rounded-2xl p-4 sm:p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-slate-700">All Departments</p>
-              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+              <p className="text-sm font-bold text-heading">All Departments</p>
+              <span className="text-xs font-semibold text-body bg-alt px-2.5 py-1 rounded-full">
                 {departments.length} department{departments.length === 1 ? '' : 's'}
               </span>
             </div>
 
             {isLoading ? (
-              <div className="text-sm text-slate-500">Loading departments...</div>
+              <div className="text-sm text-body">Loading departments...</div>
             ) : departments.length === 0 ? (
-              <div className="text-sm text-slate-500">No departments added yet.</div>
+              <div className="text-sm text-body">No departments added yet.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {departments.map((department, index) => (
-                  <div key={`${department}-${index}`} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-slate-700">
+                  <div key={`${department}-${index}`} className="bg-alt border border-theme rounded-xl p-3 text-sm font-semibold text-heading">
                     {editingDepartment === department ? (
                       <div className="space-y-2">
                         <input
                           type="text"
                           value={editingDepartmentValue}
                           onChange={(e) => setEditingDepartmentValue(e.target.value)}
-                          className="w-full p-2 text-sm bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          className="w-full p-2 text-sm bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                           disabled={isUpdatingDepartment}
                         />
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={cancelDepartmentEdit}
-                            className="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200"
+                            className="px-2.5 py-1.5 text-xs bg-alt hover:bg-alt text-heading rounded-lg border border-theme"
                             disabled={isUpdatingDepartment}
                           >
                             <X className="w-3.5 h-3.5" />
@@ -302,7 +302,7 @@ const SuperAdminAddDepartmentPage = () => {
                           <button
                             type="button"
                             onClick={handleSaveDepartmentEdit}
-                            className="px-2.5 py-1.5 text-xs bg-teal-600 hover:bg-teal-700 text-white rounded-lg"
+                            className="px-2.5 py-1.5 text-xs bg-[#1a6b5c] hover:bg-[#134d42] text-white rounded-lg"
                             disabled={isUpdatingDepartment}
                           >
                             <Check className="w-3.5 h-3.5" />
@@ -315,7 +315,7 @@ const SuperAdminAddDepartmentPage = () => {
                         <button
                           type="button"
                           onClick={() => startDepartmentEdit(department)}
-                          className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-teal-700 hover:bg-teal-50"
+                          className="p-1.5 rounded-lg border border-theme text-body hover:text-[#134d42] hover:bg-[#f0f7f5]"
                           title="Edit department"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -328,10 +328,10 @@ const SuperAdminAddDepartmentPage = () => {
             )}
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm mt-5">
+          <div className="bg-card border border-theme rounded-2xl p-4 sm:p-5 shadow-sm mt-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-bold text-slate-700">Add Department Admin</p>
-              {/* <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+              <p className="text-sm font-bold text-heading">Add Department Admin</p>
+              {/* <span className="text-xs font-semibold text-body bg-alt px-2.5 py-1 rounded-full">
                 Old field form
               </span> */}
             </div>
@@ -348,33 +348,33 @@ const SuperAdminAddDepartmentPage = () => {
                     placeholder="Full Name"
                     value={adminForm.name}
                     onChange={(e) => handleAdminFieldChange('name', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                   <input
                     type="email"
                     placeholder="Email"
                     value={adminForm.email}
                     onChange={(e) => handleAdminFieldChange('email', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                   <input
                     type="tel"
                     placeholder="Phone"
                     value={adminForm.phone}
                     onChange={(e) => handleAdminFieldChange('phone', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                   <input
                     type="text"
                     placeholder="Employee ID"
                     value={adminForm.empId}
                     onChange={(e) => handleAdminFieldChange('empId', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                   <select
                     value={adminForm.department}
                     onChange={(e) => handleAdminFieldChange('department', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   >
                     <option value="">Select Department</option>
                     {departments.map((department, index) => (
@@ -388,14 +388,14 @@ const SuperAdminAddDepartmentPage = () => {
                     placeholder="Qualification"
                     value={adminForm.qualification}
                     onChange={(e) => handleAdminFieldChange('qualification', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                   <input
                     type="text"
                     placeholder="Experience"
                     value={adminForm.experience}
                     onChange={(e) => handleAdminFieldChange('experience', e.target.value)}
-                    className="p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="p-3 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                   />
                 </div>
 
@@ -403,7 +403,7 @@ const SuperAdminAddDepartmentPage = () => {
                   placeholder="Specialization"
                   value={adminForm.specialization}
                   onChange={(e) => handleAdminFieldChange('specialization', e.target.value)}
-                  className="mt-3 p-3 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 w-full h-24 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="mt-3 p-3 text-sm bg-card border border-theme rounded-xl text-heading w-full h-24 focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
                 />
 
                 <div className="flex justify-end mt-3">
@@ -411,7 +411,7 @@ const SuperAdminAddDepartmentPage = () => {
                     type="button"
                     onClick={handleAddAdmin}
                     disabled={isAddingAdmin}
-                    className="px-4 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-all text-sm font-semibold disabled:opacity-70"
+                    className="px-4 py-2 bg-[#1a6b5c] text-white rounded-xl hover:bg-[#134d42] transition-all text-sm font-semibold disabled:opacity-70"
                   >
                     {isAddingAdmin ? 'Adding Admin...' : 'Add Admin'}
                   </button>
@@ -420,13 +420,13 @@ const SuperAdminAddDepartmentPage = () => {
             )}
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm mt-5">
+          <div className="bg-card border border-theme rounded-2xl p-4 sm:p-5 shadow-sm mt-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-              <p className="text-sm font-bold text-slate-700">Department Admins</p>
+              <p className="text-sm font-bold text-heading">Department Admins</p>
               <select
                 value={adminDepartmentFilter}
                 onChange={(e) => setAdminDepartmentFilter(e.target.value)}
-                className="p-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="p-2.5 text-sm bg-card border border-theme rounded-xl text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78]"
               >
                 <option value="all">All Departments</option>
                 {departments.map((department, index) => (
@@ -438,18 +438,18 @@ const SuperAdminAddDepartmentPage = () => {
             </div>
 
             {filteredAdmins.length === 0 ? (
-              <div className="text-sm text-slate-500">No admins found for selected department.</div>
+              <div className="text-sm text-body">No admins found for selected department.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {filteredAdmins.map((admin) => (
-                  <div key={admin.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                    <p className="text-sm font-bold text-slate-800">{admin.name}</p>
-                    <p className="text-xs text-slate-500 mt-1">{admin.email}</p>
+                  <div key={admin.id} className="bg-alt border border-theme rounded-xl p-3">
+                    <p className="text-sm font-bold text-heading">{admin.name}</p>
+                    <p className="text-xs text-body mt-1">{admin.email}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                      <span className="px-2 py-1 bg-teal-50 text-teal-700 rounded-full border border-teal-100">
+                      <span className="px-2 py-1 bg-[#f0f7f5] text-[#134d42] rounded-full border border-[#dff2ed]">
                         {admin.department}
                       </span>
-                      <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-full border border-slate-200">
+                      <span className="px-2 py-1 bg-alt text-body rounded-full border border-theme">
                         {admin.empId}
                       </span>
                     </div>

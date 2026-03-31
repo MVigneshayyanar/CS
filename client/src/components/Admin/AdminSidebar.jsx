@@ -37,24 +37,6 @@ const AdminSidebar = ({ onLogout }) => {
       title: 'Lab Management',
       icon: FlaskConical,
       path: '/labs'
-    // },
-    // {
-    //   title: 'System Analytics',
-    //   icon: Activity,
-    //   path: '/analytics',
-    //   active: location.pathname.startsWith('/analytics')
-    // },
-    // {
-    //   title: 'Data Management',
-    //   icon: Database,
-    //   path: '/data',
-    //   active: location.pathname.startsWith('/data')
-    // },
-    // {
-    //   title: 'System Settings',
-    //   icon: Settings,
-    //   path: '/settings',
-    //   active: location.pathname.startsWith('/settings')
     }
   ];
 
@@ -63,19 +45,23 @@ const AdminSidebar = ({ onLogout }) => {
       <aside
       className={[
         "fixed top-4 bottom-4 left-4 z-40 flex flex-col",
-        "bg-[#18181b] text-white",
+        "text-white",
         "rounded-[2.5rem] transition-[width,transform] duration-500 ease-in-out",
         "shadow-2xl overflow-hidden",
         isCollapsed ? "md:w-20" : "md:w-64",
       ].join(" ")}
+      style={{ background: 'var(--sidebar-bg)' }}
       aria-label="Admin Navigation"
       aria-expanded={!isCollapsed}
     >
       {/* Header */}
       <div className={`relative flex h-24 items-center ${isCollapsed ? 'justify-center mx-auto' : 'justify-between px-6'}`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center mx-auto' : 'gap-3'}`}>
-          <div className="rounded-full bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10">
-            <div className="h-full w-full rounded-full bg-[#18181b] flex items-center justify-center overflow-hidden">
+          <div 
+            className="rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 h-10 w-10"
+            style={{ background: 'var(--gradient-logo)' }}
+          >
+            <div className="h-full w-full rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'var(--sidebar-logo-bg)' }}>
               <Building2 className="w-6 h-6 text-white" />
             </div>
           </div>
@@ -99,13 +85,20 @@ const AdminSidebar = ({ onLogout }) => {
                 "group relative flex items-center rounded-3xl py-3.5 text-sm font-medium transition-all duration-300",
                 isCollapsed ? "justify-center px-0" : "px-4 gap-4",
                 isActive
-                  ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
-                  : "text-white/60 hover:text-white hover:bg-white/5",
+                  ? "text-white shadow-lg"
+                  : "hover:bg-white/5",
               ].join(" ")}
+              style={({ isActive }) => isActive ? {
+                background: 'var(--sidebar-active)',
+                boxShadow: `0 8px 25px var(--sidebar-active-shadow)`,
+                color: 'var(--sidebar-text-active)',
+              } : {
+                color: 'var(--sidebar-text)',
+              }}
             >
               {({ isActive }) => (
                 <>
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-neutral-500 group-hover:text-white'}`} />
+                  <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'group-hover:text-white'}`} style={!isActive ? { color: 'var(--sidebar-text)' } : {}} />
                   {!isCollapsed && (
                     <span className="whitespace-nowrap transition-all duration-500">
                       {item.title}
@@ -114,9 +107,10 @@ const AdminSidebar = ({ onLogout }) => {
                   {isCollapsed && (
                     <span
                       className="absolute left-full top-1/2 -translate-y-1/2 ml-4
-                                 whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2 text-xs text-white
+                                 whitespace-nowrap rounded-xl px-4 py-2 text-xs text-white
                                  opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none
                                  shadow-xl z-[60]"
+                      style={{ background: 'var(--sidebar-bg)' }}
                     >
                       {item.title}
                     </span>
@@ -130,14 +124,14 @@ const AdminSidebar = ({ onLogout }) => {
 
 
       {/* Theme and Logout at Bottom */}
-      <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{paddingBottom: !isCollapsed ? '56px' : undefined}}>
+      <div className="p-4 flex flex-col gap-2 relative" style={{borderTop: '1px solid var(--sidebar-border)', paddingBottom: !isCollapsed ? '56px' : undefined}}>
         <ThemeToggle collapsed={isCollapsed} />
         
         <button
           onClick={() => setShowLogoutConfirm(true)}
           className={`group relative w-full flex items-center rounded-3xl py-3 text-sm font-medium transition-all duration-200 text-red-400 hover:text-red-300 hover:bg-red-500/10 ${isCollapsed ? 'justify-center px-0' : 'px-4 gap-4'}`}
         >
-          <LogOut className="w-5 h-5 text-neutral-500 group-hover:text-red-300" />
+          <LogOut className="w-5 h-5 group-hover:text-red-300" style={{ color: 'var(--sidebar-text)' }} />
           {!isCollapsed && (
             <span className="whitespace-nowrap transition-all duration-500">
               Logout
@@ -154,7 +148,6 @@ const AdminSidebar = ({ onLogout }) => {
             </span>
           )}
         </button>
-        {/* Shrink button absolutely at bottom center when expanded, below logout */}
         <div className={`w-full ${isCollapsed ? 'flex justify-center' : ''}`} style={{ position: !isCollapsed ? 'absolute' : 'static', left: 0, right: 0, bottom: 16, display: !isCollapsed ? 'flex' : undefined, justifyContent: !isCollapsed ? 'center' : undefined, pointerEvents: 'auto' }}>
           <button
             onClick={setIsCollapsed}

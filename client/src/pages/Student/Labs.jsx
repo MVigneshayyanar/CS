@@ -42,7 +42,7 @@ export default function Labs() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <div className="max-w-7xl mx-auto px-6 pt-8 pb-12">
         {/* Header */}
         <SectionHeader
@@ -60,33 +60,33 @@ export default function Labs() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/20">
+              <div className="w-10 h-10 rounded-2xl bg-[#2a8c78] flex items-center justify-center shadow-lg shadow-[#2a8c78]/20">
                 <Code className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tight">Active Curriculums</h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5">Your personalized learning path</p>
+                <h3 className="text-xl font-black text-heading tracking-tight">Active Curriculums</h3>
+                <p className="text-xs text-muted font-bold uppercase tracking-widest mt-0.5">Your personalized learning path</p>
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
-              <span className="text-xs font-black text-slate-700">{labs.length}</span>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Units Available</span>
+            <div className="hidden sm:flex items-center gap-2 bg-card px-4 py-2 rounded-2xl border border-theme-light shadow-sm">
+              <span className="text-xs font-black text-heading">{labs.length}</span>
+              <span className="text-xs font-bold text-muted uppercase tracking-tighter">Units Available</span>
             </div>
           </div>
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white rounded-[2rem] h-80 border border-slate-100" />
+                <div key={i} className="bg-card rounded-[2rem] h-80 border border-theme-light" />
               ))}
             </div>
           ) : labs.length === 0 ? (
-            <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm p-16 text-center">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <FlaskConical className="w-10 h-10 text-slate-200" />
+            <div className="bg-card rounded-[3rem] border border-theme-light shadow-sm p-16 text-center">
+              <div className="w-20 h-20 bg-alt rounded-full flex items-center justify-center mx-auto mb-6">
+                <FlaskConical className="w-10 h-10 text-muted" />
               </div>
-              <h4 className="text-xl font-bold text-slate-800 mb-2">No Labs Found</h4>
-              <p className="text-slate-400 max-w-xs mx-auto text-sm leading-relaxed">
+              <h4 className="text-xl font-bold text-heading mb-2">No Labs Found</h4>
+              <p className="text-muted max-w-xs mx-auto text-sm leading-relaxed">
                 Labs and experiments will appear here only after your faculty schedules them in Lab Management.
               </p>
             </div>

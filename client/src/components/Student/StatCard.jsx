@@ -2,14 +2,14 @@ import React from "react";
 
 const colorMap = {
   teal: {
-    num: "text-teal-600",
-    iconBg: "bg-teal-50",
-    border: "border-teal-100",
+    num: "text-[#1a6b5c]",
+    iconBg: "bg-[#f0f7f5]",
+    border: "border-[#dff2ed]",
   },
   emerald: {
-    num: "text-emerald-600",
-    iconBg: "bg-emerald-50",
-    border: "border-emerald-100",
+    num: "text-[#1a6b5c]",
+    iconBg: "bg-[#f0f7f5]",
+    border: "border-[#dff2ed]",
   },
   amber: {
     num: "text-amber-500",
@@ -17,9 +17,9 @@ const colorMap = {
     border: "border-amber-100",
   },
   cyan: {
-    num: "text-cyan-600",
-    iconBg: "bg-cyan-50",
-    border: "border-cyan-100",
+    num: "text-[#1a6b5c]",
+    iconBg: "bg-[#f0f7f5]",
+    border: "border-[#dff2ed]",
   },
   blue: {
     num: "text-blue-600",
@@ -33,7 +33,7 @@ const StatCard = ({ value, label, color = "teal", icon: Icon }) => {
   const c = colorMap[color] || colorMap.teal;
   return (
     <div
-      className={`bg-white rounded-2xl border ${c.border} shadow-sm p-4 flex flex-col items-center gap-2 text-center`}
+      className={`bg-card rounded-2xl border ${c.border} shadow-sm p-4 flex flex-col items-center gap-2 text-center`}
     >
       {Icon && (
         <div
@@ -45,7 +45,7 @@ const StatCard = ({ value, label, color = "teal", icon: Icon }) => {
       <div className={`text-3xl font-extrabold leading-none ${c.num}`}>
         {value}
       </div>
-      <div className="text-xs text-slate-400 font-semibold">{label}</div>
+      <div className="text-xs text-muted font-semibold">{label}</div>
     </div>
   );
 };

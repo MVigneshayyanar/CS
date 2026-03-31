@@ -218,7 +218,7 @@ const CodeEditor = forwardRef(({ code, setCode, language = "java", onCheatAttemp
       loading={
         <div className="flex items-center justify-center h-full bg-[#1A1A2E]">
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div className="w-5 h-5 border-2 border-[#2a8c78]/30 border-t-teal-500 rounded-full animate-spin"></div>
             <span className="text-sm text-neutral-400">Loading editor...</span>
           </div>
         </div>

@@ -68,23 +68,20 @@ export default function Sidebar({ onLogout }) {
     setShowLogoutConfirm(true);
   };
 
-  const widthDesktop = collapsed ? "md:w-20" : "md:w-64";
-  const labelVisibility = collapsed
-    ? "md:opacity-0 md:-translate-x-2 md:invisible md:pointer-events-none"
-    : "md:opacity-100";
-
   return (
     <>
       <>
         {/* Mobile trigger */}
         <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed left-3 top-3 z-50 rounded-xl border border-slate-200 bg-white p-2 shadow-sm"
+        className="md:hidden fixed left-3 top-3 z-50 rounded-xl p-2 shadow-sm"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
         aria-label="Open menu"
       >
         <svg
           viewBox="0 0 24 24"
-          className="h-5 w-5 text-slate-600"
+          className="h-5 w-5"
+          style={{ color: 'var(--text-body)' }}
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
@@ -101,13 +98,14 @@ export default function Sidebar({ onLogout }) {
       <aside
         className={[
           "fixed top-4 bottom-4 left-4 z-40 flex flex-col",
-          "bg-[#18181b] text-white",
+          "text-white",
           "rounded-[2.5rem] transition-[width,transform] duration-500 ease-in-out",
           "shadow-2xl overflow-hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-[calc(100%+20px)]",
           "md:translate-x-0",
           collapsed ? "md:w-20" : "md:w-64",
         ].join(" ")}
+        style={{ background: 'var(--sidebar-bg)' }}
         aria-label="Student Navigation"
         aria-expanded={!collapsed}
       >
@@ -117,8 +115,14 @@ export default function Sidebar({ onLogout }) {
             to="/dashboard"
             className={`flex items-center rounded-md focus:outline-none ${collapsed ? 'justify-center mx-auto' : 'gap-3'}`}
           >
-            <div className={`rounded-full bg-gradient-to-tr from-orange-400 via-pink-500 to-indigo-500 flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? 'h-12 w-12' : 'h-10 w-10'}`}>
-              <div className="h-full w-full rounded-full bg-[#18181b] flex items-center justify-center overflow-hidden">
+            <div 
+              className={`rounded-full flex items-center justify-center p-0.5 transform transition-all duration-300 ${collapsed ? 'h-12 w-12' : 'h-10 w-10'}`}
+              style={{ background: 'var(--gradient-logo)' }}
+            >
+              <div 
+                className="h-full w-full rounded-full flex items-center justify-center overflow-hidden"
+                style={{ background: 'var(--sidebar-logo-bg)' }}
+              >
                 <img src={brandLogo} alt="Logo" className="h-6 w-6 object-contain" />
               </div>
             </div>
@@ -144,10 +148,17 @@ export default function Sidebar({ onLogout }) {
                     "group relative flex items-center rounded-3xl py-3.5 text-sm font-medium transition-all duration-300",
                     collapsed ? "justify-center px-0" : "px-4 gap-4",
                     isActive
-                      ? "bg-[#0d9488] text-white shadow-lg shadow-teal-500/25"
-                      : "text-white/60 hover:text-white hover:bg-white/5",
+                      ? "text-white shadow-lg"
+                      : "hover:bg-white/5",
                   ].join(" ")
                 }
+                style={({ isActive }) => isActive ? {
+                  background: 'var(--sidebar-active)',
+                  boxShadow: `0 8px 25px ${getComputedStyle(document.documentElement).getPropertyValue('--sidebar-active-shadow').trim() || 'rgba(42,140,120,0.3)'}`,
+                  color: 'var(--sidebar-text-active)',
+                } : {
+                  color: 'var(--sidebar-text)',
+                }}
               >
                 <div className="flex-shrink-0">
                   <Icon />
@@ -160,9 +171,10 @@ export default function Sidebar({ onLogout }) {
                 {collapsed && (
                   <span
                     className="absolute left-full top-1/2 -translate-y-1/2 ml-4
-                               whitespace-nowrap rounded-xl bg-slate-900 px-4 py-2 text-xs text-white
+                               whitespace-nowrap rounded-xl px-4 py-2 text-xs text-white
                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none
                                shadow-xl z-[60]"
+                    style={{ background: 'var(--sidebar-bg)' }}
                   >
                     {label}
                   </span>
@@ -174,7 +186,7 @@ export default function Sidebar({ onLogout }) {
 
 
         {/* Theme and Logout at Bottom */}
-        <div className="p-4 border-t border-white/5 flex flex-col gap-2 relative" style={{paddingBottom: !collapsed ? '56px' : undefined}}>
+        <div className="p-4 flex flex-col gap-2 relative" style={{borderTop: '1px solid var(--sidebar-border)', paddingBottom: !collapsed ? '56px' : undefined}}>
           <ThemeToggle collapsed={collapsed} />
           
           <button

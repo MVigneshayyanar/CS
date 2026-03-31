@@ -3,13 +3,13 @@ import { BookOpen } from "lucide-react";
 import ProgressCircle from "./ProgressCircle";
 
 const ProgressSection = ({ progressData }) => (
-  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+  <div className="bg-card rounded-2xl border border-theme-light shadow-sm p-5">
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
-        <BookOpen className="w-4 h-4 text-teal-500" />
+      <h2 className="text-sm font-extrabold text-heading flex items-center gap-2">
+        <BookOpen className="w-4 h-4 text-[#2a8c78]" />
         Laboratory Progress
       </h2>
-      <span className="text-xs text-teal-600 font-semibold cursor-pointer hover:underline">
+      <span className="text-xs text-[#1a6b5c] font-semibold cursor-pointer hover:underline">
         View All
       </span>
     </div>

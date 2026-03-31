@@ -6,34 +6,34 @@ const AssignmentCard = ({ title, date, timeRange, type, icon: Icon }) => {
   const isUpcoming = type === "upcoming";
 
   const bgClass = isLive
-    ? "bg-emerald-50 border-emerald-100 hover:border-emerald-300"
+    ? "bg-[#f0f7f5] border-[#dff2ed] hover:border-[#5c9088]"
     : isUpcoming
       ? "bg-blue-50 border-blue-100 hover:border-blue-300"
-      : "bg-teal-50 border-teal-100 hover:border-teal-300";
+      : "bg-[#f0f7f5] border-[#dff2ed] hover:border-[#5c9088]";
 
   const iconBgClass = isLive
-    ? "bg-emerald-100"
+    ? "bg-[#dff2ed]"
     : isUpcoming
       ? "bg-blue-100"
-      : "bg-teal-100";
+      : "bg-[#dff2ed]";
 
   const iconTextClass = isLive
-    ? "text-emerald-600"
+    ? "text-[#1a6b5c]"
     : isUpcoming
       ? "text-blue-600"
-      : "text-teal-600";
+      : "text-[#1a6b5c]";
 
   const titleTextClass = isLive
-    ? "text-emerald-900"
+    ? "text-teal-900"
     : isUpcoming
       ? "text-blue-900"
       : "text-teal-900";
 
   const badgeBgClass = isLive
-    ? "bg-emerald-100 text-emerald-700"
+    ? "bg-[#dff2ed] text-[#134d42]"
     : isUpcoming
       ? "bg-blue-100 text-blue-700"
-      : "bg-teal-100 text-teal-700";
+      : "bg-[#dff2ed] text-[#134d42]";
 
   return (
     <div
@@ -49,7 +49,7 @@ const AssignmentCard = ({ title, date, timeRange, type, icon: Icon }) => {
           {title}
         </p>
         {timeRange && (
-          <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${isLive ? "text-emerald-600" : "text-blue-500"}`}>
+          <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${isLive ? "text-[#1a6b5c]" : "text-blue-500"}`}>
             <Clock className="w-2.5 h-2.5" />
             {timeRange}
           </p>

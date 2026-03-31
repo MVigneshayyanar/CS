@@ -8,48 +8,48 @@ const ExperimentsList = ({
   onViewLabManual,
 }) => (
   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl w-[680px] max-h-[80vh] flex flex-col">
+    <div className="bg-card rounded-2xl border border-theme-light shadow-2xl w-[680px] max-h-[80vh] flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-theme-light">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-            <FlaskConical className="w-4 h-4 text-indigo-500" />
+          <div className="w-8 h-8 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+            <FlaskConical className="w-4 h-4 text-[#2a8c78]" />
           </div>
           <div>
-            <h2 className="text-sm font-extrabold text-slate-900">
+            <h2 className="text-sm font-extrabold text-heading">
               All Experiments
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-muted mt-0.5">
               {selectedSubject?.name}
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center hover:bg-slate-200 transition-colors"
+          className="w-8 h-8 bg-alt rounded-lg flex items-center justify-center hover:bg-alt transition-colors"
         >
-          <X className="w-4 h-4 text-slate-500" />
+          <X className="w-4 h-4 text-body" />
         </button>
       </div>
 
       {/* List */}
       <div className="flex-1 overflow-auto p-5 space-y-2">
         {experiments.length === 0 ? (
-          <p className="text-sm text-slate-400 text-center py-8">
+          <p className="text-sm text-muted text-center py-8">
             No experiments found.
           </p>
         ) : (
           experiments.map((exp) => (
             <div
               key={exp.id}
-              className="flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all"
+              className="flex items-center justify-between px-4 py-3.5 bg-alt rounded-xl border border-theme-light hover:border-[#c2e6de] hover:bg-[#f0f7f5]/30 transition-all"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-xs font-extrabold text-indigo-600">
+                <div className="w-8 h-8 bg-[#f0f7f5] rounded-lg flex items-center justify-center text-xs font-extrabold text-[#1a6b5c]">
                   {String(exp.number).padStart(2, "0")}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800">
+                  <p className="text-xs font-bold text-heading">
                     Experiment {exp.number}: {exp.name}
                   </p>
                 </div>

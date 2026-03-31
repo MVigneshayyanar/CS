@@ -11,7 +11,7 @@ const ClassCard = ({
 }) => (
   <div
     onClick={onClick}
-    className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group p-5 mb-3"
+    className="bg-card rounded-2xl border border-theme-light shadow-sm hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer group p-5 mb-3"
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">
@@ -19,13 +19,13 @@ const ClassCard = ({
           <Building2 className="w-5 h-5 text-blue-500" />
         </div>
         <div>
-          <h3 className="text-base font-extrabold text-slate-900 group-hover:text-blue-700 transition-colors">
+          <h3 className="text-base font-extrabold text-heading group-hover:text-blue-700 transition-colors">
             {className}
           </h3>
-          <p className="text-xs text-slate-400 font-medium mt-0.5">{section}</p>
+          <p className="text-xs text-muted font-medium mt-0.5">{section}</p>
         </div>
       </div>
-      <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
+      <span className="text-[10px] font-bold bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full">
         Active
       </span>
     </div>
@@ -36,7 +36,7 @@ const ClassCard = ({
         <Users className="w-3 h-3" />
         {Array.isArray(students) ? students.length : students} students
       </span>
-      <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full bg-teal-50 text-teal-700">
+      <span className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1 rounded-full bg-[#f0f7f5] text-[#134d42]">
         <FlaskConical className="w-3 h-3" />
         {experiments} experiments
       </span>
@@ -44,11 +44,11 @@ const ClassCard = ({
 
     {/* Progress bar */}
     <div>
-      <div className="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
+      <div className="flex justify-between text-xs font-bold text-body mb-1.5">
         <span>Class Average</span>
         <span className="text-blue-600">{completionRate}%</span>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-alt rounded-full overflow-hidden">
         <div
           className="h-2 rounded-full bg-blue-500 transition-all duration-700"
           style={{ width: `${completionRate}%` }}

@@ -41,32 +41,32 @@ const getSectionLabel = (student) => {
 
 const Modal = ({ title, children, onSubmit, onClose, isSubmitting }) => (
   <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4 sm:p-6">
-    <div className="bg-white border border-slate-200 rounded-2xl p-5 w-full max-w-2xl shadow-xl max-h-[85vh] overflow-y-auto">
+    <div className="bg-card border border-theme rounded-2xl p-5 w-full max-w-2xl shadow-xl max-h-[85vh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6 gap-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+        <h2 className="text-xl sm:text-2xl font-bold text-heading">
           {title}
         </h2>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-700 transition-colors p-1"
+          className="text-muted hover:text-heading transition-colors p-1"
         >
           <X className="w-6 h-6" />
         </button>
       </div>
       <form onSubmit={onSubmit} className="space-y-6">
         {children}
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-theme">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2 text-slate-600 bg-slate-100 border border-slate-200 rounded-lg hover:bg-slate-200 transition-colors w-full sm:w-auto"
+            className="px-6 py-2 text-body bg-alt border border-theme rounded-lg hover:bg-alt transition-colors w-full sm:w-auto"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60"
+            className="px-6 py-2 bg-[#1a6b5c] text-white rounded-lg hover:bg-[#134d42] transition-all flex items-center justify-center shadow-sm w-full sm:w-auto disabled:opacity-60"
           >
             <Save className="w-4 h-4 mr-2" />
             {isSubmitting ? "Saving..." : "Save"}
@@ -313,10 +313,10 @@ const StudentManagement = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-16 md:pt-8 pb-10 sm:pb-12">
         {/* Hero Header */}
-        <div className="relative bg-teal-600 rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
+        <div className="relative bg-[#1a6b5c] rounded-2xl px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden gap-4 mb-6">
           <div className="relative z-10 flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-white" />
@@ -346,7 +346,7 @@ const StudentManagement = () => {
             </button>
             <button
               onClick={openCreateModal}
-              className="bg-white text-teal-700 px-4 py-2 rounded-xl hover:bg-teal-50 transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
+              className="bg-card text-[#134d42] px-4 py-2 rounded-xl hover:bg-[#f0f7f5] transition-all flex items-center justify-center shadow-sm text-sm font-semibold w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               Add Student
@@ -363,32 +363,32 @@ const StudentManagement = () => {
         </div>
 
         {/* Search */}
-        <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+        <div className="mb-6 bg-card border border-theme rounded-2xl p-4 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3">
-            <p className="text-sm font-bold text-slate-700">Find Students</p>
-            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+            <p className="text-sm font-bold text-heading">Find Students</p>
+            <span className="text-xs font-semibold text-body bg-alt px-2.5 py-1 rounded-full">
               {filteredStudents.length} result
               {filteredStudents.length === 1 ? "" : "s"}
             </span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_220px_220px] gap-3">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by name, email, ID, registration no..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl w-full text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                className="pl-12 pr-4 py-3 bg-alt border border-theme rounded-xl w-full text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
               />
             </div>
             <div className="flex items-stretch gap-2">
               <div className="relative flex-1">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 w-4 h-4" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1a6b5c] w-4 h-4" />
                 <select
                   value={selectedBatch}
                   onChange={(e) => setSelectedBatch(e.target.value)}
-                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl w-full text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-[#f0f7f5] to-[#f0f7f5] border border-[#c2e6de] rounded-xl w-full text-heading font-semibold focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                 >
                   <option value="all">Filter: All Batches</option>
                   {batchOptions.map((batch) => (
@@ -397,13 +397,13 @@ const StudentManagement = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4 pointer-events-none" />
               </div>
               {selectedBatch !== "all" && (
                 <button
                   type="button"
                   onClick={() => setSelectedBatch("all")}
-                  className="px-3 py-3 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition-colors"
+                  className="px-3 py-3 text-xs font-bold text-[#134d42] bg-[#f0f7f5] border border-[#c2e6de] rounded-xl hover:bg-[#dff2ed] transition-colors"
                 >
                   Clear
                 </button>
@@ -411,11 +411,11 @@ const StudentManagement = () => {
             </div>
             <div className="flex items-stretch gap-2">
               <div className="relative flex-1">
-                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-teal-600 w-4 h-4" />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1a6b5c] w-4 h-4" />
                 <select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
-                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl w-full text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-[#f0f7f5] to-[#f0f7f5] border border-[#c2e6de] rounded-xl w-full text-heading font-semibold focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                 >
                   <option value="all">Section: All</option>
                   {sectionOptions.map((section) => (
@@ -424,13 +424,13 @@ const StudentManagement = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4 pointer-events-none" />
               </div>
               {selectedSection !== "all" && (
                 <button
                   type="button"
                   onClick={() => setSelectedSection("all")}
-                  className="px-3 py-3 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 rounded-xl hover:bg-teal-100 transition-colors"
+                  className="px-3 py-3 text-xs font-bold text-[#134d42] bg-[#f0f7f5] border border-[#c2e6de] rounded-xl hover:bg-[#dff2ed] transition-colors"
                 >
                   Clear
                 </button>
@@ -440,30 +440,30 @@ const StudentManagement = () => {
         </div>
 
         {/* Table — no department/branch column */}
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card border border-theme rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80">
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-theme bg-alt/80">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     ID
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Registration No
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Batch
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Section
                   </th>
-                  <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-[11px] font-bold text-muted uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -473,7 +473,7 @@ const StudentManagement = () => {
                   <tr>
                     <td
                       colSpan="7"
-                      className="px-6 py-8 text-center text-slate-400 text-sm"
+                      className="px-6 py-8 text-center text-muted text-sm"
                     >
                       Loading students...
                     </td>
@@ -483,36 +483,36 @@ const StudentManagement = () => {
                   filteredStudents.map((student) => (
                     <tr
                       key={student.id}
-                      className="hover:bg-slate-50/70 transition-colors"
+                      className="hover:bg-alt/70 transition-colors"
                     >
-                      <td className="px-6 py-4 text-slate-800 font-medium text-sm">
+                      <td className="px-6 py-4 text-heading font-medium text-sm">
                         {student.name}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 text-sm">
+                      <td className="px-6 py-4 text-body text-sm">
                         {student.email}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-mono text-sm">
+                      <td className="px-6 py-4 text-body font-mono text-sm">
                         {student.rollNo}
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-mono text-sm">
+                      <td className="px-6 py-4 text-body font-mono text-sm">
                         {student.registrationNo || "-"}
                       </td>
                       <td className="px-6 py-4">
                         {student.joiningYear || student.passoutYear ? (
-                          <span className="bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                          <span className="bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full text-xs font-medium">
                             {getBatchLabel(student)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-sm">—</span>
+                          <span className="text-muted text-sm">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         {student.section ? (
-                          <span className="bg-cyan-50 text-cyan-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                          <span className="bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full text-xs font-medium">
                             {getSectionLabel(student)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-sm">—</span>
+                          <span className="text-muted text-sm">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -539,7 +539,7 @@ const StudentManagement = () => {
                   <tr>
                     <td
                       colSpan="7"
-                      className="px-6 py-8 text-center text-slate-400 text-sm italic"
+                      className="px-6 py-8 text-center text-muted text-sm italic"
                     >
                       No students found.
                     </td>
@@ -561,7 +561,7 @@ const StudentManagement = () => {
             <div className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Student Name
                   </label>
                   <input
@@ -574,12 +574,12 @@ const StudentManagement = () => {
                         name: e.target.value,
                       }))
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Email ID
                   </label>
                   <input
@@ -592,14 +592,14 @@ const StudentManagement = () => {
                         email: e.target.value,
                       }))
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   Student ID / Roll Number
                 </label>
                 <input
@@ -612,13 +612,13 @@ const StudentManagement = () => {
                       rollNo: e.target.value,
                     }))
                   }
-                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="w-full p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   Registration Number
                 </label>
                 <input
@@ -631,13 +631,13 @@ const StudentManagement = () => {
                       registrationNo: e.target.value,
                     }))
                   }
-                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="w-full p-4 bg-card border border-theme rounded-lg text-heading placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   Section
                 </label>
                 <select
@@ -648,7 +648,7 @@ const StudentManagement = () => {
                       section: e.target.value,
                     }))
                   }
-                  className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                  className="w-full p-4 bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                   required
                 >
                   <option value="">Select Section</option>
@@ -662,7 +662,7 @@ const StudentManagement = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Joining Year
                   </label>
                   <select
@@ -673,7 +673,7 @@ const StudentManagement = () => {
                         joiningYear: e.target.value,
                       }))
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                     required
                   >
                     <option value="">Select Year</option>
@@ -685,7 +685,7 @@ const StudentManagement = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                     Passout Year
                   </label>
                   <select
@@ -696,7 +696,7 @@ const StudentManagement = () => {
                         passoutYear: e.target.value,
                       }))
                     }
-                    className="w-full p-4 bg-white border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                    className="w-full p-4 bg-card border border-theme rounded-lg text-heading focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                     required
                   >
                     <option value="">Select Year</option>

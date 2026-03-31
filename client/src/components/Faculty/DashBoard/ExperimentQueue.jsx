@@ -3,16 +3,16 @@ import React from "react";
 const statusMap = {
   overdue: { bg: "bg-red-50", text: "text-red-600", label: "Overdue" },
   pending: { bg: "bg-amber-50", text: "text-amber-700", label: "Pending" },
-  active: { bg: "bg-emerald-50", text: "text-emerald-700", label: "Active" },
+  active: { bg: "bg-[#f0f7f5]", text: "text-[#134d42]", label: "Active" },
   scheduled: { bg: "bg-blue-50", text: "text-blue-700", label: "Scheduled" },
 };
 
 const numColors = [
   "bg-blue-50 text-blue-600",
   "bg-violet-50 text-violet-600",
-  "bg-teal-50 text-teal-600",
+  "bg-[#f0f7f5] text-[#1a6b5c]",
   "bg-amber-50 text-amber-600",
-  "bg-emerald-50 text-emerald-600",
+  "bg-[#f0f7f5] text-[#1a6b5c]",
 ];
 
 const normalizeQueue = (experimentQueueData) => {
@@ -49,7 +49,7 @@ const ExperimentQueue = ({ experimentQueueData = [] }) => {
 
   if (queue.length === 0) {
     return (
-      <p className="text-sm text-slate-400 text-center py-6">
+      <p className="text-sm text-muted text-center py-6">
         No experiments in queue
       </p>
     );
@@ -64,7 +64,7 @@ const ExperimentQueue = ({ experimentQueueData = [] }) => {
         return (
           <div
             key={exp.id || i}
-            className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer group"
+            className="flex items-center gap-3 p-3 bg-alt border border-theme-light rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-pointer group"
           >
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold flex-shrink-0 ${numColors[i % numColors.length]}`}
@@ -73,10 +73,10 @@ const ExperimentQueue = ({ experimentQueueData = [] }) => {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-slate-800 truncate">
+              <p className="text-xs font-bold text-heading truncate">
                 {exp.name || exp.title}
               </p>
-              <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+              <p className="text-[10px] text-muted mt-0.5 font-medium">
                 {exp.class ||
                   (Array.isArray(exp.classes)
                     ? exp.classes.join(", ")
@@ -91,7 +91,7 @@ const ExperimentQueue = ({ experimentQueueData = [] }) => {
               {status.label}
             </span>
 
-            <div className="w-7 h-7 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-[11px] font-extrabold text-slate-500 flex-shrink-0 group-hover:border-blue-300 transition-colors">
+            <div className="w-7 h-7 bg-card border border-theme rounded-lg flex items-center justify-center text-[11px] font-extrabold text-body flex-shrink-0 group-hover:border-blue-300 transition-colors">
               {exp.submissionCount ?? 0}
             </div>
           </div>

@@ -102,7 +102,7 @@ function App() {
   // Show loading while checking authentication
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen" style={{ background: 'var(--loading-bg)' }}>
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -138,7 +138,7 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <div className="flex min-h-screen bg-[#f0f4f8] theme-transition">
+      <div className="flex min-h-screen theme-transition" style={{ background: 'var(--bg-page)' }}>
         {getSidebar()}
         <div
           className={`flex-1 transition-all duration-500 ${

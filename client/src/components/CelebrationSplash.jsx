@@ -38,10 +38,10 @@ const CelebrationSplash = () => {
             </div>
           ))}
         </div>
-        <div className="bg-[#16162A] border-2 border-emerald-500/50 p-8 rounded-2xl shadow-[0_0_80px_rgba(16,185,129,0.3)] transform scale-100 animate-bounce-in text-center z-10 font-sans">
+        <div className="bg-[#16162A] border-2 border-[#2a8c78]/50 p-8 rounded-2xl shadow-[0_0_80px_rgba(16,185,129,0.3)] transform scale-100 animate-bounce-in text-center z-10 font-sans">
           <h2 className="text-4xl font-extrabold text-white mb-2">🎉 Masterpiece! 🎉</h2>
-          <p className="text-emerald-400 text-lg font-medium">All test cases passed successfully.</p>
-          <p className="text-neutral-400 text-sm mt-4 animate-pulse">Automatically exiting in a few seconds...</p>
+          <p className="text-[#3aa892] text-lg font-medium">All test cases passed successfully.</p>
+          <p className="text-muted text-sm mt-4 animate-pulse">Automatically exiting in a few seconds...</p>
         </div>
         <style>{`
           @keyframes fall {

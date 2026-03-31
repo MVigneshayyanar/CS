@@ -1,7 +1,7 @@
 import React from "react";
 
 const Banner = ({ user }) => (
-  <div className="relative bg-teal-600 rounded-2xl overflow-hidden px-7 py-6 flex items-center justify-between min-h-[110px]">
+  <div className="relative bg-[#1a6b5c] rounded-2xl overflow-hidden px-7 py-6 flex items-center justify-between min-h-[110px]">
     {/* Text */}
     <div className="relative z-10">
       <h2 className="text-xl font-extrabold text-white leading-snug mb-1.5">

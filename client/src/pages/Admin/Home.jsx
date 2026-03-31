@@ -9,8 +9,8 @@ const TabButton = ({ id, label, icon: Icon, activeTab, onClick }) => (
     onClick={() => onClick(id)}
     className={`flex items-center px-6 py-4 font-medium transition-all border-b-2 ${
       activeTab === id
-        ? 'text-teal-400 border-teal-400 bg-neutral-800/50'
-        : 'text-neutral-400 border-transparent hover:text-teal-300 hover:bg-neutral-800/30'
+        ? 'text-[#3aa892] border-[#3aa892] bg-alt'
+        : 'text-muted border-transparent hover:text-[#5c9088] hover:bg-neutral-800/30'
     }`}
   >
     <Icon className="w-5 h-5 mr-3" />
@@ -28,13 +28,13 @@ const DigitalLabAdmin = () => {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#3aa892] to-[#3aa892] bg-clip-text text-transparent">
                 Digital Lab Admin Panel
               </h1>
-              <p className="text-neutral-400 mt-1">Programming Lab Management System</p>
+              <p className="text-muted mt-1">Programming Lab Management System</p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-neutral-500">
+              <div className="text-sm text-body">
                 {new Date().toLocaleDateString()}
               </div>
             </div>

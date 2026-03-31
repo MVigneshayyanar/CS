@@ -411,7 +411,7 @@ const ExperimentView = () => {
     return (
       <div className="fixed inset-0 z-[9999] bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-400 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3aa892] mx-auto mb-4"></div>
           <p className="text-neutral-400">Loading experiment...</p>
         </div>
       </div>
@@ -467,8 +467,8 @@ const ExperimentView = () => {
       {/* Enhanced Fullscreen Prompt */}
       {!isFullscreen && showExitWarning && !showViolationWarning && (
         <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-[10000]">
-          <div className="bg-gradient-to-br from-teal-900/90 to-cyan-900/90 border border-teal-500/50 rounded-xl p-8 max-w-md text-center shadow-2xl">
-            <div className="text-teal-400 text-4xl mb-4">🔒</div>
+          <div className="bg-gradient-to-br from-teal-900/90 to-teal-900/90 border border-[#2a8c78]/50 rounded-xl p-8 max-w-md text-center shadow-2xl">
+            <div className="text-[#3aa892] text-4xl mb-4">🔒</div>
             <h3 className="text-xl font-bold text-white mb-4">Fullscreen Mode Required</h3>
             <p className="text-teal-100 mb-6">
               You must enter and remain in fullscreen mode throughout the experiment.
@@ -490,7 +490,7 @@ const ExperimentView = () => {
                   enterFullscreen();
                   setShowExitWarning(false);
                 }}
-                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 rounded-lg text-white font-medium transition-colors flex items-center gap-2"
+                className="px-6 py-3 bg-[#1a6b5c] hover:bg-[#134d42] rounded-lg text-white font-medium transition-colors flex items-center gap-2"
               >
                 <Beaker className="w-4 h-4" />
                 Enter Fullscreen Mode
@@ -513,8 +513,8 @@ const ExperimentView = () => {
         <div className="flex-shrink-0 px-6 py-4 border-b border-neutral-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Beaker className="w-6 h-6 text-teal-400" />
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">
+              <Beaker className="w-6 h-6 text-[#3aa892]" />
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-[#3aa892] to-[#3aa892] bg-clip-text text-transparent">
                 {(labLanguage || 'EXPERIMENT').toUpperCase()}
               </h1>
               <span className="text-sm text-neutral-400">•</span>
@@ -522,8 +522,8 @@ const ExperimentView = () => {
             </div>
             <div className="flex items-center gap-4">
               {examMode && (
-                <div className="flex items-center gap-2 text-green-400 text-xs">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2 text-[#3aa892] text-xs">
+                  <div className="w-2 h-2 bg-[#3aa892] rounded-full animate-pulse"></div>
                   Fullscreen Mode Active
                 </div>
               )}
@@ -550,8 +550,8 @@ const ExperimentView = () => {
             <div className="flex-shrink-0 p-4 border-b border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-teal-600/20 rounded-lg">
-                    <Code className="w-4 h-4 text-teal-400" />
+                  <div className="p-2 bg-[#1a6b5c]/20 rounded-lg">
+                    <Code className="w-4 h-4 text-[#3aa892]" />
                   </div>
                   <h3 className="text-lg font-semibold text-white">Problem Statement</h3>
                 </div>
@@ -572,21 +572,21 @@ const ExperimentView = () => {
               {experiment.testCases && experiment.testCases.length > 0 && (
                 <div>
                   <h4 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-teal-400" />
+                    <Clock className="w-4 h-4 text-[#3aa892]" />
                     Sample Test Cases
                   </h4>
                   <div className="space-y-3">
                     {experiment.testCases.map((testCase, index) => (
-                      <div key={index} className="bg-gradient-to-r from-teal-900/20 to-teal-800/20 border border-teal-700/30 rounded-xl p-4">
+                      <div key={index} className="bg-gradient-to-r from-teal-900/20 to-teal-800/20 border border-[#134d42]/30 rounded-xl p-4">
                         <div className="mb-2">
                           <span className="text-neutral-400 text-sm font-medium">Input:</span>
-                          <pre className="text-teal-300 font-mono text-sm mt-1 bg-neutral-800/50 p-2 rounded">
+                          <pre className="text-[#5c9088] font-mono text-sm mt-1 bg-neutral-800/50 p-2 rounded">
                             {testCase.input}
                           </pre>
                         </div>
                         <div>
                           <span className="text-neutral-400 text-sm font-medium">Expected Output:</span>
-                          <pre className="text-emerald-300 font-mono text-sm mt-1 bg-neutral-800/50 p-2 rounded">
+                          <pre className="text-[#5c9088] font-mono text-sm mt-1 bg-neutral-800/50 p-2 rounded">
                             {testCase.expected || testCase.expectedOutput}
                           </pre>
                         </div>
@@ -620,8 +620,8 @@ const ExperimentView = () => {
             <div className="flex-shrink-0 p-4 border-b border-neutral-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-600/20 rounded-lg">
-                    <Code className="w-4 h-4 text-emerald-400" />
+                  <div className="p-2 bg-[#1a6b5c]/20 rounded-lg">
+                    <Code className="w-4 h-4 text-[#3aa892]" />
                   </div>
                   <h3 className="text-lg font-semibold text-white">Code Editor</h3>
                   <div className="flex items-center gap-2">

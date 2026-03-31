@@ -19,8 +19,8 @@ const SettingsSidebar = ({ activeSection, setActiveSection }) => {
                   onClick={() => setActiveSection(item.id)}
                   className={`w-full flex items-center justify-between px-4 py-3 text-left rounded-lg transition-all duration-300 ${
                     activeSection === item.id
-                      ? 'bg-emerald-600 text-white shadow-lg'
-                      : 'text-neutral-300 hover:bg-neutral-800/50 hover:text-white'
+                      ? 'bg-[#1a6b5c] text-white shadow-lg'
+                      : 'text-muted hover:bg-alt hover:text-white'
                   }`}
                 >
                   <div className="flex items-center">

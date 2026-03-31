@@ -58,18 +58,19 @@ const LoginCard = ({ onLogin }) => {
   };
 
   return (
-    <div className="bg-[#1e1e1e] text-white rounded-2xl p-8 w-[420px] max-w-[92vw] shadow-lg">
+    <div className="text-white rounded-2xl p-8 w-[420px] max-w-[92vw] shadow-lg" style={{ background: '#132820', border: '1px solid rgba(42,140,120,0.22)' }}>
       <form onSubmit={handleLogin}>
         <div className="flex justify-center mb-6">
           <img src={logo} alt="Lab Management Logo" className="h-12 w-auto" />
         </div>
 
         <div className="flex justify-center mb-6">
-          <div className="relative flex bg-[#3a3a3a] rounded-full overflow-hidden w-[220px]">
+          <div className="relative flex rounded-full overflow-hidden w-[220px]" style={{ background: '#0f2420' }}>
             <span
-              className={`absolute top-0 bottom-0 w-1/2 bg-green-500 rounded-full transition-transform duration-300 ease-in-out ${
+              className={`absolute top-0 bottom-0 w-1/2 rounded-full transition-transform duration-300 ease-in-out ${
                 userType === "Student" ? "translate-x-0" : "translate-x-full"
               }`}
+              style={{ background: '#1a6b5c' }}
             />
             <button
               type="button"
@@ -97,7 +98,7 @@ const LoginCard = ({ onLogin }) => {
         <div className="text-center mb-4">
           <p className="text-sm text-gray-400">
             Logging in as{" "}
-            <span className="text-green-400 font-semibold">{userType}</span>
+            <span className="font-semibold" style={{ color: '#2a8c78' }}>{userType}</span>
           </p>
         </div>
 
@@ -106,7 +107,8 @@ const LoginCard = ({ onLogin }) => {
           <input
             type="text"
             autoComplete="username"
-            className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full px-4 py-3 rounded-md text-white outline-none focus:ring-2 focus:ring-[#3aa892]"
+            style={{ background: '#0f2420', border: '1px solid rgba(42,140,120,0.18)' }}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder={`Enter ${userType.toLowerCase()} username`}
@@ -119,7 +121,8 @@ const LoginCard = ({ onLogin }) => {
           <input
             type="password"
             autoComplete="current-password"
-            className="w-full px-4 py-3 rounded-md bg-[#2c2c2c] text-white outline-none focus:ring-2 focus:ring-green-400"
+            className="w-full px-4 py-3 rounded-md text-white outline-none focus:ring-2 focus:ring-[#3aa892]"
+            style={{ background: '#0f2420', border: '1px solid rgba(42,140,120,0.18)' }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
@@ -130,7 +133,8 @@ const LoginCard = ({ onLogin }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700 text-black font-semibold py-3 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="w-full text-white font-semibold py-3 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center hover:opacity-90"
+          style={{ background: 'linear-gradient(135deg, #1a6b5c, #2a8c78)' }}
         >
           {isLoading ? (
             <>

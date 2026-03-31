@@ -8,10 +8,10 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold text-white mb-4">Display Settings</h3>
-        <p className="text-neutral-400 text-sm mb-6">Customize how the application looks and feels</p>
+        <p className="text-muted text-sm mb-6">Customize how the application looks and feels</p>
 
         <div className="space-y-4">
-          <div className="p-4 bg-neutral-800/50 rounded-lg border border-neutral-700/50 backdrop-blur-sm">
+          <div className="p-4 bg-alt rounded-lg border border-theme backdrop-blur-sm">
             <label className="block text-sm font-medium text-white mb-3">Theme Preference</label>
             <div className="flex space-x-4">
               <label className="flex items-center cursor-pointer">
@@ -26,7 +26,7 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
                   }}
                   className="sr-only peer"
                 />
-                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400 transition-all duration-300">
+                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-[#1a6b5c] peer-checked:ring-2 peer-checked:ring-teal-400 transition-all duration-300">
                   <Monitor />
                   <span className="text-white">Dark Mode</span>
                 </div>
@@ -43,7 +43,7 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
                   }}
                   className="sr-only peer"
                 />
-                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-emerald-600 peer-checked:ring-2 peer-checked:ring-emerald-400 transition-all duration-300">
+                <div className="flex items-center space-x-3 p-3 bg-neutral-700/50 rounded-lg peer-checked:bg-[#1a6b5c] peer-checked:ring-2 peer-checked:ring-teal-400 transition-all duration-300">
                   <Monitor />
                   <span className="text-white">Light Mode</span>
                 </div>
@@ -55,7 +55,7 @@ const AppearanceSection = ({ preferences, setPreferences, loading, handlePrefere
         <button
           onClick={handlePreferenceUpdate}
           disabled={loading}
-          className="flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 transition-all duration-300"
+          className="flex items-center px-6 py-3 bg-[#1a6b5c] text-white rounded-lg hover:bg-[#134d42] focus:ring-2 focus:ring-[#2a8c78] focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 transition-all duration-300"
         >
           <Save />
           <span className="ml-2">{loading ? 'Saving...' : 'Save Display Settings'}</span>

@@ -43,7 +43,7 @@ const styles = `
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    background: #0a0a0f;
+    background: #071210;
     font-family: 'Inter', sans-serif;
     text-align: center;
     overflow: hidden;
@@ -63,14 +63,14 @@ const styles = `
   .mb-overlay::before {
     width: 320px;
     height: 320px;
-    background: radial-gradient(circle, #6c63ff, #3b37cc);
+    background: radial-gradient(circle, #1a6b5c, #0f3f36);
     top: -80px;
     left: -80px;
   }
   .mb-overlay::after {
     width: 260px;
     height: 260px;
-    background: radial-gradient(circle, #ff6584, #c62a6a);
+    background: radial-gradient(circle, #f4a623, #d48c1a);
     bottom: -60px;
     right: -60px;
     animation-delay: 3s;
@@ -115,14 +115,14 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(108, 99, 255, 0.15);
-    border: 1px solid rgba(108, 99, 255, 0.3);
+    background: rgba(42, 140, 120, 0.15);
+    border: 1px solid rgba(42, 140, 120, 0.3);
   }
 
   .mb-icon svg {
     width: 28px;
     height: 28px;
-    color: #6c63ff;
+    color: #2a8c78;
   }
 
   .mb-arrow {
@@ -131,10 +131,10 @@ const styles = `
   }
 
   .mb-icon-desktop {
-    background: rgba(99, 220, 177, 0.12);
-    border-color: rgba(99, 220, 177, 0.3);
+    background: rgba(244, 166, 35, 0.12);
+    border-color: rgba(244, 166, 35, 0.3);
   }
-  .mb-icon-desktop svg { color: #63dcb1; }
+  .mb-icon-desktop svg { color: #f4a623; }
 
   .mb-badge {
     display: inline-flex;
@@ -142,9 +142,9 @@ const styles = `
     gap: 0.4rem;
     padding: 0.3rem 0.85rem;
     border-radius: 999px;
-    background: rgba(255, 101, 132, 0.12);
-    border: 1px solid rgba(255, 101, 132, 0.3);
-    color: #ff6584;
+    background: rgba(244, 166, 35, 0.12);
+    border: 1px solid rgba(244, 166, 35, 0.3);
+    color: #f4a623;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -178,8 +178,8 @@ const styles = `
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background: rgba(108, 99, 255, 0.08);
-    border: 1px solid rgba(108, 99, 255, 0.15);
+    background: rgba(42, 140, 120, 0.08);
+    border: 1px solid rgba(42, 140, 120, 0.15);
     border-radius: 12px;
     padding: 0.75rem 1rem;
   }

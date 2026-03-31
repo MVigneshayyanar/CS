@@ -8,12 +8,19 @@ const LogoutConfirmation = ({ isOpen, onConfirm, onCancel, isLoading = false }) 
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 backdrop-blur-sm"
+        style={{ background: 'var(--bg-modal-overlay)' }}
         onClick={onCancel}
       />
       
       {/* Modal */}
-      <div className="relative bg-[#18181b] border border-white/10 rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-300">
+      <div 
+        className="relative rounded-2xl shadow-2xl p-6 max-w-sm mx-4 animate-in fade-in zoom-in-95 duration-300"
+        style={{ 
+          background: 'var(--logout-modal-bg)', 
+          border: '1px solid var(--logout-modal-border)' 
+        }}
+      >
         {/* Close Button */}
         <button
           onClick={onCancel}

@@ -12,12 +12,12 @@ import { FlaskConical, Search, Bell, ArrowLeft, Lightbulb, Calendar, X, BarChart
 const SectionHeader = ({ icon: Icon, title, badge, action }) => (
     <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center">
-                <Icon className="w-4 h-4 text-teal-600" />
+            <div className="w-8 h-8 bg-[#f0f7f5] rounded-lg flex items-center justify-center">
+                <Icon className="w-4 h-4 text-[#1a6b5c]" />
             </div>
-            <h2 className="text-sm font-extrabold text-slate-800">{title}</h2>
+            <h2 className="text-sm font-extrabold text-heading">{title}</h2>
             {badge && (
-                <span className="text-[10px] font-bold bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full">
+                <span className="text-[10px] font-bold bg-[#f0f7f5] text-[#134d42] px-2.5 py-1 rounded-full">
                     {badge}
                 </span>
             )}
@@ -189,46 +189,46 @@ const FacultyLabManagement = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#f0f4f8]">
+        <div className="min-h-screen bg-page">
             <div className="max-w-5xl mx-auto px-6 pt-8 pb-12">
                 {/* ── Top bar ── */}
                 <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center shadow-md shadow-teal-200">
+                        <div className="w-10 h-10 bg-[#1a6b5c] rounded-xl flex items-center justify-center shadow-md shadow-[#2a8c78]/20">
                             <FlaskConical className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-extrabold text-slate-900 leading-tight">
+                            <h1 className="text-xl font-extrabold text-heading leading-tight">
                                 Lab Management
                             </h1>
-                            <p className="text-xs text-slate-400">
+                            <p className="text-xs text-muted">
                                 Manage subjects, classes and experiments
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm">
-                            <Search className="w-4 h-4 text-slate-400" />
+                        <div className="flex items-center gap-2 bg-card border border-theme rounded-xl px-4 py-2 shadow-sm">
+                            <Search className="w-4 h-4 text-muted" />
                             <input
-                                className="text-sm text-slate-500 outline-none bg-transparent w-36 placeholder:text-slate-400"
+                                className="text-sm text-body outline-none bg-transparent w-36 placeholder:text-muted"
                                 placeholder="Search..."
                             />
                         </div>
-                        <div className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center shadow-sm">
-                            <Bell className="w-4 h-4 text-slate-500" />
+                        <div className="w-9 h-9 bg-card border border-theme rounded-xl flex items-center justify-center shadow-sm">
+                            <Bell className="w-4 h-4 text-body" />
                         </div>
                     </div>
                 </div>
 
                 {isLoading ? (
-                    <div className="flex items-center gap-3 text-slate-400 py-20 justify-center">
-                        <div className="w-5 h-5 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="flex items-center gap-3 text-muted py-20 justify-center">
+                        <div className="w-5 h-5 border-2 border-[#2a8c78] border-t-transparent rounded-full animate-spin" />
                         Loading lab data...
                     </div>
                 ) : (
                     <>
                         {/* ── Teal banner ── */}
-                        <div className="relative bg-teal-600 rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
+                        <div className="relative bg-[#1a6b5c] rounded-2xl px-7 py-5 mb-5 flex items-center justify-between overflow-hidden">
                             <div className="relative z-10">
                                 <h2 className="text-lg font-extrabold text-white mb-1">
                                     Lab Management Centre
@@ -308,7 +308,7 @@ const FacultyLabManagement = () => {
                         </div>
 
                         {/* ── Breadcrumb ── */}
-                        <div className="flex items-center gap-2 mb-5 text-xs font-medium text-slate-400">
+                        <div className="flex items-center gap-2 mb-5 text-xs font-medium text-muted">
                             {crumbs.map((c, i) => (
                                 <React.Fragment key={i}>
                                     {i > 0 && (
@@ -322,7 +322,7 @@ const FacultyLabManagement = () => {
                                             <polyline points="9 18 15 12 9 6" />
                                         </svg>
                                     )}
-                                    <span className={c.active ? "text-teal-600 font-bold" : ""}>
+                                    <span className={c.active ? "text-[#1a6b5c] font-bold" : ""}>
                                         {c.label}
                                     </span>
                                 </React.Fragment>
@@ -333,7 +333,7 @@ const FacultyLabManagement = () => {
                         {currentView !== "subjects" && (
                             <button
                                 onClick={handleBack}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm mb-5"
+                                className="flex items-center gap-2 px-4 py-2 bg-card border border-theme rounded-xl text-xs font-bold text-body hover:bg-alt transition-all shadow-sm mb-5"
                             >
                                 <ArrowLeft className="w-3.5 h-3.5" />
                                 Back
@@ -349,7 +349,7 @@ const FacultyLabManagement = () => {
                                     badge={`${subjects.length} Subjects`}
                                 />
                                 {subjects.length === 0 ? (
-                                    <p className="text-sm text-slate-400 text-center py-10">
+                                    <p className="text-sm text-muted text-center py-10">
                                         No subjects found.
                                     </p>
                                 ) : (
@@ -380,7 +380,7 @@ const FacultyLabManagement = () => {
                                     action={
                                         <button
                                             onClick={() => setShowExperimentsList(true)}
-                                            className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+                                            className="flex items-center gap-2 px-3 py-2 bg-[#1a6b5c] text-white text-xs font-bold rounded-xl hover:bg-[#134d42] transition-all shadow-sm"
                                         >
                                             <Lightbulb className="w-3.5 h-3.5" />
                                             View All Experiments
@@ -388,7 +388,7 @@ const FacultyLabManagement = () => {
                                     }
                                 />
                                 {(classesBySubject[selectedSubject.id] || []).length === 0 ? (
-                                    <p className="text-sm text-slate-400 text-center py-10">
+                                    <p className="text-sm text-muted text-center py-10">
                                         No classes for this subject.
                                     </p>
                                 ) : (
@@ -419,7 +419,7 @@ const FacultyLabManagement = () => {
                                     action={
                                         <button
                                             onClick={() => setShowDataSheet(true)}
-                                            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-xs font-bold rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 flex items-center gap-2 shadow-sm"
+                                            className="px-4 py-2 bg-gradient-to-r from-[#1a6b5c] to-[#134d42] text-white text-xs font-bold rounded-xl hover:from-[#134d42] hover:to-[#0f3f36] transition-all duration-200 flex items-center gap-2 shadow-sm"
                                         >
                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

@@ -28,7 +28,7 @@ const PerformanceCharts = ({
   ];
 
   const progressDistributionData = progressDistributionDataProp || [
-    { range: "90-100%", students: 142, color: "#10b981" },
+    { range: "90-100%", students: 142, color: "#1a6b5c" },
     { range: "80-89%", students: 98, color: "#3b82f6" },
     { range: "70-79%", students: 67, color: "#f59e0b" },
     { range: "60-69%", students: 28, color: "#ef4444" },
@@ -38,8 +38,8 @@ const PerformanceCharts = ({
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white border border-slate-200 rounded-lg p-3 shadow-xl">
-          <p className="font-semibold text-slate-800 mb-1">{label}</p>
+        <div className="bg-card border border-theme rounded-lg p-3 shadow-xl">
+          <p className="font-semibold text-heading mb-1">{label}</p>
           {payload.map((entry, index) => {
             // Safe string checking before using includes()
             const name = entry.name || "";
@@ -71,7 +71,7 @@ const PerformanceCharts = ({
       {!pieOnly && (
         <div
           className={
-            barOnly ? "" : "bg-white border border-slate-200 rounded-2xl p-4"
+            barOnly ? "" : "bg-card border border-theme rounded-2xl p-4"
           }
         >
           <ResponsiveContainer width="100%" height={250}>
@@ -81,7 +81,7 @@ const PerformanceCharts = ({
               <YAxis stroke="#94a3b8" />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="avgScore" fill="#3b82f6" name="Avg Score" />
-              <Bar dataKey="completion" fill="#10b981" name="Completion Rate" />
+              <Bar dataKey="completion" fill="#1a6b5c" name="Completion Rate" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -90,7 +90,7 @@ const PerformanceCharts = ({
       {!barOnly && (
         <div
           className={
-            pieOnly ? "" : "bg-white border border-slate-200 rounded-2xl p-4"
+            pieOnly ? "" : "bg-card border border-theme rounded-2xl p-4"
           }
         >
           <div className="flex items-center justify-between h-64">
@@ -117,8 +117,8 @@ const PerformanceCharts = ({
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: entry.color }}
                   ></div>
-                  <span className="text-sm text-slate-500">{entry.range}</span>
-                  <span className="text-sm text-slate-800 font-semibold ml-auto">
+                  <span className="text-sm text-body">{entry.range}</span>
+                  <span className="text-sm text-heading font-semibold ml-auto">
                     {entry.students}
                   </span>
                 </div>
