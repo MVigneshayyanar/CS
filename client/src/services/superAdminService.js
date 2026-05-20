@@ -78,3 +78,12 @@ export const deleteDepartmentHead = async (id) => {
   return response.data;
 };
 
+export const deleteSuperAdminDepartment = async (departmentName) => {
+  const headers = await getAuthHeaders();
+  const encodedDepartment = encodeURIComponent(departmentName);
+  const response = await superAdminApi.delete(`/super-admin/departments/${encodedDepartment}`, {
+    headers,
+  });
+  return response.data;
+};
+

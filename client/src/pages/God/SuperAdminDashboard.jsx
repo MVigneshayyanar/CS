@@ -50,12 +50,12 @@ const SuperAdminDashboard = () => {
 
   const totals = useMemo(
     () => ({
-      departments: departmentWiseCounts.length,
+      departments: Array.isArray(college?.departments) ? college.departments.length : 0,
       admins: Number(college?.adminCount) || 0,
       faculty: Number(college?.facultyCount) || 0,
       students: Number(college?.studentCount) || 0,
     }),
-    [college, departmentWiseCounts]
+    [college]
   );
 
   return (

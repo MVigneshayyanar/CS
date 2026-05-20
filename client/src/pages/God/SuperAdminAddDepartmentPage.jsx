@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Building2, Check, Pencil, Plus, X } from 'lucide-react';
+import { Building2, Check, Pencil, Plus, Trash2, X } from 'lucide-react';
 import {
   addDepartmentAdmin,
   addSuperAdminDepartment,
+  deleteSuperAdminDepartment,
   fetchSuperAdminCollege,
   updateSuperAdminDepartment,
 } from '@/services/superAdminService';
@@ -27,6 +28,7 @@ const SuperAdminAddDepartmentPage = () => {
   const [editingDepartment, setEditingDepartment] = useState('');
   const [editingDepartmentValue, setEditingDepartmentValue] = useState('');
   const [isUpdatingDepartment, setIsUpdatingDepartment] = useState(false);
+  const [isDeletingDepartment, setIsDeletingDepartment] = useState(false);
 
   const departments = useMemo(() => college?.departments || [], [college]);
   const departmentHeads = useMemo(() => college?.departmentHeads || [], [college]);
@@ -158,6 +160,24 @@ const SuperAdminAddDepartmentPage = () => {
       alert(message);
     } finally {
       setIsUpdatingDepartment(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (departmentName) => {
+    if (!window.confirm(`Are you sure you want to delete the "${departmentName}" department? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeletingDepartment(true);
+    try {
+      await deleteSuperAdminDepartment(departmentName);
+      await loadCollege();
+      alert('Department deleted successfully.');
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Failed to delete department';
+      alert(message);
+    } finally {
+      setIsDeletingDepartment(false);
     }
   };
 
@@ -312,14 +332,25 @@ const SuperAdminAddDepartmentPage = () => {
                     ) : (
                       <div className="flex items-center justify-between gap-2">
                         <span>{department}</span>
-                        <button
-                          type="button"
-                          onClick={() => startDepartmentEdit(department)}
-                          className="p-1.5 rounded-lg border border-theme text-body hover:text-[#134d42] hover:bg-[#f0f7f5]"
-                          title="Edit department"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => startDepartmentEdit(department)}
+                            className="p-1.5 rounded-lg border border-theme text-body hover:text-[#134d42] hover:bg-[#f0f7f5]"
+                            title="Edit department"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDepartment(department)}
+                            className="p-1.5 rounded-lg border border-theme text-body hover:text-red-600 hover:bg-red-50"
+                            title="Delete department"
+                            disabled={isDeletingDepartment}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
