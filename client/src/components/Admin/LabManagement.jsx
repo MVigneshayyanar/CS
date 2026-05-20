@@ -413,7 +413,7 @@ const LabManagement = () => {
                 <select
                   value={selectedLabBatch}
                   onChange={(e) => setSelectedLabBatch(e.target.value)}
-                  className="appearance-none pl-10 pr-9 py-3 bg-gradient-to-r from-[#f0f7f5] to-[#f0f7f5] border border-[#c2e6de] rounded-xl w-full text-heading font-semibold focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
+                  className="appearance-none pl-10 pr-9 py-3 bg-alt border border-theme rounded-xl w-full text-heading font-semibold focus:outline-none focus:ring-2 focus:ring-[#2a8c78] focus:border-[#2a8c78] transition-all"
                 >
                   <option value="all">Filter: All Batches</option>
                   {labBatchOptions.map((batch) => (

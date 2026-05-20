@@ -206,6 +206,11 @@ html.dark,
     color: var(--text-body);
     transition: background-color 0.38s ease, color 0.38s ease;
   }
+  
+  select option {
+    background-color: var(--bg-card);
+    color: var(--text-heading);
+  }
 }
 
 .theme-transition {
