@@ -78,7 +78,7 @@ const AdminSidebar = ({ onLogout }) => {
             ) : (
               <img 
                 src={resolvedTheme === 'light' ? logoLight : logoDark} 
-                alt="CodeSphere" 
+                alt="Devlabz" 
                 className="h-9 w-auto object-contain animate-in fade-in slide-in-from-left-2 duration-500" 
               />
             )}

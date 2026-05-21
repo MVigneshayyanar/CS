@@ -491,7 +491,7 @@ const Reports = () => {
         pdf.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 10, {
           align: "center",
         });
-        pdf.text("CodeSphere Academic Reports", margin, pageHeight - 10);
+        pdf.text("Devlabz Academic Reports", margin, pageHeight - 10);
       }
 
       pdf.save(
